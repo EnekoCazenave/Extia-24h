@@ -1,4 +1,9 @@
 import Fastify, { FastifyInstance } from 'fastify'
+import cookiePlugin from './plugins/cookie.js'
+import corsPlugin from './plugins/cors.js'
+import helmetPlugin from './plugins/helmet.js'
+import rateLimitPlugin from './plugins/rateLimit.js'
+import csrfPlugin from './plugins/csrf.js'
 
 export interface BuildOptions {
   logger?: boolean | object
@@ -12,15 +17,13 @@ export async function buildApp(opts: BuildOptions = {}): Promise<FastifyInstance
     },
   })
 
-  // Plugins registered in later tasks — stubs for now
-  // await fastify.register(import('./plugins/cookie.js'))
-  // await fastify.register(import('./plugins/cors.js'))
-  // await fastify.register(import('./plugins/helmet.js'))
-  // await fastify.register(import('./plugins/jwt.js'))
-  // await fastify.register(import('./plugins/rateLimit.js'))
-  // await fastify.register(import('./plugins/csrf.js'))
-  // await fastify.register(import('./routes/index.js'))
+  await fastify.register(cookiePlugin)
+  await fastify.register(corsPlugin)
+  await fastify.register(helmetPlugin)
+  await fastify.register(rateLimitPlugin)
+  await fastify.register(csrfPlugin)
 
+  // Routes registered in Task 7
   fastify.get('/health', async () => ({ status: 'ok' }))
 
   return fastify

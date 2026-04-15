@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitest/config'
 import { loadEnv } from 'vite'
+import path from 'path'
 
 export default defineConfig(({ mode }) => ({
   test: {
     environment: 'node',
     globals: true,
-    env: loadEnv(mode, process.cwd(), ''),
+    env: loadEnv(mode, path.resolve(process.cwd(), '../..'), ''),
   },
 }))
