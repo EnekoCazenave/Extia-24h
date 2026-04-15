@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int               @id @default(autoincrement())
+  login         String
+  password      String
+  lastname      String
+  firstname     String
+  intern        Boolean           @default(false)
+  email         String            @unique
+  role          Role              @relation(fields: [roleId], references: [id])
+  roleId        Int
+  userGames     UserGame[]
+  userTeams     UserTeam[]
+  achievements  UserAchievement[]
+  userEvents    UserEvent[]
+  refreshTokens RefreshToken[]
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users User[]
+}
+
+model VideoGame {
+  id             Int        @id @default(autoincrement())
+  nom            String
+  happyHourStart DateTime?
+  happyHourEnd   DateTime?
+  gameTypes      GameType[]
+}
+
+model GameType {
+  id          Int        @id @default(autoincrement())
+  name        String
+  calcul      String
+  win         String
+  team        Boolean    @default(false)
+  videoGame   VideoGame  @relation(fields: [videoGameId], references: [id])
+  videoGameId Int
+  teams       Team[]
+  userGames   UserGame[]
+}
+
+model Team {
+  id         Int        @id @default(autoincrement())
+  gameType   GameType   @relation(fields: [gameTypeId], references: [id])
+  gameTypeId Int
+  members    UserTeam[]
+}
+
+model UserTeam {
+  team   Team @relation(fields: [teamId], references: [id])
+  teamId Int
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@id([teamId, userId])
+}
+
+model UserGame {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  gameType   GameType @relation(fields: [gameTypeId], references: [id])
+  gameTypeId Int
+
+  @@id([userId, gameTypeId])
+}
+
+model Achievement {
+  id          Int               @id @default(autoincrement())
+  name        String
+  description String?
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  user          User        @relation(fields: [userId], references: [id])
+  userId        Int
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  achievementId Int
+
+  @@id([userId, achievementId])
+}
+
+model Event {
+  id         Int         @id @default(autoincrement())
+  name       String
+  userEvents UserEvent[]
+}
+
+model UserEvent {
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+  event   Event @relation(fields: [eventId], references: [id])
+  eventId Int
+
+  @@id([userId, eventId])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  expiresAt DateTime
+}
