@@ -18,6 +18,8 @@ vi.mock('@prisma/client', () => {
 })
 
 describe('GET /api/games', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
   it('returns 200 with game list', async () => {
     const { PrismaClient } = await import('@prisma/client')
     const mockPrisma = new (PrismaClient as any)()
@@ -27,6 +29,7 @@ describe('GET /api/games', () => {
     mockPrisma.userGame.groupBy.mockResolvedValue([])
 
     const app = await buildApp({ logger: false })
+    await app.ready()
     const res = await app.inject({ method: 'GET', url: '/api/games' })
     expect(res.statusCode).toBe(200)
     const body = JSON.parse(res.body)
@@ -36,12 +39,15 @@ describe('GET /api/games', () => {
 })
 
 describe('GET /api/games/:id', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
   it('returns 404 when game not found', async () => {
     const { PrismaClient } = await import('@prisma/client')
     const mockPrisma = new (PrismaClient as any)()
     mockPrisma.videoGame.findUnique.mockResolvedValue(null)
 
     const app = await buildApp({ logger: false })
+    await app.ready()
     const res = await app.inject({ method: 'GET', url: '/api/games/999' })
     expect(res.statusCode).toBe(404)
     await app.close()
@@ -49,6 +55,7 @@ describe('GET /api/games/:id', () => {
 
   it('returns 400 for non-numeric id', async () => {
     const app = await buildApp({ logger: false })
+    await app.ready()
     const res = await app.inject({ method: 'GET', url: '/api/games/notanumber' })
     expect(res.statusCode).toBe(400)
     await app.close()

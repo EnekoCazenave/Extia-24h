@@ -3,9 +3,7 @@ import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-
 import { RegisterSchema, LoginSchema } from '@extia-gaming/shared'
 import { register, login, refresh, logout } from '../controllers/auth.controller.js'
 import { authenticate } from '../hooks/authenticate.js'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '../lib/prisma.js'
 
 export async function authRoutes(fastify: FastifyInstance) {
   fastify.setValidatorCompiler(validatorCompiler)

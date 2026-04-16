@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../lib/prisma.js'
 import bcrypt from 'bcryptjs'
 import crypto from 'node:crypto'
 import type { LoginInput, RegisterInput } from '@extia-gaming/shared'
-
-const prisma = new PrismaClient()
 
 type RegisterData = Omit<RegisterInput, 'consentAccepted'>
 
