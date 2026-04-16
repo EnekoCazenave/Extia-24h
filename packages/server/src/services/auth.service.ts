@@ -1,18 +1,11 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import crypto from 'node:crypto'
-import type { LoginInput } from '@extia-gaming/shared'
+import type { LoginInput, RegisterInput } from '@extia-gaming/shared'
 
 const prisma = new PrismaClient()
 
-type RegisterData = {
-  login: string
-  email: string
-  password: string
-  firstname: string
-  lastname: string
-  intern: boolean
-}
+type RegisterData = Omit<RegisterInput, 'consentAccepted'>
 
 export async function registerUser(input: RegisterData) {
   const existing = await prisma.user.findUnique({ where: { email: input.email } })

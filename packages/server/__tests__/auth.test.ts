@@ -33,6 +33,7 @@ describe('Auth routes', () => {
           firstname: 'Test',
           lastname: 'User',
           intern: false,
+          consentAccepted: true,
         },
       })
       expect(response.statusCode).toBe(201)
@@ -54,6 +55,7 @@ describe('Auth routes', () => {
           firstname: 'Test',
           lastname: 'User',
           intern: false,
+          consentAccepted: true,
         },
       })
       expect(response.statusCode).toBe(409)
