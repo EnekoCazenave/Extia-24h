@@ -1,4 +1,8 @@
 import SEOHead from '../components/SEOHead.tsx'
+import TopGamesTable from '../components/TopGamesTable.tsx'
+import PlayerLeaderboard from '../components/PlayerLeaderboard.tsx'
+import { useTopGames, useGlobalLeaderboard } from '../hooks/useLeaderboard.ts'
+import styles from './HomePage.module.css'
 
 const EVENT_JSON_LD = {
   '@context': 'https://schema.org',
@@ -11,6 +15,9 @@ const EVENT_JSON_LD = {
 }
 
 export default function HomePage() {
+  const topGames = useTopGames(5)
+  const leaderboard = useGlobalLeaderboard(20)
+
   return (
     <>
       <SEOHead
@@ -19,10 +26,28 @@ export default function HomePage() {
         canonicalPath="/"
         jsonLd={EVENT_JSON_LD}
       />
-      <section aria-labelledby="home-title">
-        <h1 id="home-title">Extia Gaming 24h</h1>
-        <p>L'événement gaming interne d'Extia — 24 heures de jeux et de compétition.</p>
+      <section className={styles.hero} aria-labelledby="home-title">
+        <h1 className={styles.heroTitle} id="home-title">
+          Extia <span className={styles.heroAccent}>Gaming</span> 24h
+        </h1>
+        <p className={styles.heroSubtitle}>
+          24 heures de compétition, de jeux et de fair-play. Que le meilleur gagne !
+        </p>
       </section>
+      <div className={styles.content}>
+        <section aria-labelledby="top-games-title" className={styles.section}>
+          <h2 className={styles.sectionTitle} id="top-games-title">🏆 Top 5 Jeux</h2>
+          {topGames.isLoading && <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }} aria-live="polite">Chargement…</p>}
+          {topGames.isError && <p style={{ color: 'var(--color-error)', fontSize: 'var(--text-sm)' }} role="alert">Impossible de charger les jeux.</p>}
+          {topGames.data && <TopGamesTable games={topGames.data} />}
+        </section>
+        <section aria-labelledby="leaderboard-title" className={styles.section}>
+          <h2 className={styles.sectionTitle} id="leaderboard-title">🎮 Classement général</h2>
+          {leaderboard.isLoading && <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }} aria-live="polite">Chargement…</p>}
+          {leaderboard.isError && <p style={{ color: 'var(--color-error)', fontSize: 'var(--text-sm)' }} role="alert">Impossible de charger le classement.</p>}
+          {leaderboard.data && <PlayerLeaderboard rankings={leaderboard.data} />}
+        </section>
+      </div>
     </>
   )
 }
