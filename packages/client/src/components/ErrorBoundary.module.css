@@ -1,0 +1,37 @@
+.container {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  padding: 48px var(--page-padding);
+  text-align: center;
+}
+.icon { font-size: 4rem; line-height: 1; }
+.title { font-size: var(--text-2xl); font-weight: 700; }
+.message { color: var(--text-muted); max-width: 480px; font-size: var(--text-sm); }
+.actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+.homeLink {
+  padding: 10px 22px;
+  background: var(--color-accent);
+  color: var(--text-on-accent);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  text-decoration: none;
+  transition: background var(--transition);
+}
+.homeLink:hover { background: var(--color-accent-hover); text-decoration: none; }
+.retryBtn {
+  padding: 10px 22px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.retryBtn:hover { border-color: var(--border-color-hover); color: var(--text-primary); }
