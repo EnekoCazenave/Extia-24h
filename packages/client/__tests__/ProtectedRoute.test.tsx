@@ -24,13 +24,13 @@ function renderWithRouter(initialRoute = '/protected') {
 
 describe('ProtectedRoute', () => {
   it('shows loading state while auth is loading', () => {
-    mockUseAuth.mockReturnValue({ user: null, isLoading: true, login: vi.fn(), logout: vi.fn() })
+    mockUseAuth.mockReturnValue({ user: null, isLoading: true, login: vi.fn(), logout: vi.fn(), register: vi.fn() })
     renderWithRouter()
     expect(screen.getByText('Chargement…')).toBeInTheDocument()
   })
 
   it('redirects to /login when user is null', () => {
-    mockUseAuth.mockReturnValue({ user: null, isLoading: false, login: vi.fn(), logout: vi.fn() })
+    mockUseAuth.mockReturnValue({ user: null, isLoading: false, login: vi.fn(), logout: vi.fn(), register: vi.fn() })
     renderWithRouter()
     expect(screen.getByText('Login Page')).toBeInTheDocument()
   })
@@ -41,6 +41,7 @@ describe('ProtectedRoute', () => {
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
+      register: vi.fn(),
     })
     renderWithRouter()
     expect(screen.getByText('Protected Content')).toBeInTheDocument()

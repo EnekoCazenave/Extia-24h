@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
-import type { UserPublic } from '@extia-gaming/shared'
+import type { UserPublic, RegisterInput } from '@extia-gaming/shared'
 import { api } from '../services/api.ts'
 
 interface AuthContextValue {
@@ -7,6 +7,7 @@ interface AuthContextValue {
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  register: (data: RegisterInput) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -32,8 +33,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }
 
+  async function register(data: RegisterInput) {
+    const res = await api.post<{ user: UserPublic }>('/auth/register', data)
+    setUser(res.data.user)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   )
