@@ -14,6 +14,8 @@ export const CreateGameTypeSchema = z.object({
   team: z.boolean().default(false),
 })
 
+// Both fields are always required (nullable, not optional) so the update is unambiguous:
+// send null to clear, send a datetime string to set.
 export const UpdateHappyHourSchema = z.object({
   happyHourStart: z.string().datetime().nullable(),
   happyHourEnd: z.string().datetime().nullable(),

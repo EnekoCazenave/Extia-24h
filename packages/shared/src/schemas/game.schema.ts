@@ -23,13 +23,6 @@ export const PlayInputSchema = z.object({
   score: z.number().int().min(0),
 })
 
-export const UpdateProfileSchema = z.object({
-  login: z.string().min(3).max(50).optional(),
-  firstname: z.string().min(1).max(100).optional(),
-  lastname: z.string().min(1).max(100).optional(),
-})
-
 export type GameType = z.infer<typeof GameTypeSchema>
 export type VideoGame = z.infer<typeof VideoGameSchema>
 export type PlayInput = z.infer<typeof PlayInputSchema>
-export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>
