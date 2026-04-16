@@ -17,11 +17,18 @@ export async function getGlobalLeaderboard(limit = 20) {
         u.login,
         u.firstname,
         u.lastname,
-        COALESCE(SUM(ug.score), 0) + COALESCE(SUM(pb.points), 0) AS "totalScore"
+        COALESCE(ug_agg.total, 0) + COALESCE(pb_agg.total, 0) AS "totalScore"
       FROM "User" u
-      LEFT JOIN "UserGame" ug ON ug."userId" = u.id
-      LEFT JOIN "PointBonus" pb ON pb."userId" = u.id
-      GROUP BY u.id, u.login, u.firstname, u.lastname
+      LEFT JOIN (
+        SELECT "userId", SUM(score) AS total
+        FROM "UserGame"
+        GROUP BY "userId"
+      ) ug_agg ON ug_agg."userId" = u.id
+      LEFT JOIN (
+        SELECT "userId", SUM(points) AS total
+        FROM "PointBonus"
+        GROUP BY "userId"
+      ) pb_agg ON pb_agg."userId" = u.id
       ORDER BY "totalScore" DESC
       LIMIT ${limit}
     `,
