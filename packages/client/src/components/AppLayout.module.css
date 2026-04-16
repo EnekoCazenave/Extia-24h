@@ -1,0 +1,114 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-height);
+  background: rgba(26, 26, 46, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.nav {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--page-padding);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.logo {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--text-primary) !important;
+  text-decoration: none !important;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo span {
+  color: var(--color-accent);
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.navLink {
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-muted) !important;
+  transition: color var(--transition), background var(--transition);
+  text-decoration: none !important;
+}
+
+.navLink:hover {
+  color: var(--text-primary) !important;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navLinkActive {
+  color: var(--text-primary) !important;
+  background: rgba(233, 69, 96, 0.12);
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.userInfo {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.logoutBtn {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.logoutBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.main {
+  min-height: calc(100vh - var(--header-height) - 56px);
+}
+
+.footer {
+  text-align: center;
+  padding: 20px var(--page-padding);
+  border-top: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.adminBadge {
+  font-size: var(--text-xs);
+  padding: 2px 6px;
+  background: rgba(233, 69, 96, 0.15);
+  color: var(--color-accent);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
