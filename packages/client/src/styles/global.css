@@ -1,0 +1,157 @@
+/* packages/client/src/styles/global.css
+ *
+ * DESIGN TOKENS — EXTIA GAMING 24h
+ * Colors derived from theme-color #1a1a2e + gaming dark theme.
+ * VERIFY ALL COLORS against "Chartes graphiques - GROUPE.pdf" before release.
+ */
+
+:root {
+  /* Backgrounds */
+  --bg-base: #0d0d1a;
+  --bg-surface: #1a1a2e;
+  --bg-elevated: #16213e;
+  --bg-card: #0f3460;
+
+  /* Accent colors */
+  --color-accent: #e94560;
+  --color-accent-hover: #c73652;
+  --color-secondary: #4cc9f0;
+  --color-secondary-hover: #3ab8df;
+
+  /* Text */
+  --text-primary: #eaeaea;
+  --text-muted: #94a3b8;
+  --text-on-accent: #ffffff;
+
+  /* State */
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Borders */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-hover: rgba(255, 255, 255, 0.16);
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: 2.75rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 24px rgba(233, 69, 96, 0.3);
+
+  /* Transitions */
+  --transition: 150ms ease;
+
+  /* Layout */
+  --header-height: 64px;
+  --max-width: 1200px;
+  --page-padding: 24px;
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--color-secondary-hover);
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  background: var(--color-accent);
+  color: var(--text-on-accent);
+  padding: 8px 16px;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  z-index: 9999;
+  transition: top var(--transition);
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: none;
+}
+
+/* Happy hour badge */
+.happy-hour-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, var(--color-warning), #f97316);
+  color: #1a1a1a;
+  border-radius: 99px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
