@@ -4,6 +4,7 @@ import { gameRoutes } from './games.js'
 import { leaderboardRoutes } from './leaderboard.js'
 import { playRoutes } from './play.js'
 import { userRoutes } from './users.js'
+import { adminRoutes } from './admin.js'
 
 export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(authRoutes)
@@ -11,4 +12,5 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(leaderboardRoutes)
   await fastify.register(playRoutes)
   await fastify.register(userRoutes)
+  await fastify.register(adminRoutes)
 }
