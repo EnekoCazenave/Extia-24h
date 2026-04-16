@@ -27,7 +27,8 @@ export async function register(
   reply: FastifyReply,
 ) {
   try {
-    const user = await registerUser(request.body)
+    const { consentAccepted: _, ...userData } = request.body
+    const user = await registerUser(userData)
     const accessToken = request.server.jwt.sign(
       { sub: user.id, email: user.email, roleId: user.roleId },
       { expiresIn: env.JWT_EXPIRES_IN },

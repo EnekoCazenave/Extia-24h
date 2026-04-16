@@ -7,15 +7,14 @@ export const RegisterSchema = z.object({
   firstname: z.string().min(1).max(100),
   lastname: z.string().min(1).max(100),
   intern: z.boolean().default(false),
+  consentAccepted: z.literal(true, {
+    errorMap: () => ({ message: 'Vous devez accepter la politique de confidentialité' }),
+  }),
 })
 
 export const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
-})
-
-export const RefreshSchema = z.object({
-  // body is empty — refresh token is in httpOnly cookie
 })
 
 export type RegisterInput = z.infer<typeof RegisterSchema>
