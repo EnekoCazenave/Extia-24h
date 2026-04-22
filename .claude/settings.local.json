@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -d .worktrees)",
+      "Bash(ls -d worktrees)",
+      "Bash(grep -i \"worktree.*director\" CLAUDE.md)",
+      "Bash(pnpm *)",
+      "Bash(git *)",
+      "Bash(dir \"C:/Users/User/Desktop/projets/Extia gaming/Site 24h/.worktrees/foundation\" /a)",
+      "Bash(cat pnpm-workspace.yaml)",
+      "Bash(cat package.json)",
+      "Bash(node_modules/.bin/prisma generate *)",
+      "Bash(npx prisma *)",
+      "Bash(node_modules/.bin/prisma migrate *)",
+      "Bash(npm test *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c \"import pdfplumber; pdf=pdfplumber.open\\('C:/Users/User/Desktop/projets/Extia gaming/Site 24h/Chartes graphiques - GROUPE.pdf'\\); [print\\(f'Page {i+1}:', p.extract_text\\(\\)\\) for i,p in enumerate\\(pdf.pages[:3]\\)]\")",
+      "Bash(exit 0)",
+      "Bash(echo \"EXIT_CODE: $?\")",
+      "Bash(npx vitest *)"
+    ]
+  }
+}

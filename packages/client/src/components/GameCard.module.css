@@ -1,0 +1,64 @@
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none !important;
+  display: block;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  color: var(--text-primary) !important;
+  box-shadow: var(--shadow-sm);
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+.imageWrapper {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.image { width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition); }
+.card:hover .image { transform: scale(1.05); }
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(var(--secondary-rgb), 0.08));
+  color: var(--color-accent);
+}
+.happyHourBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, var(--extia-yellow), var(--extia-orange));
+  color: var(--extia-ink);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 99px;
+  box-shadow: 0 4px 12px rgba(var(--warning-rgb), 0.35);
+}
+.body { padding: 20px; }
+.name { font-family: var(--font-display), sans-serif; font-size: var(--text-lg); font-weight: 800; margin-bottom: 8px; color: var(--text-primary); }
+.meta { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.score { font-size: var(--text-sm); color: var(--text-muted); }
+.scoreValue { font-weight: 800; color: var(--color-accent); }
+.typesList { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.typeTag {
+  font-size: var(--text-xs);
+  padding: 3px 10px;
+  background: rgba(var(--secondary-rgb), 0.12);
+  color: var(--color-secondary);
+  border-radius: 99px;
+  border: 1px solid rgba(var(--secondary-rgb), 0.22);
+  font-weight: 600;
+}

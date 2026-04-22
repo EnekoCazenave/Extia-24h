@@ -1,0 +1,27 @@
+{
+  "name": "extia-gaming-24h",
+  "private": true,
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter=!@extia-gaming/shared run dev",
+    "build": "pnpm --filter @extia-gaming/shared run build && pnpm --parallel --filter=!@extia-gaming/shared run build",
+    "test": "pnpm -r run test",
+    "db:migrate": "pnpm --filter @extia-gaming/server run db:migrate",
+    "db:seed": "pnpm --filter @extia-gaming/server run db:seed",
+    "audit": "pnpm -r audit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma"
+    ]
+  }
+}
