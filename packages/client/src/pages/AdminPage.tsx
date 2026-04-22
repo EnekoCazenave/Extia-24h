@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ChangeEvent } from 'react'
 import SEOHead from '../components/SEOHead.tsx'
 import { useGames } from '../hooks/useGames.ts'
 import { useCreateGame, useAddGameType, useUpdateHappyHour, useGrantBonus } from '../hooks/useAdmin.ts'
+import { api } from '../services/api.ts'
 import styles from './AdminPage.module.css'
 
 type Tab = 'create-game' | 'add-game-type' | 'happy-hour' | 'bonus'
@@ -17,6 +18,15 @@ function CreateGamePanel() {
   const createGame = useCreateGame()
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+
+  function handleImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null
+    setImageFile(file)
+    setImagePreview(file ? URL.createObjectURL(file) : null)
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -24,15 +34,29 @@ function CreateGamePanel() {
     setError(null)
     const data = new FormData(e.currentTarget)
     try {
+      let imageUrl: string | undefined
+      if (imageFile) {
+        setUploading(true)
+        const form = new FormData()
+        form.append('file', imageFile)
+        const res = await api.post<{ url: string }>('/api/upload', form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        imageUrl = res.data.url
+        setUploading(false)
+      }
       await createGame.mutateAsync({
         nom: data.get('nom') as string,
-        imageUrl: (data.get('imageUrl') as string) || undefined,
+        imageUrl,
         happyHourStart: (data.get('happyHourStart') as string) || undefined,
         happyHourEnd: (data.get('happyHourEnd') as string) || undefined,
       })
       setSuccess(true)
+      setImageFile(null)
+      setImagePreview(null)
       ;(e.target as HTMLFormElement).reset()
     } catch {
+      setUploading(false)
       setError('Erreur lors de la création du jeu.')
     }
   }
@@ -46,8 +70,17 @@ function CreateGamePanel() {
           <input className={styles.input} id="nom" name="nom" type="text" required maxLength={100} placeholder="ex: Rocket League" />
         </div>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="imageUrl">URL de l'image</label>
-          <input className={styles.input} id="imageUrl" name="imageUrl" type="url" placeholder="https://..." />
+          <label className={styles.label} htmlFor="imageFile">Image du jeu</label>
+          <input
+            className={styles.fileInput}
+            id="imageFile"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          {imagePreview && (
+            <img src={imagePreview} alt="Aperçu" className={styles.imgPreview} />
+          )}
           <span className={styles.hint}>Laisser vide pour l'image par défaut.</span>
         </div>
         <div className={styles.row}>
@@ -62,8 +95,8 @@ function CreateGamePanel() {
         </div>
         {success && <p className={styles.success} role="status">✅ Jeu créé avec succès !</p>}
         {error && <p className={styles.error} role="alert">{error}</p>}
-        <button type="submit" className={styles.submitBtn} disabled={createGame.isPending}>
-          {createGame.isPending ? 'Création…' : '+ Créer le jeu'}
+        <button type="submit" className={styles.submitBtn} disabled={createGame.isPending || uploading}>
+          {uploading ? 'Upload…' : createGame.isPending ? 'Création…' : '+ Créer le jeu'}
         </button>
       </form>
     </div>

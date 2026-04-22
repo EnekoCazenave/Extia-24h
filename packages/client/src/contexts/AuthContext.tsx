@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import type { UserPublic, RegisterInput } from '@extia-gaming/shared'
-import { api } from '../services/api.ts'
+import { api, resetRefreshState } from '../services/api.ts'
 
 interface AuthContextValue {
   user: UserPublic | null
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function login(email: string, password: string) {
+    resetRefreshState()
     const res = await api.post<{ user: UserPublic }>('/auth/login', { email, password })
     setUser(res.data.user)
   }

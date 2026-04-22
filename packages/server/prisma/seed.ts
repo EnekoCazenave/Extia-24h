@@ -15,6 +15,11 @@ async function main() {
     update: {},
     create: { name: 'admin' },
   })
+  const moderatorRole = await prisma.role.upsert({
+    where: { id: 3 },
+    update: {},
+    create: { name: 'moderator' },
+  })
 
   // Sample video games
   const lol = await prisma.videoGame.upsert({
@@ -68,7 +73,23 @@ async function main() {
     },
   })
 
-  console.log('Seed complete. Roles:', { userRole, adminRole })
+  // Moderator user
+  const hashedModPassword = await bcrypt.hash('Modo1234!', 12)
+  await prisma.user.upsert({
+    where: { email: 'moderateur@extia.fr' },
+    update: {},
+    create: {
+      login: 'moderateur',
+      email: 'moderateur@extia.fr',
+      password: hashedModPassword,
+      firstname: 'Super',
+      lastname: 'Modérateur',
+      intern: true,
+      roleId: moderatorRole.id,
+    },
+  })
+
+  console.log('Seed complete. Roles:', { userRole, adminRole, moderatorRole })
 }
 
 main()

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod'
 import { UpdateProfileSchema } from '@extia-gaming/shared'
-import { updateProfile } from '../controllers/user.controller.js'
+import { updateProfile, listUsers } from '../controllers/user.controller.js'
 import { authenticate } from '../hooks/authenticate.js'
 
 export async function userRoutes(fastify: FastifyInstance) {
@@ -13,4 +13,6 @@ export async function userRoutes(fastify: FastifyInstance) {
     preHandler: [authenticate],
     schema: { body: UpdateProfileSchema },
   }, updateProfile)
+
+  f.get('/api/users', { preHandler: [authenticate] }, listUsers)
 }

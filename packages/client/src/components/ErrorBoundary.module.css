@@ -9,7 +9,7 @@
   text-align: center;
 }
 .icon { font-size: 4rem; line-height: 1; }
-.title { font-size: var(--text-2xl); font-weight: 700; }
+.title { font-family: var(--font-display), sans-serif; font-size: var(--text-2xl); font-weight: 800; }
 .message { color: var(--text-muted); max-width: 480px; font-size: var(--text-sm); }
 .actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
 .homeLink {

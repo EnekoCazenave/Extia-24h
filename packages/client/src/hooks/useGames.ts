@@ -16,13 +16,15 @@ export interface GameDetail extends GameWithScore {
   rankings: (GameLeaderboardEntry & { rank: number })[]
 }
 
-export function useGames() {
+export function useGames(options?: { refetchInterval?: number }) {
   return useQuery({
     queryKey: ['games'],
     queryFn: async () => {
       const res = await api.get<{ games: GameWithScore[] }>('/api/games')
       return res.data.games
     },
+    refetchInterval: options?.refetchInterval,
+    refetchIntervalInBackground: false,
   })
 }
 
@@ -41,7 +43,7 @@ export function useSubmitPlay() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: PlayInput) => {
-      const res = await api.post<{ session: { id: number; score: number; happyHourApplied: boolean; originalScore: number } }>('/api/play', data)
+      const res = await api.post<{ session: { id: number; status: string } }>('/api/play', data)
       return res.data.session
     },
     onSuccess: () => {

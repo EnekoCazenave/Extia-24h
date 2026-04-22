@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.ts'
 
 interface ProtectedRouteProps {
-  requiredRole?: 'admin' | 'user'
+  requiredRole?: 'admin' | 'moderator' | 'user'
 }
 
 export default function ProtectedRoute({ requiredRole }: ProtectedRouteProps) {
@@ -24,6 +24,10 @@ export default function ProtectedRoute({ requiredRole }: ProtectedRouteProps) {
   }
 
   if (requiredRole === 'admin' && user.role?.name !== 'admin') {
+    return <Navigate to="/" replace />
+  }
+
+  if (requiredRole === 'moderator' && user.role?.name !== 'moderator' && user.role?.name !== 'admin') {
     return <Navigate to="/" replace />
   }
 

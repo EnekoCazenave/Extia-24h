@@ -44,6 +44,57 @@ export async function getGlobalLeaderboard(limit = 20) {
   }))
 }
 
+export async function getFilteredLeaderboard(opts: {
+  gameId?: number
+  gameTypeId?: number
+  team?: boolean
+  limit?: number
+}) {
+  const { gameId, gameTypeId, team, limit = 100 } = opts
+
+  const rows = await prisma.$queryRaw<
+    Array<{
+      userId: number
+      login: string
+      firstname: string
+      lastname: string
+      totalScore: bigint
+      gameCount: bigint
+    }>
+  >(
+    Prisma.sql`
+      SELECT
+        u.id AS "userId",
+        u.login,
+        u.firstname,
+        u.lastname,
+        COALESCE(SUM(ug.score), 0) AS "totalScore",
+        COUNT(ug.id) AS "gameCount"
+      FROM "User" u
+      INNER JOIN "UserGame" ug ON ug."userId" = u.id
+      INNER JOIN "GameType" gt ON gt.id = ug."gameTypeId"
+      INNER JOIN "VideoGame" vg ON vg.id = gt."videoGameId"
+      WHERE 1=1
+        ${gameId !== undefined ? Prisma.sql`AND vg.id = ${gameId}` : Prisma.sql``}
+        ${gameTypeId !== undefined ? Prisma.sql`AND gt.id = ${gameTypeId}` : Prisma.sql``}
+        ${team !== undefined ? Prisma.sql`AND gt.team = ${team}` : Prisma.sql``}
+      GROUP BY u.id, u.login, u.firstname, u.lastname
+      ORDER BY "totalScore" DESC
+      LIMIT ${limit}
+    `,
+  )
+
+  return rows.map((r, i) => ({
+    rank: i + 1,
+    userId: r.userId,
+    login: r.login,
+    firstname: r.firstname,
+    lastname: r.lastname,
+    totalScore: Number(r.totalScore),
+    gameCount: Number(r.gameCount),
+  }))
+}
+
 export async function getTopGamesByScore(limit = 5) {
   const rows = await prisma.$queryRaw<
     Array<{

@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const CreateGameSchema = z.object({
   nom: z.string().min(1).max(100),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().min(1).optional(),
   happyHourStart: z.string().datetime().optional(),
   happyHourEnd: z.string().datetime().optional(),
 })

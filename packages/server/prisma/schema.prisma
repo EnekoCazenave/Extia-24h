@@ -8,22 +8,24 @@ datasource db {
 }
 
 model User {
-  id              Int               @id @default(autoincrement())
-  login           String
-  password        String
-  lastname        String
-  firstname       String
-  intern          Boolean           @default(false)
-  email           String            @unique
-  role            Role              @relation(fields: [roleId], references: [id])
-  roleId          Int
-  userGames       UserGame[]
-  userTeams       UserTeam[]
-  achievements    UserAchievement[]
-  userEvents      UserEvent[]
-  refreshTokens   RefreshToken[]
-  bonusesReceived PointBonus[]      @relation("BonusReceiver")
-  bonusesGranted  PointBonus[]      @relation("BonusGranter")
+  id                 Int                 @id @default(autoincrement())
+  login              String
+  password           String
+  lastname           String
+  firstname          String
+  intern             Boolean             @default(false)
+  email              String              @unique
+  role               Role                @relation(fields: [roleId], references: [id])
+  roleId             Int
+  userGames          UserGame[]
+  userTeams          UserTeam[]
+  achievements       UserAchievement[]
+  userEvents         UserEvent[]
+  refreshTokens      RefreshToken[]
+  bonusesReceived    PointBonus[]        @relation("BonusReceiver")
+  bonusesGranted     PointBonus[]        @relation("BonusGranter")
+  submittedSessions  GameSession[]       @relation("SubmittedSessions")
+  sessionMemberships GameSessionMember[]
 }
 
 model Role {
@@ -42,15 +44,16 @@ model VideoGame {
 }
 
 model GameType {
-  id          Int        @id @default(autoincrement())
-  name        String
-  calcul      String
-  win         String
-  team        Boolean    @default(false)
-  videoGame   VideoGame  @relation(fields: [videoGameId], references: [id])
-  videoGameId Int
-  teams       Team[]
-  userGames   UserGame[]
+  id           Int           @id @default(autoincrement())
+  name         String
+  calcul       String
+  win          String
+  team         Boolean       @default(false)
+  videoGame    VideoGame     @relation(fields: [videoGameId], references: [id])
+  videoGameId  Int
+  teams        Team[]
+  userGames    UserGame[]
+  gameSessions GameSession[]
 }
 
 model Team {
@@ -70,13 +73,45 @@ model UserTeam {
 }
 
 model UserGame {
-  id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  gameType   GameType @relation(fields: [gameTypeId], references: [id])
-  gameTypeId Int
-  score      Int      @default(0)
-  playedAt   DateTime @default(now())
+  id            Int          @id @default(autoincrement())
+  user          User         @relation(fields: [userId], references: [id])
+  userId        Int
+  gameType      GameType     @relation(fields: [gameTypeId], references: [id])
+  gameTypeId    Int
+  score         Int          @default(0)
+  playedAt      DateTime     @default(now())
+  gameSession   GameSession? @relation(fields: [gameSessionId], references: [id])
+  gameSessionId Int?
+}
+
+enum SessionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model GameSession {
+  id          Int                 @id @default(autoincrement())
+  submitter   User                @relation("SubmittedSessions", fields: [submitterId], references: [id])
+  submitterId Int
+  gameType    GameType            @relation(fields: [gameTypeId], references: [id])
+  gameTypeId  Int
+  score       Int
+  proofUrl    String?
+  status      SessionStatus       @default(PENDING)
+  createdAt   DateTime            @default(now())
+  reviewedAt  DateTime?
+  teamMembers GameSessionMember[]
+  userGames   UserGame[]
+}
+
+model GameSessionMember {
+  session   GameSession @relation(fields: [sessionId], references: [id])
+  sessionId Int
+  user      User        @relation(fields: [userId], references: [id])
+  userId    Int
+
+  @@id([sessionId, userId])
 }
 
 model PointBonus {

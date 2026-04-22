@@ -22,16 +22,30 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Tracks whether a refresh attempt already failed this session.
+// Prevents infinite loop: 401 → refresh → 401 → refresh → ...
+let refreshFailed = false
+
+export function resetRefreshState() {
+  refreshFailed = false
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401 && !error.config._retry) {
+    const isRefreshCall = error.config?.url?.includes('/auth/refresh')
+    if (
+      error.response?.status === 401 &&
+      !error.config._retry &&
+      !refreshFailed &&
+      !isRefreshCall
+    ) {
       error.config._retry = true
       try {
         await api.post('/auth/refresh')
         return api(error.config)
       } catch {
-        window.location.href = '/login'
+        refreshFailed = true
       }
     }
     return Promise.reject(error)

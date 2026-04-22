@@ -5,6 +5,7 @@ import styles from './AppLayout.module.css'
 export default function AppLayout() {
   const { user, logout } = useAuth()
   const isAdmin = user?.role?.name === 'admin'
+  const isModerator = user?.role?.name === 'moderator' || isAdmin
 
   return (
     <>
@@ -36,6 +37,24 @@ export default function AppLayout() {
             >
               Jeux
             </NavLink>
+            <NavLink
+              to="/classement"
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
+              }
+            >
+              Classement
+            </NavLink>
+            {isModerator && (
+              <NavLink
+                to="/moderation"
+                className={({ isActive }) =>
+                  `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
+                }
+              >
+                Modération <span className={styles.adminBadge}>modo</span>
+              </NavLink>
+            )}
             {isAdmin && (
               <NavLink
                 to="/admin"

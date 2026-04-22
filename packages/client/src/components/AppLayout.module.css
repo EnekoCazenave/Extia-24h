@@ -3,9 +3,11 @@
   top: 0;
   z-index: 100;
   height: var(--header-height);
-  background: rgba(26, 26, 46, 0.92);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 0 rgba(var(--ink-rgb), 0.02);
 }
 
 .nav {
@@ -19,8 +21,9 @@
 }
 
 .logo {
-  font-size: var(--text-lg);
-  font-weight: 800;
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--text-xl);
+  font-weight: 900;
   color: var(--text-primary) !important;
   text-decoration: none !important;
   letter-spacing: -0.02em;
@@ -42,10 +45,10 @@
 }
 
 .navLink {
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-muted) !important;
   transition: color var(--transition), background var(--transition);
   text-decoration: none !important;
@@ -53,34 +56,35 @@
 
 .navLink:hover {
   color: var(--text-primary) !important;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--ink-rgb), 0.04);
 }
 
 .navLinkActive {
-  color: var(--text-primary) !important;
-  background: rgba(233, 69, 96, 0.12);
+  color: var(--color-accent) !important;
+  background: rgba(var(--accent-rgb), 0.10);
 }
 
 .navActions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin-left: auto;
 }
 
 .userInfo {
   font-size: var(--text-sm);
   color: var(--text-muted);
+  font-weight: 600;
 }
 
 .logoutBtn {
-  padding: 6px 14px;
+  padding: 7px 16px;
   background: transparent;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-muted);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all var(--transition);
 }
@@ -88,6 +92,7 @@
 .logoutBtn:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 
 .main {
@@ -96,19 +101,20 @@
 
 .footer {
   text-align: center;
-  padding: 20px var(--page-padding);
+  padding: 24px var(--page-padding);
   border-top: 1px solid var(--border-color);
   color: var(--text-muted);
   font-size: var(--text-sm);
+  background: var(--bg-surface);
 }
 
 .adminBadge {
   font-size: var(--text-xs);
-  padding: 2px 6px;
-  background: rgba(233, 69, 96, 0.15);
+  padding: 3px 8px;
+  background: rgba(var(--accent-rgb), 0.14);
   color: var(--color-accent);
   border-radius: var(--radius-sm);
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
