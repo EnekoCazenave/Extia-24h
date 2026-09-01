@@ -1,0 +1,150 @@
+.block {
+  margin: 0 0 28px 0;
+}
+
+.heading1 {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+.heading2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 14px 0;
+}
+.heading3 {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.text {
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  line-height: 1.65;
+}
+.text p { margin: 0 0 12px 0; }
+.text a { color: var(--color-accent); text-decoration: underline; }
+.text strong { font-weight: 700; }
+.text ul, .text ol { padding-left: 1.4em; margin: 0 0 12px 0; }
+
+.figure { margin: 0; }
+.image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+.caption {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: 8px;
+  text-align: center;
+}
+
+.videoWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.videoWrapper iframe, .videoWrapper video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.cta {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.ctaPrimary {
+  background: var(--color-accent);
+  color: var(--extia-ink, #111);
+}
+.ctaPrimary:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.ctaSecondary {
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+}
+.ctaSecondary:hover { background: rgba(var(--accent-rgb), 0.12); }
+
+.progressWrapper { width: 100%; }
+.progressLabelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.progressLabel {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: var(--text-base);
+}
+.progressValue {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.progressBar {
+  position: relative;
+  height: 14px;
+  border-radius: 99px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-secondary));
+  border-radius: 99px;
+  transition: width 600ms ease;
+}
+
+.donationLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-secondary));
+  color: var(--extia-ink, #111);
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition);
+}
+.donationLink:hover { transform: translateY(-2px); }
+
+.quote {
+  margin: 0;
+  padding: 20px 24px;
+  border-left: 4px solid var(--color-accent);
+  background: rgba(var(--accent-rgb), 0.06);
+  border-radius: var(--radius-md);
+  font-style: italic;
+  color: var(--text-primary);
+}
+.quote p { margin: 0 0 8px 0; font-size: var(--text-lg); }
+.quoteAuthor {
+  display: block;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}

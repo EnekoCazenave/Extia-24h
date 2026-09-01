@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '../test-utils.tsx'
@@ -6,8 +6,11 @@ import AdminPage from '../pages/AdminPage.tsx'
 
 vi.mock('../hooks/useAdmin.ts', () => ({
   useCreateGame: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateGame: (_id: number) => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteGame: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useAddGameType: (_id: number) => ({ mutateAsync: vi.fn(), isPending: false }),
-  useUpdateHappyHour: (_id: number) => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateGameType: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteGameType: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useGrantBonus: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
@@ -26,31 +29,26 @@ describe('AdminPage', () => {
     expect(screen.getByRole('heading', { name: /administration/i })).toBeInTheDocument()
   })
 
-  it('renders all 4 tabs', () => {
+  it('renders 4 tabs (no happy hour)', () => {
     renderWithProviders(<AdminPage />)
-    expect(screen.getByRole('tab', { name: /ajouter un jeu/i })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /^jeux$/i })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /type de partie/i })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /happy hour/i })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /bonus de points/i })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /associations/i })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: /happy hour/i })).not.toBeInTheDocument()
   })
 
-  it('shows add game form by default', () => {
+  it('shows games list by default with add button', () => {
     renderWithProviders(<AdminPage />)
-    expect(screen.getByLabelText(/nom du jeu/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /\+ ajouter/i })).toBeInTheDocument()
+    expect(screen.getByText('League of Legends')).toBeInTheDocument()
   })
 
-  it('switches to game type tab', async () => {
+  it('switches to game types tab', async () => {
     const user = userEvent.setup()
     renderWithProviders(<AdminPage />)
     await user.click(screen.getByRole('tab', { name: /type de partie/i }))
-    expect(screen.getByLabelText(/nom du mode/i)).toBeInTheDocument()
-  })
-
-  it('switches to happy hour tab', async () => {
-    const user = userEvent.setup()
-    renderWithProviders(<AdminPage />)
-    await user.click(screen.getByRole('tab', { name: /happy hour/i }))
-    expect(screen.getByLabelText(/heure de début/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /types de partie/i })).toBeInTheDocument()
   })
 
   it('switches to bonus tab', async () => {

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../services/api.ts'
-import type { PlayInput, GameLeaderboardEntry } from '@extia-gaming/shared'
+import type { PlayInput, GameLeaderboardEntry, CalculType, CalculConfig } from '@extia-gaming/shared'
 
 export interface GameWithScore {
   id: number
@@ -8,7 +8,15 @@ export interface GameWithScore {
   imageUrl: string | null
   happyHourStart: string | null
   happyHourEnd: string | null
-  gameTypes: Array<{ id: number; name: string; calcul: string; win: string; team: boolean; videoGameId: number }>
+  gameTypes: Array<{
+    id: number
+    name: string
+    calculType: CalculType
+    calculConfig: CalculConfig
+    win: string
+    team: boolean
+    videoGameId: number
+  }>
   totalScore: number
 }
 

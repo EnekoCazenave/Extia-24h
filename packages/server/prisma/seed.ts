@@ -39,7 +39,8 @@ async function main() {
     update: {},
     create: {
       name: '5v5 Classique',
-      calcul: 'Meilleur de 3',
+      calculType: 'BOOLEAN',
+      calculConfig: { type: 'BOOLEAN', trueValue: 100, falseValue: 0 },
       win: "Destruction du Nexus adverse",
       team: true,
       videoGameId: lol.id,
@@ -50,7 +51,8 @@ async function main() {
     update: {},
     create: {
       name: 'Tournoi Blitz',
-      calcul: 'Points ELO',
+      calculType: 'NUMBER',
+      calculConfig: { type: 'NUMBER', multiplier: 1 },
       win: 'Roi mis en échec',
       team: false,
       videoGameId: chess.id,

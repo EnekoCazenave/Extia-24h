@@ -2,7 +2,14 @@ import { Link, useParams } from 'react-router-dom'
 import SEOHead from '../components/SEOHead.tsx'
 import PlayerLeaderboard from '../components/PlayerLeaderboard.tsx'
 import { useGame } from '../hooks/useGames.ts'
+import type { CalculConfig } from '@extia-gaming/shared'
 import styles from './GameDetailPage.module.css'
+
+function formatCalcul(config: CalculConfig): string {
+  if (config.type === 'BOOLEAN') return `Booléen — ${config.trueValue} pts si vrai, ${config.falseValue} pts si faux`
+  if (config.type === 'NUMBER') return `Nombre — multiplicateur ×${config.multiplier}`
+  return `Temps — ${config.tiers.length} palier${config.tiers.length > 1 ? 's' : ''}`
+}
 
 function isHappyHourActive(start: string | null, end: string | null): boolean {
   if (!start || !end) return false
@@ -80,7 +87,7 @@ export default function GameDetailPage() {
                 {gt.team && <span className={styles.teamBadge}>Équipe</span>}
               </div>
               <div className={styles.gameTypeMeta}>
-                <div><strong>Calcul :</strong> {gt.calcul}</div>
+                <div><strong>Calcul :</strong> {formatCalcul(gt.calculConfig)}</div>
                 <div><strong>Victoire :</strong> {gt.win}</div>
               </div>
               <Link

@@ -13,6 +13,9 @@ export async function play(
     if (err instanceof Error && err.message === 'GAME_TYPE_NOT_FOUND') {
       return reply.code(404).send({ error: 'Game type not found', statusCode: 404 })
     }
+    if (err instanceof Error && err.message === 'CALCUL_TYPE_MISMATCH') {
+      return reply.code(400).send({ error: 'Calcul type mismatch with game type configuration', statusCode: 400 })
+    }
     throw err
   }
 }
