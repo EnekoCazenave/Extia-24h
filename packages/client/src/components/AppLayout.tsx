@@ -46,6 +46,14 @@ export default function AppLayout() {
               Classement
             </NavLink>
             <NavLink
+                to="/programme"
+                className={({ isActive }) =>
+                    `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
+                }
+            >
+              Programme
+            </NavLink>
+            <NavLink
               to="/associations"
               className={({ isActive }) =>
                 `${styles.navLink} ${isActive ? styles.navLinkActive : ''}`
