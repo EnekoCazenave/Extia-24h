@@ -1,8 +1,10 @@
 import { z } from 'zod';
+import { CalculTypeSchema, CalculConfigSchema } from './admin.schema.js';
 export const GameTypeSchema = z.object({
     id: z.number(),
     name: z.string(),
-    calcul: z.string(),
+    calculType: CalculTypeSchema,
+    calculConfig: CalculConfigSchema,
     win: z.string(),
     team: z.boolean(),
     videoGameId: z.number(),
@@ -15,12 +17,31 @@ export const VideoGameSchema = z.object({
     happyHourEnd: z.string().datetime().nullable(),
     gameTypes: z.array(GameTypeSchema),
 });
-export const PlayInputSchema = z.object({
+const PlayBaseShape = {
     gameTypeId: z.number().int().positive(),
-    score: z.number().int().min(0),
     teamMemberIds: z.array(z.number().int().positive()).optional().default([]),
     proofUrl: z.string().optional(),
+};
+export const BooleanPlayInputSchema = z.object({
+    ...PlayBaseShape,
+    calculType: z.literal('BOOLEAN'),
+    value: z.boolean(),
 });
+export const NumberPlayInputSchema = z.object({
+    ...PlayBaseShape,
+    calculType: z.literal('NUMBER'),
+    value: z.number().min(0),
+});
+export const TimePlayInputSchema = z.object({
+    ...PlayBaseShape,
+    calculType: z.literal('TIME'),
+    timeSeconds: z.number().int().min(0),
+});
+export const PlayInputSchema = z.discriminatedUnion('calculType', [
+    BooleanPlayInputSchema,
+    NumberPlayInputSchema,
+    TimePlayInputSchema,
+]);
 export const SessionStatusSchema = z.enum(['PENDING', 'APPROVED', 'REJECTED']);
 export const GameSessionSchema = z.object({
     id: z.number(),

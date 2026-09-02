@@ -59,6 +59,26 @@ async function main() {
     },
   })
 
+  let createdAt = new Date();
+  const startsAt = new Date(Date.now() + 60 * 60 * 1000) // dans 1 heure
+  const endsAt = new Date(startsAt.getTime() + 2 * 60 * 60 * 1000) // 2 h après
+
+  // Event
+  await prisma.event.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: 'Tournoi Blitz',
+      description: 'MEGA TOURNOI DE MALADE MENTAL',
+      createdAt: createdAt,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+      maxPlaces: 10,
+      updatedAt: new Date(),
+      videoGameId: 1
+    }
+  })
+
   // Admin user
   const hashedPassword = await bcrypt.hash('Admin1234!', 12)
   await prisma.user.upsert({

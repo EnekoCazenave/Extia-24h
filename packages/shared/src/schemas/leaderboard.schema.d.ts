@@ -43,14 +43,14 @@ export declare const GameScoreSummarySchema: z.ZodObject<{
     imageUrl: z.ZodNullable<z.ZodString>;
     totalScore: z.ZodNumber;
 }, "strip", z.ZodTypeAny, {
-    videoGameId: number;
     nom: string;
     imageUrl: string | null;
+    videoGameId: number;
     totalScore: number;
 }, {
-    videoGameId: number;
     nom: string;
     imageUrl: string | null;
+    videoGameId: number;
     totalScore: number;
 }>;
 export type LeaderboardEntry = z.infer<typeof LeaderboardEntrySchema>;

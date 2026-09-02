@@ -8,6 +8,7 @@ import { adminRoutes } from './admin.js'
 import { moderationRoutes } from './moderation.js'
 import { uploadRoutes } from './upload.js'
 import { associationRoutes } from './association.js'
+import { eventRoutes } from './event.js'
 
 export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(authRoutes)
@@ -19,4 +20,5 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(moderationRoutes)
   await fastify.register(uploadRoutes)
   await fastify.register(associationRoutes)
+  await fastify.register(eventRoutes)
 }
