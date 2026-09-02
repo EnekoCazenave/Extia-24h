@@ -24,7 +24,7 @@ export interface GameDetail extends GameWithScore {
   rankings: (GameLeaderboardEntry & { rank: number })[]
 }
 
-export function useGames(options?: { refetchInterval?: number }) {
+export function useGames(options?: { refetchInterval?: number; enabled?: boolean }) {
   return useQuery({
     queryKey: ['games'],
     queryFn: async () => {
@@ -33,6 +33,7 @@ export function useGames(options?: { refetchInterval?: number }) {
     },
     refetchInterval: options?.refetchInterval,
     refetchIntervalInBackground: false,
+    enabled: options?.enabled,
   })
 }
 

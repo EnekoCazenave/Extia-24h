@@ -104,6 +104,11 @@
     border-color: rgba(var(--success-rgb), .5);
 }
 
+.past {
+    opacity: .72;
+    background: var(--bg-surface);
+}
+
 .cardTop {
     display: flex;
     justify-content: space-between;
@@ -350,4 +355,85 @@
         justify-content: stretch;
         flex-direction: column;
     }
+}
+
+.gameSearch {
+    position: relative;
+}
+
+.gameSuggestions {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    max-height: 230px;
+    overflow-y: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.gameSuggestions button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    color: var(--text-primary);
+    text-align: left;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.gameSuggestions button:hover,
+.gameSuggestions button:focus-visible {
+    background: var(--bg-tint);
+}
+
+.gameSuggestions img {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.selectedGame {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--color-success) !important;
+    font-size: var(--text-xs);
+    font-weight: 800 !important;
+}
+
+.selectedGame button {
+    padding: 0;
+    color: var(--color-error);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.endedBadge {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    background: var(--extia-mist);
+    border-radius: 99px;
+    padding: 5px 11px;
+    font-size: var(--text-xs);
+    font-weight: 900;
+}
+
+.ongoingBadge {
+    flex-shrink: 0;
+    color: var(--color-accent-hover);
+    background: rgba(var(--accent-rgb), .12);
+    border-radius: 99px;
+    padding: 5px 11px;
+    font-size: var(--text-xs);
+    font-weight: 900;
 }

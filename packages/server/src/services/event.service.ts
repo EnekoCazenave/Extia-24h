@@ -3,11 +3,6 @@ import type {CreateEventInput, UpdateEventInput} from '@extia-gaming/shared'
 
 export async function listAllEvents(userId?: number) {
     const events = await prisma.event.findMany({
-        where: {
-            startsAt: {
-                gte: new Date(),
-            }
-        },
         orderBy: {startsAt: 'asc'},
         include: {
             videoGame: {
