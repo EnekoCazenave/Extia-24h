@@ -19,7 +19,6 @@ import {
 } from '../hooks/useEvents.ts'
 import {useGames} from '../hooks/useGames.ts'
 import styles from './ProgrammePage.module.css'
-import {Link} from "react-router-dom";
 
 export default function ProgrammePage() {
     const {user} = useAuth()
