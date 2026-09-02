@@ -4,6 +4,7 @@ import {buildApp} from '../src/app.js'
 
 const eventService = vi.hoisted(() => ({
     listAllEvents: vi.fn(),
+    getEventById: vi.fn(),
     registerToEvent: vi.fn(),
     unregisterToEvent: vi.fn(),
     createEvent: vi.fn(),
@@ -55,6 +56,16 @@ describe('Event controller', () => {
 
         expect(response.statusCode).toBe(200)
         expect(eventService.listAllEvents).toHaveBeenCalledWith(7)
+    })
+
+    it('GET /api/events/:eventId retourne le détail d\'un event', async () => {
+        eventService.getEventById.mockResolvedValue({id: 3, name: 'Tournoi'})
+
+        const response = await app.inject({method: 'GET', url: '/api/events/3'})
+
+        expect(response.statusCode).toBe(200)
+        expect(response.json().event).toEqual({id: 3, name: 'Tournoi'})
+        expect(eventService.getEventById).toHaveBeenCalledWith(3, undefined)
     })
 
     it('POST /api/events/:eventId/participation inscrit l\'utilisateur connecté', async () => {

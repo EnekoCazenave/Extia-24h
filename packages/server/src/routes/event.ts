@@ -15,6 +15,7 @@ import { requireAdmin } from '../hooks/requireAdmin.js'
 import {
   handleCreateEvent,
   handleDeleteEvent,
+  handleGetEventById,
   handleListAllEvents,
   handleRegisterToEvent,
   handleUnregisterToEvent,
@@ -33,6 +34,11 @@ export async function eventRoutes(fastify: FastifyInstance) {
 
   // List des events
   f.get('/api/events', optionalAuthenticatedGuard, handleListAllEvents)
+  f.get(
+    '/api/events/:eventId',
+    { ...optionalAuthenticatedGuard, schema: eventParamsSchema },
+    handleGetEventById,
+  )
 
   // Inscription / Désinscription aux events
   f.post(

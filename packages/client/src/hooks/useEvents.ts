@@ -12,6 +12,17 @@ export function useEvents(userId?: number) {
     })
 }
 
+export function useEvent(eventId: number, userId?: number) {
+    return useQuery({
+        queryKey: ['events', eventId, userId ?? 'anonymous'],
+        enabled: eventId > 0,
+        queryFn: async () => {
+            const response = await api.get<{event: ProgramEvent}>(`/api/events/${eventId}`)
+            return response.data.event
+        },
+    })
+}
+
 function useInvalidateEvents() {
     const queryClient = useQueryClient()
     return () => queryClient.invalidateQueries({queryKey: ['events']})

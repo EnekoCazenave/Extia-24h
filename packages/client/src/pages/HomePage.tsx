@@ -2,6 +2,7 @@ import SEOHead from '../components/SEOHead.tsx'
 import TopGamesTable from '../components/TopGamesTable.tsx'
 import PlayerLeaderboard from '../components/PlayerLeaderboard.tsx'
 import PrizePoolBanner from '../components/PrizePoolBanner.tsx'
+import ProgrammeAgenda from '../components/programme/ProgrammeAgenda.tsx'
 import { useTopGames, useGlobalLeaderboard } from '../hooks/useLeaderboard.ts'
 import styles from './HomePage.module.css'
 
@@ -36,6 +37,21 @@ export default function HomePage() {
         </p>
       </section>
       <PrizePoolBanner />
+      <div className={styles.content}>
+          <section
+              aria-labelledby="programme-title"
+              className={`${styles.section} ${styles.programmeSection}`}
+          >
+              <header className={styles.programmeHeader}>
+                  <div>
+                      <p className={styles.programmeEyebrow}>Les 24 heures</p>
+                      <h2 className={styles.sectionTitle} id="programme-title">Programme</h2>
+                  </div>
+                  <p>Suivez l’ensemble des temps forts du défi, heure par heure.</p>
+              </header>
+              <ProgrammeAgenda />
+          </section>
+      </div>
       <section className={styles.twitchSection} aria-label="Live Twitch Extia Gaming">
         <div className={styles.twitchHeader}>
           <span className={styles.twitchLiveBadge}>LIVE</span>

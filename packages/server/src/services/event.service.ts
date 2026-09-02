@@ -40,6 +40,42 @@ export async function listAllEvents(userId?: number) {
     })
 }
 
+export async function getEventById(eventId: number, userId?: number) {
+    const event = await prisma.event.findUnique({
+        where: {id: eventId},
+        include: {
+            videoGame: {
+                select: {id: true, nom: true, imageUrl: true},
+            },
+            _count: {
+                select: {userEvents: true},
+            },
+            userEvents: {
+                where: {userId: userId ?? 0},
+                select: {userId: true},
+            },
+        },
+    })
+
+    if (!event) throw new Error('EVENT_NOT_FOUND')
+
+    const {_count, userEvents, ...eventData} = event
+    const participantCount = _count.userEvents
+    const remainingPlaces = Math.max(event.maxPlaces - participantCount, 0)
+
+    return {
+        ...eventData,
+        startsAt: event.startsAt.toISOString(),
+        endsAt: event.endsAt.toISOString(),
+        createdAt: event.createdAt.toISOString(),
+        updatedAt: event.updatedAt.toISOString(),
+        participantCount,
+        remainingPlaces,
+        isRegistered: userEvents.length > 0,
+        isFull: remainingPlaces === 0,
+    }
+}
+
 export async function registerToEvent(userId: number, eventId: number) {
     return prisma.$transaction(async (tx) => {
         const [event, user, existingRegistration] = await Promise.all([

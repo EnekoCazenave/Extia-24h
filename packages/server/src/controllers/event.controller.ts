@@ -8,6 +8,7 @@ import type {
 import {
     createEvent,
     deleteEvent,
+    getEventById,
     listAllEvents,
     registerToEvent,
     unregisterToEvent,
@@ -53,6 +54,18 @@ function getRequiredUserId(request: FastifyRequest) {
 export async function handleListAllEvents(request: FastifyRequest, reply: FastifyReply) {
     const events = await listAllEvents(getUserId(request))
     return reply.send({events})
+}
+
+export async function handleGetEventById(request: FastifyRequest, reply: FastifyReply) {
+    try {
+        const {eventId} = request.params as EventIdParams
+        const event = await getEventById(eventId, getUserId(request))
+        return reply.send({event})
+    } catch (error) {
+        const response = sendServiceError(error, reply)
+        if (response) return response
+        throw error
+    }
 }
 
 export async function handleRegisterToEvent(

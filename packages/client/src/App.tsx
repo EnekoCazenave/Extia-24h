@@ -15,6 +15,7 @@ import PrivacyPage from './pages/PrivacyPage.tsx'
 import AssociationsPage from './pages/AssociationsPage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
 import ProgrammePage from "./pages/ProgrammePage.tsx";
+import EventDetailPage from './pages/EventDetailPage.tsx'
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/jeux/:id" element={<GameDetailPage />} />
         <Route path="/classement" element={<LeaderboardPage />} />
         <Route path="/programme" element={<ProgrammePage />} />
+        <Route path="/programme/:id" element={<EventDetailPage />} />
         <Route path="/associations" element={<AssociationsPage />} />
         <Route path="/politique-de-confidentialite" element={<PrivacyPage />} />
 
