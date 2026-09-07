@@ -4,12 +4,14 @@ export declare const CreateEventSchema: z.ZodEffects<z.ZodObject<{
     description: z.ZodString;
     videoGameId: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
     startsAt: z.ZodString;
+    pointsEarned: z.ZodNumber;
     endsAt: z.ZodString;
     maxPlaces: z.ZodNumber;
 }, "strip", z.ZodTypeAny, {
     name: string;
     description: string;
     startsAt: string;
+    pointsEarned: number;
     endsAt: string;
     maxPlaces: number;
     videoGameId?: number | null | undefined;
@@ -17,6 +19,7 @@ export declare const CreateEventSchema: z.ZodEffects<z.ZodObject<{
     name: string;
     description: string;
     startsAt: string;
+    pointsEarned: number;
     endsAt: string;
     maxPlaces: number;
     videoGameId?: number | null | undefined;
@@ -24,6 +27,7 @@ export declare const CreateEventSchema: z.ZodEffects<z.ZodObject<{
     name: string;
     description: string;
     startsAt: string;
+    pointsEarned: number;
     endsAt: string;
     maxPlaces: number;
     videoGameId?: number | null | undefined;
@@ -31,6 +35,7 @@ export declare const CreateEventSchema: z.ZodEffects<z.ZodObject<{
     name: string;
     description: string;
     startsAt: string;
+    pointsEarned: number;
     endsAt: string;
     maxPlaces: number;
     videoGameId?: number | null | undefined;
@@ -40,6 +45,7 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     description: z.ZodOptional<z.ZodString>;
     videoGameId: z.ZodOptional<z.ZodOptional<z.ZodNullable<z.ZodNumber>>>;
     startsAt: z.ZodOptional<z.ZodString>;
+    pointsEarned: z.ZodOptional<z.ZodNumber>;
     endsAt: z.ZodOptional<z.ZodString>;
     maxPlaces: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
@@ -47,6 +53,7 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     videoGameId?: number | null | undefined;
     description?: string | undefined;
     startsAt?: string | undefined;
+    pointsEarned?: number | undefined;
     endsAt?: string | undefined;
     maxPlaces?: number | undefined;
 }, {
@@ -54,6 +61,7 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     videoGameId?: number | null | undefined;
     description?: string | undefined;
     startsAt?: string | undefined;
+    pointsEarned?: number | undefined;
     endsAt?: string | undefined;
     maxPlaces?: number | undefined;
 }>, {
@@ -61,6 +69,7 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     videoGameId?: number | null | undefined;
     description?: string | undefined;
     startsAt?: string | undefined;
+    pointsEarned?: number | undefined;
     endsAt?: string | undefined;
     maxPlaces?: number | undefined;
 }, {
@@ -68,6 +77,7 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     videoGameId?: number | null | undefined;
     description?: string | undefined;
     startsAt?: string | undefined;
+    pointsEarned?: number | undefined;
     endsAt?: string | undefined;
     maxPlaces?: number | undefined;
 }>;
@@ -117,6 +127,7 @@ export declare const EventSchema: z.ZodObject<{
     remainingPlaces: z.ZodNumber;
     isRegistered: z.ZodBoolean;
     isFull: z.ZodBoolean;
+    pointsEarned: z.ZodNumber;
     createdAt: z.ZodString;
     updatedAt: z.ZodString;
 }, "strip", z.ZodTypeAny, {
@@ -131,6 +142,7 @@ export declare const EventSchema: z.ZodObject<{
     createdAt: string;
     description: string;
     startsAt: string;
+    pointsEarned: number;
     endsAt: string;
     maxPlaces: number;
     participantCount: number;
@@ -150,6 +162,7 @@ export declare const EventSchema: z.ZodObject<{
     createdAt: string;
     description: string;
     startsAt: string;
+    pointsEarned: number;
     endsAt: string;
     maxPlaces: number;
     participantCount: number;
@@ -198,6 +211,7 @@ export declare const EventListSchema: z.ZodObject<{
         remainingPlaces: z.ZodNumber;
         isRegistered: z.ZodBoolean;
         isFull: z.ZodBoolean;
+        pointsEarned: z.ZodNumber;
         createdAt: z.ZodString;
         updatedAt: z.ZodString;
     }, "strip", z.ZodTypeAny, {
@@ -212,6 +226,7 @@ export declare const EventListSchema: z.ZodObject<{
         createdAt: string;
         description: string;
         startsAt: string;
+        pointsEarned: number;
         endsAt: string;
         maxPlaces: number;
         participantCount: number;
@@ -231,6 +246,7 @@ export declare const EventListSchema: z.ZodObject<{
         createdAt: string;
         description: string;
         startsAt: string;
+        pointsEarned: number;
         endsAt: string;
         maxPlaces: number;
         participantCount: number;
@@ -252,6 +268,7 @@ export declare const EventListSchema: z.ZodObject<{
         createdAt: string;
         description: string;
         startsAt: string;
+        pointsEarned: number;
         endsAt: string;
         maxPlaces: number;
         participantCount: number;
@@ -273,6 +290,7 @@ export declare const EventListSchema: z.ZodObject<{
         createdAt: string;
         description: string;
         startsAt: string;
+        pointsEarned: number;
         endsAt: string;
         maxPlaces: number;
         participantCount: number;
@@ -309,6 +327,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         remainingPlaces: z.ZodNumber;
         isRegistered: z.ZodBoolean;
         isFull: z.ZodBoolean;
+        pointsEarned: z.ZodNumber;
         createdAt: z.ZodString;
         updatedAt: z.ZodString;
     }, "strip", z.ZodTypeAny, {
@@ -323,6 +342,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         createdAt: string;
         description: string;
         startsAt: string;
+        pointsEarned: number;
         endsAt: string;
         maxPlaces: number;
         participantCount: number;
@@ -342,6 +362,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         createdAt: string;
         description: string;
         startsAt: string;
+        pointsEarned: number;
         endsAt: string;
         maxPlaces: number;
         participantCount: number;
@@ -363,6 +384,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         createdAt: string;
         description: string;
         startsAt: string;
+        pointsEarned: number;
         endsAt: string;
         maxPlaces: number;
         participantCount: number;
@@ -384,6 +406,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         createdAt: string;
         description: string;
         startsAt: string;
+        pointsEarned: number;
         endsAt: string;
         maxPlaces: number;
         participantCount: number;
@@ -401,3 +424,4 @@ export type ProgramEvent = z.infer<typeof EventSchema>;
 export type UserEvent = z.infer<typeof UserEventSchema>;
 export type EventListResponse = z.infer<typeof EventListSchema>;
 export type EventResponse = z.infer<typeof EventResponseSchema>;
+//# sourceMappingURL=event.schema.d.ts.map

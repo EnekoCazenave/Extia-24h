@@ -37,14 +37,37 @@ export default function HomePage() {
         </p>
       </section>
       <PrizePoolBanner />
-      <div className={styles.content}>
-          <section
-              aria-labelledby="programme-title"
-              className={`${styles.section} ${styles.programmeSection}`}
+      <section className={styles.videoSection} aria-labelledby="video-explication">
+       <div className={styles.videoHeader}>
+          <span className={styles.videoTitle}>Explication Challenge</span>
+
+          <a
+            href="https://www.youtube.com/@ExtiaGamingTV"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.youtubeOpenBtn}
           >
-              <header className={styles.programmeHeader}>
-                  <div>
-                      <p className={styles.programmeEyebrow}>Les 24 heures</p>
+            Voir la chaîne ↗
+          </a>
+       </div>
+          <div className={styles.videoEmbed}>
+              <iframe src="https://www.youtube.com/embed/b-qNl-lpJMI"
+                      title="24h Solidaires 2025 (Part 3/3)" frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                      className={styles.videoIframe}></iframe>
+          </div>
+      </section>
+
+        <div className={styles.content}>
+            <section
+                aria-labelledby="programme-title"
+                className={`${styles.section} ${styles.programmeSection}`}
+            >
+                <header className={styles.programmeHeader}>
+                    <div>
+                    <p className={styles.programmeEyebrow}>Les 24 heures</p>
                       <h2 className={styles.sectionTitle} id="programme-title">Programme</h2>
                   </div>
                   <p>Suivez l’ensemble des temps forts du défi, heure par heure.</p>
@@ -52,10 +75,10 @@ export default function HomePage() {
               <ProgrammeAgenda />
           </section>
       </div>
-      <section className={styles.twitchSection} aria-label="Live Twitch Extia Gaming">
-        <div className={styles.twitchHeader}>
+      <section className={styles.videoSection} aria-label="Live Twitch Extia Gaming">
+        <div className={styles.videoHeader}>
           <span className={styles.twitchLiveBadge}>LIVE</span>
-          <span className={styles.twitchTitle}>extiagaming</span>
+          <span className={styles.videoTitle}>extiagaming</span>
           <a
             href="https://www.twitch.tv/extiagaming"
             target="_blank"
@@ -65,12 +88,12 @@ export default function HomePage() {
             Ouvrir sur Twitch ↗
           </a>
         </div>
-        <div className={styles.twitchEmbed}>
+        <div className={styles.videoEmbed}>
           <iframe
             src={`https://player.twitch.tv/?channel=extiagaming&parent=${window.location.hostname}`}
             title="Extia Gaming Live Twitch"
             allowFullScreen
-            className={styles.twitchIframe}
+            className={styles.videoIframe}
           />
         </div>
       </section>

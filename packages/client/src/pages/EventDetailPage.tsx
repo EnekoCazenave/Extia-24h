@@ -75,6 +75,7 @@ export default function EventDetailPage() {
                     {event.videoGame && <div><dt>Jeu</dt><dd>🎮 {event.videoGame.nom}</dd></div>}
                     <div><dt>Participants</dt><dd>{event.participantCount} / {event.maxPlaces}</dd></div>
                     <div><dt>Places restantes</dt><dd>{event.remainingPlaces}</dd></div>
+                    <div><dt>Points de participation</dt><dd>{event.pointsEarned}</dd></div>
                 </dl>
             </section>
 

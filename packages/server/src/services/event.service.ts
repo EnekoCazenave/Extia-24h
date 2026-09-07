@@ -157,6 +157,7 @@ export async function createEvent(eventInfos: CreateEventInput) {
             startsAt: new Date(eventInfos.startsAt),
             endsAt: new Date(eventInfos.endsAt),
             maxPlaces: eventInfos.maxPlaces,
+            pointsEarned: eventInfos.pointsEarned,
         },
     })
 }
@@ -205,6 +206,7 @@ export async function updateEvent(eventId: number, eventInfos: UpdateEventInput)
             startsAt,
             endsAt,
             maxPlaces: eventInfos.maxPlaces,
+            pointsEarned: eventInfos.pointsEarned,
         },
     })
 }

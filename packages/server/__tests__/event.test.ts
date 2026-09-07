@@ -118,6 +118,7 @@ describe('Event controller', () => {
             startsAt,
             endsAt,
             maxPlaces: 10,
+            pointsEarned: 25,
         }
         eventService.createEvent.mockResolvedValue({id: 4, ...payload})
 

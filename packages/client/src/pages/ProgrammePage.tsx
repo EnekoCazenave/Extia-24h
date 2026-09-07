@@ -139,6 +139,7 @@ function toEventDraft(event: ProgramEvent): EventDraft {
         startsAt: toLocalInputValue(new Date(event.startsAt)),
         endsAt: toLocalInputValue(new Date(event.endsAt)),
         maxPlaces: event.maxPlaces,
+        pointsEarned: event.pointsEarned,
         videoGameId: event.videoGameId,
     }
 }

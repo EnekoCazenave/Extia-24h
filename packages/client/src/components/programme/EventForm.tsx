@@ -5,7 +5,7 @@ import styles from '../../pages/ProgrammePage.module.css'
 
 export type EventDraft = Pick<
     CreateEventInput,
-    'name' | 'description' | 'startsAt' | 'endsAt' | 'maxPlaces' | 'videoGameId'
+    'name' | 'description' | 'startsAt' | 'endsAt' | 'maxPlaces' | 'videoGameId' | 'pointsEarned'
 >
 
 export function toLocalInputValue(date: Date) {
@@ -22,6 +22,7 @@ export function createEmptyEventDraft(): EventDraft {
         startsAt: toLocalInputValue(start),
         endsAt: toLocalInputValue(end),
         maxPlaces: 1,
+        pointsEarned: 1,
         videoGameId: null,
     }
 }
@@ -117,6 +118,8 @@ export default function EventForm({
         </div>
         <label>Nombre de places<input required min="1" type="number" value={draft.maxPlaces}
             onChange={(event) => setDraft({...draft, maxPlaces: Number(event.target.value)})}/></label>
+        <label>Nombre de points gagnés<input required min="1" step="1" type="number" value={draft.pointsEarned}
+            onChange={(event) => setDraft({...draft, pointsEarned: Number(event.target.value)})}/></label>
         {error && <p className={styles.formError} role="alert">{error}</p>}
         <div className={styles.formActions}>
             <button type="button" className={styles.secondaryButton} onClick={onCancel}>Annuler</button>

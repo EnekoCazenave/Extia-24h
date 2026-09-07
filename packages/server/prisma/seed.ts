@@ -74,6 +74,7 @@ async function main() {
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
       maxPlaces: 10,
+      pointsEarned: 1,
       updatedAt: new Date(),
       videoGameId: 1
     }

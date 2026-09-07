@@ -33,6 +33,7 @@ const EventWriteSchema = z.object({
         .nullable()
         .optional(),
     startsAt: EventDateSchema,
+    pointsEarned: z.number().int().positive(),
     endsAt: EventDateSchema,
     maxPlaces: MaxPlacesSchema,
 })
@@ -83,6 +84,7 @@ export const EventSchema = EventWriteSchema.extend({
     remainingPlaces: z.number().int().min(0),
     isRegistered: z.boolean(),
     isFull: z.boolean(),
+    pointsEarned: z.number().int().positive(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
 })
