@@ -10,6 +10,7 @@ const eventService = vi.hoisted(() => ({
     createEvent: vi.fn(),
     updateEvent: vi.fn(),
     deleteEvent: vi.fn(),
+    confirmEventAttendance: vi.fn(),
 }))
 
 vi.mock('../src/services/event.service.js', () => eventService)
@@ -181,6 +182,42 @@ describe('Event controller', () => {
         })
         expect(response.statusCode).toBe(403)
         expect(eventService.updateEvent).not.toHaveBeenCalled()
+    })
+
+    it.each([true, false])('confirme sa propre présence %s', async (isPresent) => {
+        eventService.confirmEventAttendance.mockResolvedValue({isPresent})
+        const response = await app.inject({
+            method: 'PUT', url: '/api/events/3/participation',
+            cookies: {access_token: userToken}, payload: {isPresent},
+        })
+        expect(response.statusCode).toBe(200)
+        expect(eventService.confirmEventAttendance).toHaveBeenCalledWith(7, 3, isPresent)
+    })
+
+    it('refuse de confirmer pour un autre utilisateur', async () => {
+        const response = await app.inject({
+            method: 'PUT', url: '/api/events/3/participation',
+            cookies: {access_token: userToken}, payload: {isPresent: true, userId: 8},
+        })
+        expect(response.statusCode).toBe(400)
+        expect(eventService.confirmEventAttendance).not.toHaveBeenCalled()
+    })
+
+    it('exige une authentification pour confirmer sa présence', async () => {
+        const response = await app.inject({
+            method: 'PUT', url: '/api/events/3/participation', payload: {isPresent: true},
+        })
+        expect(response.statusCode).toBe(401)
+        expect(eventService.confirmEventAttendance).not.toHaveBeenCalled()
+    })
+
+    it('retourne un conflit si la confirmation est indisponible', async () => {
+        eventService.confirmEventAttendance.mockRejectedValue(new Error('ATTENDANCE_UNAVAILABLE'))
+        const response = await app.inject({
+            method: 'PUT', url: '/api/events/3/participation',
+            cookies: {access_token: userToken}, payload: {isPresent: true},
+        })
+        expect(response.statusCode).toBe(409)
     })
 
     it('DELETE /api/admin/events/:eventId supprime un event', async () => {

@@ -6,6 +6,7 @@ import {
 } from 'fastify-type-provider-zod'
 import {
   CreateEventSchema,
+  ConfirmEventAttendanceSchema,
   EventIdParamsSchema,
   UpdateEventSchema,
 } from '@extia-gaming/shared'
@@ -14,6 +15,7 @@ import { optionalAuthenticate } from '../hooks/optionalAuthenticate.js'
 import { requireAdmin } from '../hooks/requireAdmin.js'
 import {
   handleCreateEvent,
+  handleConfirmEventAttendance,
   handleDeleteEvent,
   handleGetEventById,
   handleListAllEvents,
@@ -41,6 +43,11 @@ export async function eventRoutes(fastify: FastifyInstance) {
   )
 
   // Inscription / Désinscription aux events
+  f.put(
+    '/api/events/:eventId/participation',
+    { ...authenticatedGuard, schema: { ...eventParamsSchema, body: ConfirmEventAttendanceSchema } },
+    handleConfirmEventAttendance,
+  )
   f.post(
     '/api/events/:eventId/participation',
     { ...authenticatedGuard, schema: eventParamsSchema },

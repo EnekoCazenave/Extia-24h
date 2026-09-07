@@ -17,7 +17,7 @@ export async function listAllEvents(userId?: number) {
             },
             userEvents: {
                 where: {userId: userId ?? 0},
-                select: {userId: true},
+                select: {userId: true, isPresent: true},
             },
         },
     })
@@ -35,6 +35,7 @@ export async function listAllEvents(userId?: number) {
             participantCount,
             remainingPlaces,
             isRegistered: userEvents.length > 0,
+            myAttendance: userEvents[0]?.isPresent ?? null,
             isFull: remainingPlaces === 0,
         }
     })
@@ -52,7 +53,7 @@ export async function getEventById(eventId: number, userId?: number, isAdmin = f
             },
             userEvents: {
                 where: {userId: userId ?? 0},
-                select: {userId: true},
+                select: {userId: true, isPresent: true},
             },
         },
     })
@@ -81,8 +82,22 @@ export async function getEventById(eventId: number, userId?: number, isAdmin = f
         participantCount,
         remainingPlaces,
         isRegistered: userEvents.length > 0,
+        myAttendance: userEvents[0]?.isPresent ?? null,
         isFull: remainingPlaces === 0,
     }
+}
+
+export async function confirmEventAttendance(userId: number, eventId: number, isPresent: boolean) {
+    const now = new Date()
+    const result = await prisma.userEvent.updateMany({
+        where: {
+            userId, eventId, isPresent: null,
+            event: {startsAt: {lte: now}, endsAt: {gt: now}},
+        },
+        data: {isPresent},
+    })
+    if (result.count !== 1) throw new Error('ATTENDANCE_UNAVAILABLE')
+    return {isPresent}
 }
 
 export async function registerToEvent(userId: number, eventId: number) {

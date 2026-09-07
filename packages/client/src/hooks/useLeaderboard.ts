@@ -6,6 +6,17 @@ export interface RankedEntry extends LeaderboardEntry {
   rank: number
 }
 
+export function usePersonalLeaderboard(userId?: number) {
+  return useQuery({
+    queryKey: ['leaderboard', 'me', userId],
+    enabled: userId !== undefined,
+    queryFn: async () => {
+      const res = await api.get<{ranking: RankedEntry}>('/api/leaderboard/me')
+      return res.data.ranking
+    },
+  })
+}
+
 export interface FilteredRankedEntry extends RankedEntry {
   gameCount: number
 }

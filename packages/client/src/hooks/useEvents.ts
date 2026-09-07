@@ -2,8 +2,9 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
 import type {CreateEventInput, EventDetail, ProgramEvent, UpdateEventInput} from '@extia-gaming/shared'
 import {api} from '../services/api.ts'
 
-export function useEvents(userId?: number) {
+export function useEvents(userId?: number, options?: {enabled?: boolean; refetchInterval?: number}) {
     return useQuery({
+        ...options,
         queryKey: ['events', userId ?? 'anonymous'],
         queryFn: async () => {
             const response = await api.get<{events: ProgramEvent[]}>('/api/events')
@@ -26,6 +27,16 @@ export function useEvent(eventId: number, userId?: number) {
 function useInvalidateEvents() {
     const queryClient = useQueryClient()
     return () => queryClient.invalidateQueries({queryKey: ['events']})
+}
+
+export function useConfirmEventAttendance() {
+    const invalidateEvents = useInvalidateEvents()
+    return useMutation({
+        mutationFn: ({eventId, isPresent}: {eventId: number; isPresent: boolean}) =>
+            api.put(`/api/events/${eventId}/participation`, {isPresent}),
+        onSuccess: invalidateEvents,
+        onError: invalidateEvents,
+    })
 }
 
 export function useRegisterToEvent() {

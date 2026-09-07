@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest'
-import {getEventById, updateEvent} from '../src/services/event.service.js'
+import {confirmEventAttendance, getEventById, updateEvent} from '../src/services/event.service.js'
 
 const db = vi.hoisted(() => ({
     event: {findUnique: vi.fn(), update: vi.fn()},
@@ -17,6 +17,21 @@ describe('Event participants', () => {
             _count: {userEvents: 1}, userEvents: [],
         })
         db.$transaction.mockImplementation((callback) => callback(db))
+    })
+
+    it('confirme uniquement sa présence non renseignée pendant l’événement', async () => {
+        db.userEvent.updateMany.mockResolvedValue({count: 1})
+        await confirmEventAttendance(7, 3, false)
+        expect(db.userEvent.updateMany).toHaveBeenCalledWith({
+            where: {userId: 7, eventId: 3, isPresent: null,
+                event: {startsAt: {lte: expect.any(Date)}, endsAt: {gt: expect.any(Date)}}},
+            data: {isPresent: false},
+        })
+    })
+
+    it('refuse la confirmation si les conditions ne sont plus remplies', async () => {
+        db.userEvent.updateMany.mockResolvedValue({count: 0})
+        await expect(confirmEventAttendance(7, 3, true)).rejects.toThrow('ATTENDANCE_UNAVAILABLE')
     })
 
     it('ne charge ni ne retourne les participants sans droits administrateur', async () => {

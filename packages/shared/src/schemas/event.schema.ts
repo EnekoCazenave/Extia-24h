@@ -76,6 +76,8 @@ export const EventIdParamsSchema = z.object({
     eventId: z.coerce.number().int().positive(),
 })
 
+export const ConfirmEventAttendanceSchema = z.object({isPresent: z.boolean()}).strict()
+
 export const EventVideoGameSchema = z.object({
     id: z.number().int().positive(),
     nom: z.string(),
@@ -89,6 +91,7 @@ export const EventSchema = EventWriteSchema.extend({
     participantCount: z.number().int().min(0),
     remainingPlaces: z.number().int().min(0),
     isRegistered: z.boolean(),
+    myAttendance: z.boolean().nullable(),
     isFull: z.boolean(),
     pointsEarned: z.number().int().positive(),
     createdAt: z.string().datetime(),
@@ -99,7 +102,7 @@ export const UserEventSchema = z.object({
     userId: z.number().int().positive(),
     eventId: z.number().int().positive(),
     registeredAt: z.string().datetime(),
-    isPresent: z.boolean().default(true),
+    isPresent: z.boolean().nullable(),
 })
 
 export const EventListSchema = z.object({

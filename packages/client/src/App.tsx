@@ -11,6 +11,7 @@ import ProfilePage from './pages/ProfilePage.tsx'
 import AdminPage from './pages/AdminPage.tsx'
 import ModerationPage from './pages/ModerationPage.tsx'
 import LeaderboardPage from './pages/LeaderboardPage.tsx'
+import PersonalLeaderboardPage from './pages/PersonalLeaderboardPage.tsx'
 import PrivacyPage from './pages/PrivacyPage.tsx'
 import AssociationsPage from './pages/AssociationsPage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
@@ -40,6 +41,7 @@ export default function App() {
                 <Route element={<ProtectedRoute/>}>
                     <Route path="/jeux/:id/jouer" element={<PlayGamePage/>}/>
                     <Route path="/profil" element={<ProfilePage/>}/>
+                    <Route path="/classement/me" element={<PersonalLeaderboardPage/>}/>
                 </Route>
 
                 {/* Protected routes — moderator + admin */}

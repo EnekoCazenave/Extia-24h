@@ -1,6 +1,7 @@
 import { Outlet, NavLink, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.ts'
 import styles from './AppLayout.module.css'
+import EventAttendancePrompt from './programme/EventAttendancePrompt.tsx'
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
@@ -9,6 +10,7 @@ export default function AppLayout() {
 
   return (
     <>
+      {user && <EventAttendancePrompt key={user.id} userId={user.id}/>}
       <a href="#main-content" className="skip-link">
         Aller au contenu principal
       </a>

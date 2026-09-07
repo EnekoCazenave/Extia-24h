@@ -7,6 +7,7 @@ import type {
 } from '@extia-gaming/shared'
 import {
     createEvent,
+    confirmEventAttendance,
     deleteEvent,
     getEventById,
     listAllEvents,
@@ -31,6 +32,8 @@ function sendServiceError(error: unknown, reply: FastifyReply) {
             return reply.code(409).send({error: 'Not registered', statusCode: 409})
         case 'EVENT_FULL':
             return reply.code(409).send({error: 'Event is full', statusCode: 409})
+        case 'ATTENDANCE_UNAVAILABLE':
+            return reply.code(409).send({error: 'Attendance is already set or cannot be confirmed for this event', statusCode: 409})
         case 'EVENT_ENDED':
             return reply.code(409).send({error: 'Event has ended', statusCode: 409})
         case 'INVALID_EVENT_DATE_RANGE':
@@ -64,6 +67,18 @@ export async function handleGetEventById(request: FastifyRequest, reply: Fastify
         const isAdmin = (request.user as JWTPayload | undefined)?.roleId === 2
         const event = await getEventById(eventId, getUserId(request), isAdmin)
         return reply.send({event})
+    } catch (error) {
+        const response = sendServiceError(error, reply)
+        if (response) return response
+        throw error
+    }
+}
+
+export async function handleConfirmEventAttendance(request: FastifyRequest, reply: FastifyReply) {
+    try {
+        const {eventId} = request.params as EventIdParams
+        const {isPresent} = request.body as {isPresent: boolean}
+        return reply.send(await confirmEventAttendance(getRequiredUserId(request), eventId, isPresent))
     } catch (error) {
         const response = sendServiceError(error, reply)
         if (response) return response

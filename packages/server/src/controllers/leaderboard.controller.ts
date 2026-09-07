@@ -1,5 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
-import { getGlobalLeaderboard, getTopGamesByScore, getFilteredLeaderboard } from '../services/leaderboard.service.js'
+import { getGlobalLeaderboard, getTopGamesByScore, getFilteredLeaderboard, retrieveLeaderBoardById } from '../services/leaderboard.service.js'
+import type { JWTPayload } from '@extia-gaming/shared'
 
 export async function globalLeaderboard(
   request: FastifyRequest<{ Querystring: { limit?: string } }>,
@@ -34,4 +35,14 @@ export async function topGames(
   const limit = Math.min(isNaN(parsed) ? 5 : parsed, 20)
   const games = await getTopGamesByScore(limit)
   return reply.send({ games })
+}
+
+export async function getLeaderboardByUserId(
+    request: FastifyRequest,
+    reply: FastifyReply,
+) {
+  const userId = (request.user as JWTPayload).sub
+  const ranking = await retrieveLeaderBoardById(userId)
+  if (!ranking) return reply.code(404).send({error: 'User not found', statusCode: 404})
+  return reply.send({ranking})
 }

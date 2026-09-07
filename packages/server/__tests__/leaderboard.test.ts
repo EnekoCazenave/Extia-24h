@@ -44,6 +44,57 @@ describe('GET /api/leaderboard', () => {
   })
 })
 
+describe('GET /api/leaderboard/me', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('requires authentication', async () => {
+    const { PrismaClient } = await import('@prisma/client')
+    const db = new (PrismaClient as any)()
+    const app = await buildApp({logger: false})
+    try {
+      const res = await app.inject({method: 'GET', url: '/api/leaderboard/me'})
+      expect(res.statusCode).toBe(401)
+      expect(db.$queryRaw).not.toHaveBeenCalled()
+    } finally { await app.close() }
+  })
+
+  it.each([0, 300])('returns only the authenticated user with score %s and their global rank', async (score) => {
+    const { PrismaClient } = await import('@prisma/client')
+    const db = new (PrismaClient as any)()
+    db.$queryRaw.mockResolvedValue([
+      {rank: 150n, userId: 7, login: 'alice', firstname: 'Alice', lastname: 'Doe', totalScore: BigInt(score)},
+    ])
+    const app = await buildApp({logger: false})
+    try {
+      await app.ready()
+      const token = app.jwt.sign({sub: 7, email: 'alice@test.fr', roleId: 1})
+      const res = await app.inject({method: 'GET', url: '/api/leaderboard/me?userId=8&limit=1',
+        cookies: {access_token: token}})
+      expect(res.statusCode).toBe(200)
+      expect(res.json()).toEqual({ranking: {
+        rank: 150, userId: 7, login: 'alice', firstname: 'Alice', lastname: 'Doe', totalScore: score,
+      }})
+      const query = db.$queryRaw.mock.calls[0][0]
+      expect(query.values.at(-1)).toBe(7)
+      expect(query.strings.join('')).toContain('ROW_NUMBER()')
+      expect(query.strings.join('')).not.toContain('LIMIT')
+    } finally { await app.close() }
+  })
+
+  it('returns 404 when the authenticated user no longer exists', async () => {
+    const { PrismaClient } = await import('@prisma/client')
+    const db = new (PrismaClient as any)()
+    db.$queryRaw.mockResolvedValue([])
+    const app = await buildApp({logger: false})
+    try {
+      await app.ready()
+      const token = app.jwt.sign({sub: 7, email: 'alice@test.fr', roleId: 1})
+      const res = await app.inject({method: 'GET', url: '/api/leaderboard/me', cookies: {access_token: token}})
+      expect(res.statusCode).toBe(404)
+    } finally { await app.close() }
+  })
+})
+
 describe('GET /api/leaderboard/top-games', () => {
   beforeEach(() => { vi.clearAllMocks() })
 

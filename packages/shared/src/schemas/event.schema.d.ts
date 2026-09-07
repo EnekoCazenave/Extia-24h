@@ -115,6 +115,13 @@ export declare const EventIdParamsSchema: z.ZodObject<{
 }, {
     eventId: number;
 }>;
+export declare const ConfirmEventAttendanceSchema: z.ZodObject<{
+    isPresent: z.ZodBoolean;
+}, "strict", z.ZodTypeAny, {
+    isPresent: boolean;
+}, {
+    isPresent: boolean;
+}>;
 export declare const EventVideoGameSchema: z.ZodObject<{
     id: z.ZodNumber;
     nom: z.ZodString;
@@ -153,6 +160,7 @@ export declare const EventSchema: z.ZodObject<{
     participantCount: z.ZodNumber;
     remainingPlaces: z.ZodNumber;
     isRegistered: z.ZodBoolean;
+    myAttendance: z.ZodNullable<z.ZodBoolean>;
     isFull: z.ZodBoolean;
     pointsEarned: z.ZodNumber;
     createdAt: z.ZodString;
@@ -175,6 +183,7 @@ export declare const EventSchema: z.ZodObject<{
     participantCount: number;
     remainingPlaces: number;
     isRegistered: boolean;
+    myAttendance: boolean | null;
     isFull: boolean;
     updatedAt: string;
 }, {
@@ -195,6 +204,7 @@ export declare const EventSchema: z.ZodObject<{
     participantCount: number;
     remainingPlaces: number;
     isRegistered: boolean;
+    myAttendance: boolean | null;
     isFull: boolean;
     updatedAt: string;
 }>;
@@ -202,12 +212,15 @@ export declare const UserEventSchema: z.ZodObject<{
     userId: z.ZodNumber;
     eventId: z.ZodNumber;
     registeredAt: z.ZodString;
+    isPresent: z.ZodNullable<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     userId: number;
+    isPresent: boolean | null;
     eventId: number;
     registeredAt: string;
 }, {
     userId: number;
+    isPresent: boolean | null;
     eventId: number;
     registeredAt: string;
 }>;
@@ -237,6 +250,7 @@ export declare const EventListSchema: z.ZodObject<{
         participantCount: z.ZodNumber;
         remainingPlaces: z.ZodNumber;
         isRegistered: z.ZodBoolean;
+        myAttendance: z.ZodNullable<z.ZodBoolean>;
         isFull: z.ZodBoolean;
         pointsEarned: z.ZodNumber;
         createdAt: z.ZodString;
@@ -259,6 +273,7 @@ export declare const EventListSchema: z.ZodObject<{
         participantCount: number;
         remainingPlaces: number;
         isRegistered: boolean;
+        myAttendance: boolean | null;
         isFull: boolean;
         updatedAt: string;
     }, {
@@ -279,6 +294,7 @@ export declare const EventListSchema: z.ZodObject<{
         participantCount: number;
         remainingPlaces: number;
         isRegistered: boolean;
+        myAttendance: boolean | null;
         isFull: boolean;
         updatedAt: string;
     }>, "many">;
@@ -301,6 +317,7 @@ export declare const EventListSchema: z.ZodObject<{
         participantCount: number;
         remainingPlaces: number;
         isRegistered: boolean;
+        myAttendance: boolean | null;
         isFull: boolean;
         updatedAt: string;
     }[];
@@ -323,6 +340,7 @@ export declare const EventListSchema: z.ZodObject<{
         participantCount: number;
         remainingPlaces: number;
         isRegistered: boolean;
+        myAttendance: boolean | null;
         isFull: boolean;
         updatedAt: string;
     }[];
@@ -368,6 +386,7 @@ export declare const EventDetailSchema: z.ZodObject<{
     participantCount: z.ZodNumber;
     remainingPlaces: z.ZodNumber;
     isRegistered: z.ZodBoolean;
+    myAttendance: z.ZodNullable<z.ZodBoolean>;
     isFull: z.ZodBoolean;
     pointsEarned: z.ZodNumber;
     createdAt: z.ZodString;
@@ -407,6 +426,7 @@ export declare const EventDetailSchema: z.ZodObject<{
     participantCount: number;
     remainingPlaces: number;
     isRegistered: boolean;
+    myAttendance: boolean | null;
     isFull: boolean;
     updatedAt: string;
     participants?: {
@@ -433,6 +453,7 @@ export declare const EventDetailSchema: z.ZodObject<{
     participantCount: number;
     remainingPlaces: number;
     isRegistered: boolean;
+    myAttendance: boolean | null;
     isFull: boolean;
     updatedAt: string;
     participants?: {
@@ -469,6 +490,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         participantCount: z.ZodNumber;
         remainingPlaces: z.ZodNumber;
         isRegistered: z.ZodBoolean;
+        myAttendance: z.ZodNullable<z.ZodBoolean>;
         isFull: z.ZodBoolean;
         pointsEarned: z.ZodNumber;
         createdAt: z.ZodString;
@@ -508,6 +530,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         participantCount: number;
         remainingPlaces: number;
         isRegistered: boolean;
+        myAttendance: boolean | null;
         isFull: boolean;
         updatedAt: string;
         participants?: {
@@ -534,6 +557,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         participantCount: number;
         remainingPlaces: number;
         isRegistered: boolean;
+        myAttendance: boolean | null;
         isFull: boolean;
         updatedAt: string;
         participants?: {
@@ -562,6 +586,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         participantCount: number;
         remainingPlaces: number;
         isRegistered: boolean;
+        myAttendance: boolean | null;
         isFull: boolean;
         updatedAt: string;
         participants?: {
@@ -590,6 +615,7 @@ export declare const EventResponseSchema: z.ZodObject<{
         participantCount: number;
         remainingPlaces: number;
         isRegistered: boolean;
+        myAttendance: boolean | null;
         isFull: boolean;
         updatedAt: string;
         participants?: {
