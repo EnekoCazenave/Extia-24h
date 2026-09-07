@@ -60,9 +60,8 @@ export default function EventCard({
                             onClick={() => onDelete(event)}>Supprimer
                     </button>
                 </> : hasEnded ?
-                    <button className={styles.secondaryButton} disabled type="button">Terminé</button> : isOngoing ?
-                        <button className={styles.secondaryButton} disabled type="button">En
-                            cours</button> : isAuthenticated ?
+                    <button className={styles.secondaryButton} disabled type="button">Terminé</button> : isOngoing && event.isRegistered ?
+                        <button className={styles.secondaryButton} disabled type="button">Inscrit — En cours</button> : isAuthenticated ?
                             <button className={event.isRegistered ? styles.secondaryButton : styles.primaryButton}
                                     disabled={(!event.isRegistered && event.isFull) || registrationPending}
                                     type="button" onClick={() => onToggleRegistration(event)}>

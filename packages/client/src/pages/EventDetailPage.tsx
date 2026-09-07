@@ -29,7 +29,7 @@ export default function EventDetailPage() {
     const registrationPending = register.isPending || unregister.isPending
 
     async function toggleRegistration() {
-        if (!user || !event || isOngoing || hasEnded) return
+        if (!user || !event || hasEnded || (isOngoing && event.isRegistered)) return
         try {
             setActionError('')
             if (event.isRegistered) {
@@ -96,7 +96,7 @@ export default function EventDetailPage() {
             <aside className={styles.registration} aria-labelledby="event-registration-title">
                 <h2 id="event-registration-title">Inscription</h2>
                 {hasEnded ? <><strong>Évènement terminé</strong><p>Les inscriptions sont closes.</p></> :
-                    isOngoing ? <><strong>Évènement en cours</strong><p>Il n’est plus possible de s’inscrire.</p></> :
+                    isOngoing && event.isRegistered ? <><strong>Vous êtes inscrit</strong><p>L’évènement est en cours.</p></> :
                     !user ? <><p>Connectez-vous pour réserver votre place.</p>
                         <Link className={styles.primaryButton} to="/login" state={{from: `/programme/${event.id}`}}>
                             Se connecter</Link></> : <>

@@ -31,6 +31,8 @@ function sendServiceError(error: unknown, reply: FastifyReply) {
             return reply.code(409).send({error: 'Not registered', statusCode: 409})
         case 'EVENT_FULL':
             return reply.code(409).send({error: 'Event is full', statusCode: 409})
+        case 'EVENT_ENDED':
+            return reply.code(409).send({error: 'Event has ended', statusCode: 409})
         case 'INVALID_EVENT_DATE_RANGE':
             return reply.code(400).send({error: 'Invalid event date range', statusCode: 400})
         case 'MAX_PLACES_BELOW_PARTICIPANTS':

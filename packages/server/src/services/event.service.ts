@@ -107,6 +107,7 @@ export async function registerToEvent(userId: number, eventId: number) {
 
         if (!event) throw new Error('EVENT_NOT_FOUND')
         if (!user) throw new Error('USER_NOT_FOUND')
+        if (event.endsAt.getTime() <= Date.now()) throw new Error('EVENT_ENDED')
         if (existingRegistration) throw new Error('ALREADY_REGISTERED')
         if (event._count.userEvents >= event.maxPlaces) {
             throw new Error('EVENT_FULL')

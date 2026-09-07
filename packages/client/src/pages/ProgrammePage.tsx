@@ -69,7 +69,8 @@ export default function ProgrammePage() {
     }
 
     async function toggleRegistration(event: ProgramEvent) {
-        if (!user || new Date(event.startsAt).getTime() <= Date.now()) return
+        if (!user || new Date(event.endsAt).getTime() <= Date.now() ||
+            (event.isRegistered && new Date(event.startsAt).getTime() <= Date.now())) return
         try {
             setActionError('')
             if (event.isRegistered) {
