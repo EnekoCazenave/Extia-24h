@@ -1,5 +1,5 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query'
-import type {CreateEventInput, ProgramEvent, UpdateEventInput} from '@extia-gaming/shared'
+import type {CreateEventInput, EventDetail, ProgramEvent, UpdateEventInput} from '@extia-gaming/shared'
 import {api} from '../services/api.ts'
 
 export function useEvents(userId?: number) {
@@ -17,7 +17,7 @@ export function useEvent(eventId: number, userId?: number) {
         queryKey: ['events', eventId, userId ?? 'anonymous'],
         enabled: eventId > 0,
         queryFn: async () => {
-            const response = await api.get<{event: ProgramEvent}>(`/api/events/${eventId}`)
+            const response = await api.get<{event: EventDetail}>(`/api/events/${eventId}`)
             return response.data.event
         },
     })

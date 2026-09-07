@@ -2,7 +2,7 @@ import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 import SEOHead from '../components/SEOHead.tsx'
 import {useAuth} from '../hooks/useAuth.ts'
-import {useEvent, useRegisterToEvent, useUnregisterFromEvent} from '../hooks/useEvents.ts'
+import {useEvent, useRegisterToEvent, useUnregisterFromEvent, useUpdateEvent} from '../hooks/useEvents.ts'
 import styles from './EventDetailPage.module.css'
 
 export default function EventDetailPage() {
@@ -12,6 +12,7 @@ export default function EventDetailPage() {
     const {data: event, isLoading, isError} = useEvent(eventId, user?.id)
     const register = useRegisterToEvent()
     const unregister = useUnregisterFromEvent()
+    const updateEvent = useUpdateEvent()
     const [actionError, setActionError] = useState('')
     const [notice, setNotice] = useState('')
 
@@ -40,6 +41,19 @@ export default function EventDetailPage() {
             }
         } catch {
             setActionError('Impossible de modifier votre inscription.')
+        }
+    }
+
+    async function saveAttendance(userId: number, value: string) {
+        try {
+            setActionError('')
+            setNotice('')
+            await updateEvent.mutateAsync({eventId, data: {
+                attendance: {userId, isPresent: value === '' ? null : value === 'yes'},
+            }})
+            setNotice('Présence enregistrée.')
+        } catch {
+            setActionError('Impossible d’enregistrer la présence. Veuillez réessayer.')
         }
     }
 
@@ -96,6 +110,24 @@ export default function EventDetailPage() {
                     </>}
             </aside>
         </div>
+        {user?.role?.name === 'admin' && event.participants &&
+            <section className={`${styles.details} ${styles.participants}`} aria-labelledby="event-participants-title">
+                <h2 id="event-participants-title">Participants inscrits ({event.participants.length})</h2>
+                {event.participants.length === 0 ? <p>Aucun participant inscrit pour le moment.</p> :
+                    <ul className={styles.participantList}>
+                        {event.participants.map((participant) => <li key={participant.id}>
+                            <span>{participant.firstname} {participant.lastname}</span>
+                            <select aria-label={`Présence de ${participant.firstname} ${participant.lastname}`}
+                                value={participant.isPresent === null ? '' : participant.isPresent ? 'yes' : 'no'}
+                                disabled={updateEvent.isPending}
+                                onChange={(change) => void saveAttendance(participant.id, change.target.value)}>
+                                <option value="">Non renseigné</option>
+                                <option value="yes">Oui — Présent</option>
+                                <option value="no">Non — Absent</option>
+                            </select>
+                        </li>)}
+                    </ul>}
+            </section>}
     </main>
 }
 

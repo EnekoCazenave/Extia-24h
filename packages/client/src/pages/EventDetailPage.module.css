@@ -46,6 +46,11 @@
 .details dt { color: var(--text-muted); font-weight: 700; }
 .details dd { text-align: right; font-weight: 800; }
 .registration { position: sticky; top: 24px; }
+.participants { margin-top: 32px; }
+.participantList { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; }
+.participantList li { display: flex; align-items: center; gap: 12px; overflow-wrap: anywhere; }
+.participantList li { justify-content: space-between; flex-wrap: wrap; }
+.participantList select { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-card); color: var(--text-primary); }
 .registration p { margin: 8px 0 20px; color: var(--text-muted); }
 
 .primaryButton, .secondaryButton {

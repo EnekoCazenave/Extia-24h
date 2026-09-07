@@ -176,6 +176,7 @@ model UserEvent {
   eventId Int
 
   registeredAt DateTime @default(now())
+  isPresent Boolean?
 
   @@id([userId, eventId])
   @@index([eventId])

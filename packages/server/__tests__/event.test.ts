@@ -65,7 +65,7 @@ describe('Event controller', () => {
 
         expect(response.statusCode).toBe(200)
         expect(response.json().event).toEqual({id: 3, name: 'Tournoi'})
-        expect(eventService.getEventById).toHaveBeenCalledWith(3, undefined)
+        expect(eventService.getEventById).toHaveBeenCalledWith(3, undefined, false)
     })
 
     it('POST /api/events/:eventId/participation inscrit l\'utilisateur connecté', async () => {
@@ -147,6 +147,40 @@ describe('Event controller', () => {
         expect(response.statusCode).toBe(404)
         expect(response.json().error).toBe('Event not found')
         expect(eventService.updateEvent).toHaveBeenCalledWith(999, {name: 'Nouveau nom'})
+    })
+
+    it.each([
+        ['admin', true],
+        ['user', false],
+    ])('GET détail détermine les droits côté serveur (%s)', async (role, expected) => {
+        eventService.getEventById.mockResolvedValue({id: 3})
+        const response = await app.inject({
+            method: 'GET', url: '/api/events/3?isAdmin=true',
+            cookies: {access_token: role === 'admin' ? adminToken : userToken},
+        })
+        expect(response.statusCode).toBe(200)
+        expect(eventService.getEventById).toHaveBeenCalledWith(3, role === 'admin' ? 1 : 7, expected)
+    })
+
+    it.each([true, false, null])('enregistre la présence %s via la route existante', async (isPresent) => {
+        eventService.updateEvent.mockResolvedValue({id: 3})
+        const payload = {attendance: {userId: 7, isPresent}}
+        const response = await app.inject({
+            method: 'PUT', url: '/api/admin/events/3',
+            cookies: {access_token: adminToken}, payload,
+        })
+        expect(response.statusCode).toBe(200)
+        expect(eventService.updateEvent).toHaveBeenCalledWith(3, payload)
+    })
+
+    it('interdit la modification de présence à un utilisateur non administrateur', async () => {
+        const response = await app.inject({
+            method: 'PUT', url: '/api/admin/events/3',
+            cookies: {access_token: userToken},
+            payload: {attendance: {userId: 7, isPresent: true}},
+        })
+        expect(response.statusCode).toBe(403)
+        expect(eventService.updateEvent).not.toHaveBeenCalled()
     })
 
     it('DELETE /api/admin/events/:eventId supprime un event', async () => {

@@ -59,7 +59,8 @@ export async function handleListAllEvents(request: FastifyRequest, reply: Fastif
 export async function handleGetEventById(request: FastifyRequest, reply: FastifyReply) {
     try {
         const {eventId} = request.params as EventIdParams
-        const event = await getEventById(eventId, getUserId(request))
+        const isAdmin = (request.user as JWTPayload | undefined)?.roleId === 2
+        const event = await getEventById(eventId, getUserId(request), isAdmin)
         return reply.send({event})
     } catch (error) {
         const response = sendServiceError(error, reply)

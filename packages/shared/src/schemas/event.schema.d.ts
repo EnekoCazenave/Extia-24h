@@ -48,6 +48,17 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     pointsEarned: z.ZodOptional<z.ZodNumber>;
     endsAt: z.ZodOptional<z.ZodString>;
     maxPlaces: z.ZodOptional<z.ZodNumber>;
+} & {
+    attendance: z.ZodOptional<z.ZodObject<{
+        userId: z.ZodNumber;
+        isPresent: z.ZodNullable<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        userId: number;
+        isPresent: boolean | null;
+    }, {
+        userId: number;
+        isPresent: boolean | null;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     name?: string | undefined;
     videoGameId?: number | null | undefined;
@@ -56,6 +67,10 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     pointsEarned?: number | undefined;
     endsAt?: string | undefined;
     maxPlaces?: number | undefined;
+    attendance?: {
+        userId: number;
+        isPresent: boolean | null;
+    } | undefined;
 }, {
     name?: string | undefined;
     videoGameId?: number | null | undefined;
@@ -64,6 +79,10 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     pointsEarned?: number | undefined;
     endsAt?: string | undefined;
     maxPlaces?: number | undefined;
+    attendance?: {
+        userId: number;
+        isPresent: boolean | null;
+    } | undefined;
 }>, {
     name?: string | undefined;
     videoGameId?: number | null | undefined;
@@ -72,6 +91,10 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     pointsEarned?: number | undefined;
     endsAt?: string | undefined;
     maxPlaces?: number | undefined;
+    attendance?: {
+        userId: number;
+        isPresent: boolean | null;
+    } | undefined;
 }, {
     name?: string | undefined;
     videoGameId?: number | null | undefined;
@@ -80,6 +103,10 @@ export declare const UpdateEventSchema: z.ZodEffects<z.ZodObject<{
     pointsEarned?: number | undefined;
     endsAt?: string | undefined;
     maxPlaces?: number | undefined;
+    attendance?: {
+        userId: number;
+        isPresent: boolean | null;
+    } | undefined;
 }>;
 export declare const EventIdParamsSchema: z.ZodObject<{
     eventId: z.ZodNumber;
@@ -300,6 +327,122 @@ export declare const EventListSchema: z.ZodObject<{
         updatedAt: string;
     }[];
 }>;
+export declare const EventParticipantSchema: z.ZodObject<{
+    id: z.ZodNumber;
+    firstname: z.ZodString;
+    lastname: z.ZodString;
+    isPresent: z.ZodNullable<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    firstname: string;
+    lastname: string;
+    id: number;
+    isPresent: boolean | null;
+}, {
+    firstname: string;
+    lastname: string;
+    id: number;
+    isPresent: boolean | null;
+}>;
+export declare const EventDetailSchema: z.ZodObject<{
+    name: z.ZodString;
+    description: z.ZodString;
+    startsAt: z.ZodString;
+    endsAt: z.ZodString;
+    maxPlaces: z.ZodNumber;
+} & {
+    id: z.ZodNumber;
+    videoGameId: z.ZodNullable<z.ZodNumber>;
+    videoGame: z.ZodNullable<z.ZodObject<{
+        id: z.ZodNumber;
+        nom: z.ZodString;
+        imageUrl: z.ZodNullable<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        id: number;
+        nom: string;
+        imageUrl: string | null;
+    }, {
+        id: number;
+        nom: string;
+        imageUrl: string | null;
+    }>>;
+    participantCount: z.ZodNumber;
+    remainingPlaces: z.ZodNumber;
+    isRegistered: z.ZodBoolean;
+    isFull: z.ZodBoolean;
+    pointsEarned: z.ZodNumber;
+    createdAt: z.ZodString;
+    updatedAt: z.ZodString;
+} & {
+    participants: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        id: z.ZodNumber;
+        firstname: z.ZodString;
+        lastname: z.ZodString;
+        isPresent: z.ZodNullable<z.ZodBoolean>;
+    }, "strip", z.ZodTypeAny, {
+        firstname: string;
+        lastname: string;
+        id: number;
+        isPresent: boolean | null;
+    }, {
+        firstname: string;
+        lastname: string;
+        id: number;
+        isPresent: boolean | null;
+    }>, "many">>;
+}, "strip", z.ZodTypeAny, {
+    id: number;
+    name: string;
+    videoGameId: number | null;
+    videoGame: {
+        id: number;
+        nom: string;
+        imageUrl: string | null;
+    } | null;
+    createdAt: string;
+    description: string;
+    startsAt: string;
+    pointsEarned: number;
+    endsAt: string;
+    maxPlaces: number;
+    participantCount: number;
+    remainingPlaces: number;
+    isRegistered: boolean;
+    isFull: boolean;
+    updatedAt: string;
+    participants?: {
+        firstname: string;
+        lastname: string;
+        id: number;
+        isPresent: boolean | null;
+    }[] | undefined;
+}, {
+    id: number;
+    name: string;
+    videoGameId: number | null;
+    videoGame: {
+        id: number;
+        nom: string;
+        imageUrl: string | null;
+    } | null;
+    createdAt: string;
+    description: string;
+    startsAt: string;
+    pointsEarned: number;
+    endsAt: string;
+    maxPlaces: number;
+    participantCount: number;
+    remainingPlaces: number;
+    isRegistered: boolean;
+    isFull: boolean;
+    updatedAt: string;
+    participants?: {
+        firstname: string;
+        lastname: string;
+        id: number;
+        isPresent: boolean | null;
+    }[] | undefined;
+}>;
+export type EventDetail = z.infer<typeof EventDetailSchema>;
 export declare const EventResponseSchema: z.ZodObject<{
     event: z.ZodObject<{
         name: z.ZodString;
@@ -330,6 +473,23 @@ export declare const EventResponseSchema: z.ZodObject<{
         pointsEarned: z.ZodNumber;
         createdAt: z.ZodString;
         updatedAt: z.ZodString;
+    } & {
+        participants: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            id: z.ZodNumber;
+            firstname: z.ZodString;
+            lastname: z.ZodString;
+            isPresent: z.ZodNullable<z.ZodBoolean>;
+        }, "strip", z.ZodTypeAny, {
+            firstname: string;
+            lastname: string;
+            id: number;
+            isPresent: boolean | null;
+        }, {
+            firstname: string;
+            lastname: string;
+            id: number;
+            isPresent: boolean | null;
+        }>, "many">>;
     }, "strip", z.ZodTypeAny, {
         id: number;
         name: string;
@@ -350,6 +510,12 @@ export declare const EventResponseSchema: z.ZodObject<{
         isRegistered: boolean;
         isFull: boolean;
         updatedAt: string;
+        participants?: {
+            firstname: string;
+            lastname: string;
+            id: number;
+            isPresent: boolean | null;
+        }[] | undefined;
     }, {
         id: number;
         name: string;
@@ -370,6 +536,12 @@ export declare const EventResponseSchema: z.ZodObject<{
         isRegistered: boolean;
         isFull: boolean;
         updatedAt: string;
+        participants?: {
+            firstname: string;
+            lastname: string;
+            id: number;
+            isPresent: boolean | null;
+        }[] | undefined;
     }>;
 }, "strip", z.ZodTypeAny, {
     event: {
@@ -392,6 +564,12 @@ export declare const EventResponseSchema: z.ZodObject<{
         isRegistered: boolean;
         isFull: boolean;
         updatedAt: string;
+        participants?: {
+            firstname: string;
+            lastname: string;
+            id: number;
+            isPresent: boolean | null;
+        }[] | undefined;
     };
 }, {
     event: {
@@ -414,6 +592,12 @@ export declare const EventResponseSchema: z.ZodObject<{
         isRegistered: boolean;
         isFull: boolean;
         updatedAt: string;
+        participants?: {
+            firstname: string;
+            lastname: string;
+            id: number;
+            isPresent: boolean | null;
+        }[] | undefined;
     };
 }>;
 export type CreateEventInput = z.infer<typeof CreateEventSchema>;

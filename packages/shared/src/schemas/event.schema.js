@@ -44,6 +44,12 @@ export const CreateEventSchema = EventWriteSchema.refine(hasValidDateRange, {
 });
 export const UpdateEventSchema = EventWriteSchema
     .partial()
+    .extend({
+    attendance: z.object({
+        userId: z.number().int().positive(),
+        isPresent: z.boolean().nullable(),
+    }).optional(),
+})
     .refine(hasValidDateRange, {
     message: 'La date de fin doit être postérieure à la date de début',
     path: ['endsAt'],
@@ -76,7 +82,16 @@ export const UserEventSchema = z.object({
 export const EventListSchema = z.object({
     events: z.array(EventSchema),
 });
+export const EventParticipantSchema = z.object({
+    id: z.number().int().positive(),
+    firstname: z.string(),
+    lastname: z.string(),
+    isPresent: z.boolean().nullable(),
+});
+export const EventDetailSchema = EventSchema.extend({
+    participants: z.array(EventParticipantSchema).optional(),
+});
 export const EventResponseSchema = z.object({
-    event: EventSchema,
+    event: EventDetailSchema,
 });
 //# sourceMappingURL=event.schema.js.map

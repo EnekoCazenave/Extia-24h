@@ -40,7 +40,7 @@ export async function listAllEvents(userId?: number) {
     })
 }
 
-export async function getEventById(eventId: number, userId?: number) {
+export async function getEventById(eventId: number, userId?: number, isAdmin = false) {
     const event = await prisma.event.findUnique({
         where: {id: eventId},
         include: {
@@ -59,12 +59,21 @@ export async function getEventById(eventId: number, userId?: number) {
 
     if (!event) throw new Error('EVENT_NOT_FOUND')
 
+    const participants = isAdmin
+        ? await prisma.userEvent.findMany({
+            where: {eventId},
+            orderBy: {registeredAt: 'asc'},
+            select: {isPresent: true, user: {select: {id: true, firstname: true, lastname: true}}},
+        })
+        : undefined
+
     const {_count, userEvents, ...eventData} = event
     const participantCount = _count.userEvents
     const remainingPlaces = Math.max(event.maxPlaces - participantCount, 0)
 
     return {
         ...eventData,
+        ...(participants ? {participants: participants.map(({user, isPresent}) => ({...user, isPresent}))} : {}),
         startsAt: event.startsAt.toISOString(),
         endsAt: event.endsAt.toISOString(),
         createdAt: event.createdAt.toISOString(),
@@ -197,17 +206,27 @@ export async function updateEvent(eventId: number, eventInfos: UpdateEventInput)
         throw new Error('MAX_PLACES_BELOW_PARTICIPANTS')
     }
 
-    return prisma.event.update({
+    return prisma.$transaction(async (tx) => {
+        if (eventInfos.attendance) {
+            const {userId, isPresent} = eventInfos.attendance
+            const result = await tx.userEvent.updateMany({
+                where: {eventId, userId},
+                data: {isPresent},
+            })
+            if (result.count !== 1) throw new Error('NOT_REGISTERED')
+        }
+        return tx.event.update({
         where: {id: eventId},
         data: {
             name: eventInfos.name,
             description: eventInfos.description,
             videoGameId: eventInfos.videoGameId,
-            startsAt,
-            endsAt,
+            startsAt: eventInfos.startsAt ? startsAt : undefined,
+            endsAt: eventInfos.endsAt ? endsAt : undefined,
             maxPlaces: eventInfos.maxPlaces,
             pointsEarned: eventInfos.pointsEarned,
         },
+        })
     })
 }
 
