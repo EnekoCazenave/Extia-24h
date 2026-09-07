@@ -8,24 +8,25 @@ datasource db {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
-  login              String
-  password           String
-  lastname           String
-  firstname          String
-  intern             Boolean             @default(false)
-  email              String              @unique
-  role               Role                @relation(fields: [roleId], references: [id])
-  roleId             Int
-  userGames          UserGame[]
-  userTeams          UserTeam[]
-  achievements       UserAchievement[]
-  userEvents         UserEvent[]
-  refreshTokens      RefreshToken[]
-  bonusesReceived    PointBonus[]        @relation("BonusReceiver")
-  bonusesGranted     PointBonus[]        @relation("BonusGranter")
-  submittedSessions  GameSession[]       @relation("SubmittedSessions")
-  sessionMemberships GameSessionMember[]
+  id                        Int                        @id @default(autoincrement())
+  login                     String
+  password                  String
+  lastname                  String
+  firstname                 String
+  intern                    Boolean                    @default(false)
+  email                     String                     @unique
+  role                      Role                       @relation(fields: [roleId], references: [id])
+  roleId                    Int
+  userGames                 UserGame[]
+  userTeams                 UserTeam[]
+  achievements              UserAchievement[]
+  userEvents                UserEvent[]
+  refreshTokens             RefreshToken[]
+  bonusesReceived           PointBonus[]               @relation("BonusReceiver")
+  bonusesGranted            PointBonus[]               @relation("BonusGranter")
+  submittedSessions         GameSession[]              @relation("SubmittedSessions")
+  sessionMemberships        GameSessionMember[]
+  subscriptionNotifications SubscriptionNotification[]
 }
 
 model Role {
@@ -164,8 +165,9 @@ model Event {
 
   pointsEarned Int
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt              DateTime                    @default(now())
+  updatedAt              DateTime                    @updatedAt
+  notificationDeliveries EventNotificationDelivery[]
 }
 
 model UserEvent {
@@ -176,7 +178,7 @@ model UserEvent {
   eventId Int
 
   registeredAt DateTime @default(now())
-  isPresent Boolean?
+  isPresent    Boolean?
 
   @@id([userId, eventId])
   @@index([eventId])
@@ -220,4 +222,31 @@ model AssociationBlock {
   type          BlockType
   sortOrder     Int         @default(0)
   content       Json
+}
+
+model SubscriptionNotification {
+  id                          Int                         @id @default(autoincrement())
+  user                        User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                      Int
+  endpoint                    String                      @unique
+  p256dh                      String
+  auth                        String
+  expirationTime              DateTime?
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @updatedAt
+  eventNotificationDeliveries EventNotificationDelivery[]
+
+  @@index([userId])
+}
+
+model EventNotificationDelivery {
+  id             Int       @id @default(autoincrement())
+  eventId        Int
+  subscriptionId Int
+  sentAt         DateTime?
+
+  event        Event                    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  subscription SubscriptionNotification @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, subscriptionId])
 }

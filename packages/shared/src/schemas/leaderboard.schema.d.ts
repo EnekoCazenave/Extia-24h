@@ -110,4 +110,3 @@ export declare const GameScoreSummarySchema: z.ZodObject<{
 export type LeaderboardEntry = z.infer<typeof LeaderboardEntrySchema>;
 export type GameLeaderboardEntry = z.infer<typeof GameLeaderboardEntrySchema>;
 export type GameScoreSummary = z.infer<typeof GameScoreSummarySchema>;
-//# sourceMappingURL=leaderboard.schema.d.ts.map

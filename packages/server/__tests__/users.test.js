@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { buildApp } from '../src/app.js';
-vi.mock('@prisma/client', () => {
+vi.mock('@prisma/client', async (importOriginal) => {
+    const actual = await importOriginal();
     const mockPrisma = {
         user: { update: vi.fn() },
     };
-    return { PrismaClient: vi.fn(() => mockPrisma) };
+    return { ...actual, PrismaClient: vi.fn(() => mockPrisma) };
 });
 describe('PUT /api/users/me', () => {
     beforeEach(() => { vi.clearAllMocks(); });
