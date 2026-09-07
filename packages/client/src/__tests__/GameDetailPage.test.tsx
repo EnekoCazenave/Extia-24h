@@ -21,7 +21,7 @@ const mockGame = {
   imageUrl: null,
   happyHourStart: null,
   happyHourEnd: null,
-  gameTypes: [{ id: 1, name: '5v5 Classique', calcul: 'Best of 3', win: 'Destroy nexus', team: true, videoGameId: 1 }],
+  gameTypes: [{ id: 1, name: '5v5 Classique', calculType: 'BOOLEAN', calculConfig: { type: 'BOOLEAN', trueValue: 100, falseValue: 0 }, win: 'Destroy nexus', team: true, videoGameId: 1 }],
   totalScore: 750,
   rankings: [
     { rank: 1, userId: 1, login: 'alice42', firstname: 'Alice', lastname: 'Doe', gameScore: 400 },

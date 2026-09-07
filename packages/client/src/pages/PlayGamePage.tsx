@@ -5,6 +5,7 @@ import { useGame, useSubmitPlay } from '../hooks/useGames.ts'
 import { useUsers } from '../hooks/useUsers.ts'
 import { useAuth } from '../hooks/useAuth.ts'
 import { api } from '../services/api.ts'
+import type { PlayInput } from '@extia-gaming/shared'
 import styles from './PlayGamePage.module.css'
 
 function isHappyHourActive(start: string | null, end: string | null): boolean {
@@ -34,6 +35,9 @@ export default function PlayGamePage() {
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [boolValue, setBoolValue] = useState<boolean>(true)
+  const [numValue, setNumValue] = useState<string>('')
+  const [timeSeconds, setTimeSeconds] = useState<string>('')
 
   const selectedGameType = game?.gameTypes.find(
     (gt) => gt.id === (selectedGameTypeId || game?.gameTypes[0]?.id),
@@ -87,16 +91,31 @@ export default function PlayGamePage() {
     }
   }
 
+  function buildPlayInput(gameTypeId: number, proofUrl: string | undefined): PlayInput | null {
+    if (!selectedGameType) return null
+    const base = { gameTypeId, teamMemberIds, proofUrl }
+    if (selectedGameType.calculType === 'BOOLEAN') {
+      return { ...base, calculType: 'BOOLEAN', value: boolValue }
+    }
+    if (selectedGameType.calculType === 'NUMBER') {
+      const v = parseFloat(numValue)
+      if (isNaN(v) || v < 0) return null
+      return { ...base, calculType: 'NUMBER', value: v }
+    }
+    const t = parseInt(timeSeconds, 10)
+    if (isNaN(t) || t < 0) return null
+    return { ...base, calculType: 'TIME', timeSeconds: t }
+  }
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
 
     const data = new FormData(e.currentTarget)
     const gameTypeId = parseInt(data.get('gameTypeId') as string, 10)
-    const score = parseInt(data.get('score') as string, 10)
 
-    if (isNaN(gameTypeId) || isNaN(score) || score < 0) {
-      setError('Veuillez remplir tous les champs correctement.')
+    if (isNaN(gameTypeId) || !selectedGameType) {
+      setError('Sélectionnez un mode de jeu.')
       return
     }
 
@@ -113,7 +132,13 @@ export default function PlayGamePage() {
         setUploading(false)
       }
 
-      await submitPlay.mutateAsync({ gameTypeId, score, teamMemberIds, proofUrl })
+      const payload = buildPlayInput(gameTypeId, proofUrl)
+      if (!payload) {
+        setError('Veuillez remplir tous les champs correctement.')
+        return
+      }
+
+      await submitPlay.mutateAsync(payload)
       setSubmitted(true)
     } catch {
       setUploading(false)
@@ -191,23 +216,73 @@ export default function PlayGamePage() {
               </select>
             </div>
 
-            <div className={styles.field}>
-              <label className={`${styles.label} ${styles.required}`} htmlFor="score">
-                Score obtenu
-                {happyHour && <span style={{ color: '#f59e0b', marginLeft: '6px' }}>× 2</span>}
-              </label>
-              <input
-                className={styles.input}
-                id="score"
-                name="score"
-                type="number"
-                min="0"
-                step="1"
-                required
-                aria-required="true"
-                placeholder="ex: 1500"
-              />
-            </div>
+            {selectedGameType?.calculType === 'BOOLEAN' && (
+              <div className={styles.field}>
+                <label className={`${styles.label} ${styles.required}`}>
+                  Résultat
+                  {happyHour && <span style={{ color: '#f59e0b', marginLeft: '6px' }}>× 2</span>}
+                </label>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <input type="radio" name="boolValue" checked={boolValue === true} onChange={() => setBoolValue(true)} />
+                    Oui
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <input type="radio" name="boolValue" checked={boolValue === false} onChange={() => setBoolValue(false)} />
+                    Non
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {selectedGameType?.calculType === 'NUMBER' && (
+              <div className={styles.field}>
+                <label className={`${styles.label} ${styles.required}`} htmlFor="numValue">
+                  Score obtenu
+                  {happyHour && <span style={{ color: '#f59e0b', marginLeft: '6px' }}>× 2</span>}
+                </label>
+                <input
+                  className={styles.input}
+                  id="numValue"
+                  type="number"
+                  min="0"
+                  step="any"
+                  required
+                  aria-required="true"
+                  placeholder="ex: 1500"
+                  value={numValue}
+                  onChange={(e) => setNumValue(e.target.value)}
+                />
+              </div>
+            )}
+
+            {selectedGameType?.calculType === 'TIME' && (
+              <div className={styles.field}>
+                <label className={`${styles.label} ${styles.required}`} htmlFor="timeSeconds">
+                  Temps réalisé (secondes)
+                  {happyHour && <span style={{ color: '#f59e0b', marginLeft: '6px' }}>× 2</span>}
+                </label>
+                <input
+                  className={styles.input}
+                  id="timeSeconds"
+                  type="number"
+                  min="0"
+                  step="1"
+                  required
+                  aria-required="true"
+                  placeholder="ex: 120"
+                  value={timeSeconds}
+                  onChange={(e) => setTimeSeconds(e.target.value)}
+                />
+                <span className={styles.hint}>
+                  Paliers :{' '}
+                  {[...(selectedGameType.calculConfig.type === 'TIME' ? selectedGameType.calculConfig.tiers : [])]
+                    .sort((a, b) => a.timeSeconds - b.timeSeconds)
+                    .map((t) => `≤${t.timeSeconds}s → ${t.points} pts`)
+                    .join(' • ')}
+                </span>
+              </div>
+            )}
 
             <div className={styles.field}>
               <label className={styles.label} htmlFor="proof">Preuve (capture d'écran)</label>

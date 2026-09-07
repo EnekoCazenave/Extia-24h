@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod'
-import { CreateGameSchema, CreateGameTypeSchema, UpdateHappyHourSchema, GrantBonusSchema } from '@extia-gaming/shared'
-import { handleCreateGame, handleAddGameType, handleUpdateHappyHour, handleGrantBonus } from '../controllers/admin.controller.js'
+import { CreateGameSchema, UpdateGameSchema, CreateGameTypeSchema, UpdateGameTypeSchema, UpdateHappyHourSchema, GrantBonusSchema } from '@extia-gaming/shared'
+import { handleCreateGame, handleUpdateGame, handleDeleteGame, handleAddGameType, handleUpdateGameType, handleDeleteGameType, handleUpdateHappyHour, handleGrantBonus } from '../controllers/admin.controller.js'
 import { requireAdmin } from '../hooks/requireAdmin.js'
 
 export async function adminRoutes(fastify: FastifyInstance) {
@@ -12,7 +12,11 @@ export async function adminRoutes(fastify: FastifyInstance) {
   const adminGuard = { preHandler: [requireAdmin] }
 
   f.post('/api/admin/games', { ...adminGuard, schema: { body: CreateGameSchema } }, handleCreateGame)
+  f.put('/api/admin/games/:id', { ...adminGuard, schema: { body: UpdateGameSchema } }, handleUpdateGame)
+  f.delete('/api/admin/games/:id', adminGuard, handleDeleteGame)
   f.post('/api/admin/games/:id/game-types', { ...adminGuard, schema: { body: CreateGameTypeSchema } }, handleAddGameType)
+  f.put('/api/admin/game-types/:gameTypeId', { ...adminGuard, schema: { body: UpdateGameTypeSchema } }, handleUpdateGameType)
+  f.delete('/api/admin/game-types/:gameTypeId', adminGuard, handleDeleteGameType)
   f.put('/api/admin/games/:id/happy-hour', { ...adminGuard, schema: { body: UpdateHappyHourSchema } }, handleUpdateHappyHour)
   f.post('/api/admin/bonuses', { ...adminGuard, schema: { body: GrantBonusSchema } }, handleGrantBonus)
 }

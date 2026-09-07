@@ -39,7 +39,8 @@ async function main() {
     update: {},
     create: {
       name: '5v5 Classique',
-      calcul: 'Meilleur de 3',
+      calculType: 'BOOLEAN',
+      calculConfig: { type: 'BOOLEAN', trueValue: 100, falseValue: 0 },
       win: "Destruction du Nexus adverse",
       team: true,
       videoGameId: lol.id,
@@ -50,11 +51,33 @@ async function main() {
     update: {},
     create: {
       name: 'Tournoi Blitz',
-      calcul: 'Points ELO',
+      calculType: 'NUMBER',
+      calculConfig: { type: 'NUMBER', multiplier: 1 },
       win: 'Roi mis en échec',
       team: false,
       videoGameId: chess.id,
     },
+  })
+
+  let createdAt = new Date();
+  const startsAt = new Date(Date.now() + 60 * 60 * 1000) // dans 1 heure
+  const endsAt = new Date(startsAt.getTime() + 2 * 60 * 60 * 1000) // 2 h après
+
+  // Event
+  await prisma.event.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: 'Tournoi Blitz',
+      description: 'MEGA TOURNOI DE MALADE MENTAL',
+      createdAt: createdAt,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+      maxPlaces: 10,
+      pointsEarned: 1,
+      updatedAt: new Date(),
+      videoGameId: 1
+    }
   })
 
   // Admin user

@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth.ts'
 import SEOHead from '../components/SEOHead.tsx'
 import { useFilteredLeaderboard } from '../hooks/useLeaderboard.ts'
 import { useGames } from '../hooks/useGames.ts'
@@ -8,6 +10,7 @@ import styles from './LeaderboardPage.module.css'
 type TeamFilter = 'all' | 'solo' | 'team'
 
 export default function LeaderboardPage() {
+  const {user} = useAuth()
   const games = useGames()
   const [selectedGameId, setSelectedGameId] = useState<number | undefined>()
   const [selectedGameTypeId, setSelectedGameTypeId] = useState<number | undefined>()
@@ -72,6 +75,7 @@ export default function LeaderboardPage() {
             ? 'Score global tous jeux confondus (parties + bonus).'
             : 'Score filtré sur les parties validées.'}
         </p>
+        {user && <Link className={styles.personalButton} to="/classement/me">Voir mon classement</Link>}
       </div>
 
       <div className={styles.filtersBar}>

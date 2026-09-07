@@ -30,8 +30,8 @@ const mockGame = {
   happyHourStart: null,
   happyHourEnd: null,
   gameTypes: [
-    { id: 1, name: '5v5 Classique', calcul: 'Best of 3', win: 'Nexus', team: true, videoGameId: 1 },
-    { id: 2, name: 'ARAM', calcul: '1 partie', win: 'Nexus', team: true, videoGameId: 1 },
+    { id: 1, name: '5v5 Classique', calculType: 'BOOLEAN', calculConfig: { type: 'BOOLEAN', trueValue: 100, falseValue: 0 }, win: 'Nexus', team: true, videoGameId: 1 },
+    { id: 2, name: 'ARAM', calculType: 'NUMBER', calculConfig: { type: 'NUMBER', multiplier: 1 }, win: 'Nexus', team: true, videoGameId: 1 },
   ],
   totalScore: 0,
   rankings: [],
@@ -58,37 +58,37 @@ describe('PlayGamePage', () => {
     expect(screen.getByLabelText(/mode de jeu/i)).toBeInTheDocument()
   })
 
-  it('renders score input', () => {
-    renderWithProviders(<PlayGamePage />, { initialEntries: ['/jeux/1/jouer?gameTypeId=1'] })
-    expect(screen.getByLabelText(/score/i)).toBeInTheDocument()
+  it('renders score input for NUMBER type', () => {
+    renderWithProviders(<PlayGamePage />, { initialEntries: ['/jeux/1/jouer?gameTypeId=2'] })
+    expect(screen.getByLabelText(/score obtenu/i)).toBeInTheDocument()
   })
 
-  it('calls submitPlay on form submit', async () => {
-    const mockMutate = vi.fn().mockResolvedValue({ id: 1, score: 100, happyHourApplied: false, originalScore: 100 })
+  it('calls submitPlay with NUMBER payload', async () => {
+    const mockMutate = vi.fn().mockResolvedValue({ id: 1 })
     mockUseSubmitPlay.mockReturnValue({ mutateAsync: mockMutate, isPending: false })
 
     const user = userEvent.setup()
-    renderWithProviders(<PlayGamePage />, { initialEntries: ['/jeux/1/jouer?gameTypeId=1'] })
+    renderWithProviders(<PlayGamePage />, { initialEntries: ['/jeux/1/jouer?gameTypeId=2'] })
 
-    await user.clear(screen.getByLabelText(/score/i))
-    await user.type(screen.getByLabelText(/score/i), '250')
+    await user.clear(screen.getByLabelText(/score obtenu/i))
+    await user.type(screen.getByLabelText(/score obtenu/i), '250')
     await user.click(screen.getByRole('button', { name: /soumettre/i }))
 
     await waitFor(() =>
       expect(mockMutate).toHaveBeenCalledWith(
-        expect.objectContaining({ score: 250 })
+        expect.objectContaining({ calculType: 'NUMBER', value: 250, gameTypeId: 2 })
       )
     )
   })
 
   it('shows success message after submit', async () => {
-    const mockMutate = vi.fn().mockResolvedValue({ id: 1, score: 100, happyHourApplied: false, originalScore: 100 })
+    const mockMutate = vi.fn().mockResolvedValue({ id: 1 })
     mockUseSubmitPlay.mockReturnValue({ mutateAsync: mockMutate, isPending: false })
 
     const user = userEvent.setup()
-    renderWithProviders(<PlayGamePage />, { initialEntries: ['/jeux/1/jouer?gameTypeId=1'] })
+    renderWithProviders(<PlayGamePage />, { initialEntries: ['/jeux/1/jouer?gameTypeId=2'] })
 
-    await user.type(screen.getByLabelText(/score/i), '100')
+    await user.type(screen.getByLabelText(/score obtenu/i), '100')
     await user.click(screen.getByRole('button', { name: /soumettre/i }))
 
     await waitFor(() =>
