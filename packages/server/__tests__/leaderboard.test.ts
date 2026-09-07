@@ -3,7 +3,7 @@ import { buildApp } from '../src/app.js'
 
 vi.mock('@prisma/client', () => {
   const mockPrisma = {
-    $queryRaw: vi.fn(),
+    $queryRaw: vi.fn(), gameSession: {findMany: vi.fn().mockResolvedValue([])},
   }
   // Prisma.sql is a tagged template literal used in the service — mock it as a passthrough
   const Prisma = {
@@ -71,7 +71,7 @@ describe('GET /api/leaderboard/me', () => {
       const res = await app.inject({method: 'GET', url: '/api/leaderboard/me?userId=8&limit=1',
         cookies: {access_token: token}})
       expect(res.statusCode).toBe(200)
-      expect(res.json()).toEqual({ranking: {
+      expect(res.json()).toMatchObject({ranking: {
         rank: 150, userId: 7, login: 'alice', firstname: 'Alice', lastname: 'Doe', totalScore: score,
       }})
       const query = db.$queryRaw.mock.calls[0][0]

@@ -1,3 +1,11 @@
+.sessionHistory { margin-top: 36px; }
+.sessionHistory h2 { margin-bottom: 12px; }
+.sessionTable { overflow-x: auto; margin-top: 20px; border: 1px solid var(--border-color); border-radius: var(--radius-md); }
+.sessionTable table { min-width: 640px; }
+.sessionTable caption { text-align: left; padding: 12px; }
+.pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 20px; }
+.pagination button { padding: 10px 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-card); color: var(--text-primary); cursor: pointer; }
+.pagination button:disabled { opacity: .5; cursor: not-allowed; }
 .page {
     max-width: var(--max-width);
     margin: 0 auto;

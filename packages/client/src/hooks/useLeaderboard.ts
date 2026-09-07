@@ -1,18 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../services/api.ts'
 import type { LeaderboardEntry, GameScoreSummary } from '@extia-gaming/shared'
+import type {PersonalSessionPage} from '@extia-gaming/shared'
 
 export interface RankedEntry extends LeaderboardEntry {
   rank: number
 }
 
-export function usePersonalLeaderboard(userId?: number) {
+export function usePersonalLeaderboard(userId?: number, page = 1) {
   return useQuery({
-    queryKey: ['leaderboard', 'me', userId],
+    queryKey: ['leaderboard', 'me', userId, page],
     enabled: userId !== undefined,
     queryFn: async () => {
-      const res = await api.get<{ranking: RankedEntry}>('/api/leaderboard/me')
-      return res.data.ranking
+      const res = await api.get<PersonalSessionPage & {ranking: RankedEntry}>(`/api/leaderboard/me?page=${page}`)
+      return res.data
     },
   })
 }

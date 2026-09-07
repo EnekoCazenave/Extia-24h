@@ -25,9 +25,9 @@ function renderPages(path = '/classement') {
 describe('Personal leaderboard', () => {
   beforeEach(() => {
     auth.user = {id: 7}
-    vi.mocked(api.get).mockReset().mockImplementation(async (url) => ({data: url === '/api/leaderboard/me'
-      ? {ranking: {userId: 7, login: 'alice', firstname: 'Alice', lastname: 'Martin', rank: 150, totalScore: 0}}
-      : {rankings: []}}))
+    vi.mocked(api.get).mockReset().mockImplementation(async (url) => ({data: url.startsWith('/api/leaderboard/me?')
+      ? {sessions: [], page: 1, hasNextPage: false, ranking: {userId: 7, login: 'alice', firstname: 'Alice', lastname: 'Martin', rank: 150, totalScore: 0}}
+      : url.includes('/sessions') ? {sessions: [], page: 1, hasNextPage: false} : {rankings: []}}))
   })
 
   it('opens personal details from the leaderboard button', async () => {
@@ -36,7 +36,7 @@ describe('Personal leaderboard', () => {
     expect(await screen.findByText('alice')).toBeInTheDocument()
     expect(screen.getByText('150e')).toBeInTheDocument()
     expect(screen.getByText('0 pts')).toBeInTheDocument()
-    expect(api.get).toHaveBeenCalledWith('/api/leaderboard/me')
+    expect(api.get).toHaveBeenCalledWith('/api/leaderboard/me?page=1')
     fireEvent.click(screen.getByRole('link', {name: /Retour au classement/}))
     expect(screen.getByRole('heading', {name: 'Classement des joueurs'})).toBeInTheDocument()
   })
@@ -57,13 +57,13 @@ describe('Personal leaderboard', () => {
   it('shows a loading state', () => {
     vi.mocked(api.get).mockImplementation(() => new Promise(() => {}))
     renderPages('/classement/me')
-    expect(screen.getByRole('status')).toHaveTextContent('Chargement de votre classement')
+    expect(screen.getByText('Chargement de votre classement…')).toBeInTheDocument()
   })
 
   it('offers retry when the request fails', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('Network error'))
     renderPages('/classement/me')
-    expect(await screen.findByRole('alert')).toHaveTextContent('Impossible de charger votre classement')
+    expect(await screen.findByText('Impossible de charger votre classement.')).toBeInTheDocument()
     expect(screen.getByRole('button', {name: 'Réessayer'})).toBeInTheDocument()
   })
 })

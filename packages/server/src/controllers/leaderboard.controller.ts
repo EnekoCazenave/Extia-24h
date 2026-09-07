@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { getGlobalLeaderboard, getTopGamesByScore, getFilteredLeaderboard, retrieveLeaderBoardById } from '../services/leaderboard.service.js'
 import type { JWTPayload } from '@extia-gaming/shared'
+import {getPersonalSessions} from '../services/leaderboard.service.js'
 
 export async function globalLeaderboard(
   request: FastifyRequest<{ Querystring: { limit?: string } }>,
@@ -42,7 +43,12 @@ export async function getLeaderboardByUserId(
     reply: FastifyReply,
 ) {
   const userId = (request.user as JWTPayload).sub
+  const {page = '1'} = request.query as {page?: string}
+  if (typeof page !== 'string' || !/^[1-9]\d*$/.test(page) || Number(page) > 100000) {
+    return reply.code(400).send({error: 'Invalid page', statusCode: 400})
+  }
   const ranking = await retrieveLeaderBoardById(userId)
   if (!ranking) return reply.code(404).send({error: 'User not found', statusCode: 404})
-  return reply.send({ranking})
+  const history = await getPersonalSessions(userId, Number(page))
+  return reply.send({ranking, ...history})
 }

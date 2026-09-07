@@ -43,6 +43,31 @@ export async function getGlobalLeaderboard(limit = 20) {
     }))
 }
 
+export async function getPersonalSessions(userId: number, page: number) {
+    const pageSize = 20
+    const rows = await prisma.gameSession.findMany({
+        where: {submitterId: userId},
+        orderBy: [{createdAt: 'desc'}, {id: 'desc'}],
+        skip: (page - 1) * pageSize,
+        take: pageSize + 1,
+        select: {
+            id: true, createdAt: true, status: true, score: true,
+            gameType: {select: {name: true, videoGame: {select: {nom: true}}}},
+            userGames: {where: {userId}, select: {score: true}},
+        },
+    })
+    return {
+        page,
+        hasNextPage: rows.length > pageSize,
+        sessions: rows.slice(0, pageSize).map((row) => ({
+            id: row.id, createdAt: row.createdAt.toISOString(), status: row.status,
+            gameName: row.gameType.videoGame.nom, gameTypeName: row.gameType.name,
+            submittedScore: row.score,
+            creditedPoints: row.userGames.reduce((total, game) => total + game.score, 0),
+        })),
+    }
+}
+
 export async function retrieveLeaderBoardById(userId: number) {
     const rows = await prisma.$queryRaw<Array<{
         rank: bigint

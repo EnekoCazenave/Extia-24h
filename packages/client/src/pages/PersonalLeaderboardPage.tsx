@@ -1,12 +1,16 @@
 import {Link} from 'react-router-dom'
+import {useState} from 'react'
 import SEOHead from '../components/SEOHead.tsx'
 import {useAuth} from '../hooks/useAuth.ts'
 import {usePersonalLeaderboard} from '../hooks/useLeaderboard.ts'
 import styles from './LeaderboardPage.module.css'
+import PersonalSessions from '../components/PersonalSessions.tsx'
 
 export default function PersonalLeaderboardPage() {
   const {user} = useAuth()
-  const ranking = usePersonalLeaderboard(user?.id)
+  const [page, setPage] = useState(1)
+  const result = usePersonalLeaderboard(user?.id, page)
+  const ranking = {...result, data: result.data?.ranking}
 
   return <div className={styles.page}>
     <SEOHead title="Mon classement" description="Votre position dans le classement général." canonicalPath="/classement/me"/>
@@ -29,5 +33,6 @@ export default function PersonalLeaderboardPage() {
         <div><dt>Score total</dt><dd>{ranking.data.totalScore.toLocaleString('fr-FR')} pts</dd></div>
       </dl>
     </section>}
+    {result.data && !result.isError && <PersonalSessions data={result.data} page={page} setPage={setPage} isFetching={result.isFetching}/>}
   </div>
 }
