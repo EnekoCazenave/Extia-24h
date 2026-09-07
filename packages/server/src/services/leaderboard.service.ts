@@ -1,7 +1,6 @@
 import {Prisma} from '@prisma/client'
 import {prisma} from '../lib/prisma.js'
 
-// Shared score calculation for the global and personal rankings.
 const leaderboardScores = Prisma.sql`
     SELECT u.id                                                  AS "userId",
            u.login,

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { buildApp } from '../src/app.js'
 
-vi.mock('@prisma/client', () => {
+vi.mock('@prisma/client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@prisma/client')>()
   const mockPrisma = {
     videoGame: {
       findMany: vi.fn(),
@@ -14,7 +15,7 @@ vi.mock('@prisma/client', () => {
       findMany: vi.fn(),
     },
   }
-  return { PrismaClient: vi.fn(() => mockPrisma) }
+  return { ...actual, PrismaClient: vi.fn(() => mockPrisma) }
 })
 
 describe('GET /api/games', () => {
