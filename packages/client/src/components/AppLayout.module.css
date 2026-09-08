@@ -11,13 +11,42 @@
 }
 
 .nav {
-  max-width: var(--max-width);
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 var(--page-padding);
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 16px;
+}
+
+.navigationMenu {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 16px;
+}
+
+.menuToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.menuToggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
 .logo {
@@ -45,7 +74,7 @@
 }
 
 .navLink {
-  padding: 8px 16px;
+  padding: 8px 10px;
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -69,6 +98,15 @@
   align-items: center;
   gap: 10px;
   margin-left: auto;
+  min-width: 0;
+}
+
+.navActions .navLink {
+  overflow-wrap: anywhere;
+}
+
+.logoutBtn {
+  flex-shrink: 0;
 }
 
 .userInfo {
@@ -117,4 +155,59 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+@media (max-width: 1279px) {
+  .menuToggle {
+    display: inline-flex;
+  }
+
+  .navigationMenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 16px var(--page-padding);
+    max-height: calc(100dvh - var(--header-height));
+    overflow-y: auto;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 8px 16px rgba(var(--ink-rgb), 0.08);
+  }
+
+  .navigationMenuOpen {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navLinks,
+  .navActions {
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+  }
+
+  .navActions {
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .navLink,
+  .logoutBtn {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .nav {
+    gap: 8px;
+    padding: 0 12px;
+  }
+
+  .logo {
+    font-size: var(--text-lg);
+    gap: 4px;
+  }
 }
