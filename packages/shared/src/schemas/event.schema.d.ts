@@ -634,4 +634,3 @@ export type ProgramEvent = z.infer<typeof EventSchema>;
 export type UserEvent = z.infer<typeof UserEventSchema>;
 export type EventListResponse = z.infer<typeof EventListSchema>;
 export type EventResponse = z.infer<typeof EventResponseSchema>;
-//# sourceMappingURL=event.schema.d.ts.map
