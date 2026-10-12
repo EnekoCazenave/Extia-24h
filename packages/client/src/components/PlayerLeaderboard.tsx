@@ -29,7 +29,7 @@ export default function PlayerLeaderboard({ rankings, caption }: PlayerLeaderboa
               <div className={styles.playerName}>{entry.login}</div>
               <div className={styles.playerLogin}>{entry.firstname} {entry.lastname}</div>
             </td>
-            <td><span className={styles.score}>{entry.totalScore.toLocaleString('fr-FR')}</span></td>
+            <td><span className={styles.score}>{entry.totalScore.toLocaleString('fr-FR', { maximumFractionDigits: 6 })}</span></td>
           </tr>
         ))}
       </tbody>

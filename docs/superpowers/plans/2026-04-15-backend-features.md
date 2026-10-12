@@ -274,7 +274,7 @@ export async function registerUser(input: RegisterData) {
 
 From `packages/server/`:
 ```bash
-pnpm db:migrate
+npm run db:migrate
 # When prompted for migration name, enter: add_score_imagurl_pointbonus
 ```
 
@@ -283,7 +283,7 @@ Expected: migration files created, DB tables updated.
 - [ ] **Step 5: Regenerate Prisma client**
 
 ```bash
-pnpm exec prisma generate
+npm exec prisma generate
 ```
 
 Expected: `@prisma/client` updated with new types.
@@ -291,7 +291,7 @@ Expected: `@prisma/client` updated with new types.
 - [ ] **Step 6: Run existing tests to verify nothing broken**
 
 ```bash
-cd packages/server && pnpm test
+cd packages/server && npm test
 ```
 
 Expected: existing 4 tests pass.
@@ -375,7 +375,7 @@ describe('LeaderboardEntrySchema', () => {
 - [ ] **Step 2: Run test to see it fail**
 
 ```bash
-cd packages/shared && pnpm test
+cd packages/shared && npm test
 ```
 
 Expected: FAIL — cannot find module `../schemas/index.js`
@@ -514,7 +514,7 @@ export * from './types/index.js'
 - [ ] **Step 8: Run tests**
 
 ```bash
-cd packages/shared && pnpm test
+cd packages/shared && npm test
 ```
 
 Expected: All tests pass (schema validation tests).
@@ -609,7 +609,7 @@ describe('GET /api/games/:id', () => {
 - [ ] **Step 3: Run tests to see them fail**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/games.test.ts
+cd packages/server && npm test src/__tests__/games.test.ts
 ```
 
 Expected: FAIL — route `/api/games` not found (404 from Fastify)
@@ -744,7 +744,7 @@ export async function registerRoutes(fastify: FastifyInstance) {
 - [ ] **Step 8: Run tests**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/games.test.ts
+cd packages/server && npm test src/__tests__/games.test.ts
 ```
 
 Expected: 2 tests pass.
@@ -815,7 +815,7 @@ describe('GET /api/leaderboard', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/leaderboard.test.ts
+cd packages/server && npm test src/__tests__/leaderboard.test.ts
 ```
 
 Expected: FAIL — route not found.
@@ -957,7 +957,7 @@ export async function registerRoutes(fastify: FastifyInstance) {
 - [ ] **Step 7: Run tests**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/leaderboard.test.ts
+cd packages/server && npm test src/__tests__/leaderboard.test.ts
 ```
 
 Expected: 2 tests pass.
@@ -1028,7 +1028,7 @@ describe('POST /api/play', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/play.test.ts
+cd packages/server && npm test src/__tests__/play.test.ts
 ```
 
 Expected: FAIL — route not found (404).
@@ -1140,7 +1140,7 @@ export async function registerRoutes(fastify: FastifyInstance) {
 - [ ] **Step 7: Run tests**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/play.test.ts
+cd packages/server && npm test src/__tests__/play.test.ts
 ```
 
 Expected: Both tests pass (401 for unauthenticated, non-200 for missing score).
@@ -1193,7 +1193,7 @@ describe('PUT /api/users/me', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/users.test.ts
+cd packages/server && npm test src/__tests__/users.test.ts
 ```
 
 Expected: FAIL — route not found.
@@ -1284,7 +1284,7 @@ export async function registerRoutes(fastify: FastifyInstance) {
 - [ ] **Step 7: Run tests**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/users.test.ts
+cd packages/server && npm test src/__tests__/users.test.ts
 ```
 
 Expected: 1 test passes (401 for unauth).
@@ -1355,7 +1355,7 @@ describe('POST /api/admin/bonuses', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/server && pnpm test src/__tests__/admin.test.ts
+cd packages/server && npm test src/__tests__/admin.test.ts
 ```
 
 Expected: FAIL — routes not found.
@@ -1538,7 +1538,7 @@ export async function registerRoutes(fastify: FastifyInstance) {
 - [ ] **Step 7: Run all server tests**
 
 ```bash
-cd packages/server && pnpm test
+cd packages/server && npm test
 ```
 
 Expected: All tests pass.

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { RulesPlayShape } from './scoring.schema.js'
 import { CalculTypeSchema, CalculConfigSchema } from './admin.schema.js'
 
 export const GameTypeSchema = z.object({
@@ -8,6 +9,8 @@ export const GameTypeSchema = z.object({
   calculConfig: CalculConfigSchema,
   win: z.string(),
   team: z.boolean(),
+  maxPointsPerUser: z.number().positive().nullable().optional(),
+  maxPlaysPerUser: z.number().int().positive().nullable().optional(),
   videoGameId: z.number(),
 })
 
@@ -48,6 +51,7 @@ export const PlayInputSchema = z.discriminatedUnion('calculType', [
   BooleanPlayInputSchema,
   NumberPlayInputSchema,
   TimePlayInputSchema,
+  z.object({ ...PlayBaseShape, ...RulesPlayShape }),
 ])
 
 export const SessionStatusSchema = z.enum(['PENDING', 'APPROVED', 'REJECTED'])

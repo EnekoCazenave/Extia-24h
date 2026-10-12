@@ -136,11 +136,14 @@ function EmptyProgramme() {
 function toEventDraft(event: ProgramEvent): EventDraft {
     return {
         name: event.name,
+        notifyPush:event.notifyPush??true, notifyEmail:event.notifyEmail??false, notifyDiscord:event.notifyDiscord??false, reminderMinutes:event.reminderMinutes??10,
         description: event.description,
         startsAt: toLocalInputValue(new Date(event.startsAt)),
         endsAt: toLocalInputValue(new Date(event.endsAt)),
         maxPlaces: event.maxPlaces,
         pointsEarned: event.pointsEarned,
+        twitchUrl: event.twitchUrl,
+        winnerShare: event.winnerShare,
         videoGameId: event.videoGameId,
     }
 }

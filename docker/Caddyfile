@@ -1,0 +1,20 @@
+{$SITE_ADDRESS} {
+    encode zstd gzip
+
+    @backend path /api/* /auth/* /uploads/* /health
+    handle @backend {
+        reverse_proxy server:3000
+    }
+
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        header Cache-Control "no-cache"
+        file_server
+    }
+}
+
+# Internal container health probe; this port is not published.
+:8081 {
+    respond /health "ok" 200
+}

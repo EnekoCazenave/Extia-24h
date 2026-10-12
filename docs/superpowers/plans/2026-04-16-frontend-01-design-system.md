@@ -652,7 +652,7 @@ describe('useGlobalLeaderboard', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/hooks.test.ts
+cd packages/client && npm test src/__tests__/hooks.test.ts
 ```
 
 Expected: FAIL — cannot find `../hooks/useGames`.
@@ -864,7 +864,7 @@ export function useGrantBonus() {
 - [ ] **Step 7: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/hooks.test.ts
+cd packages/client && npm test src/__tests__/hooks.test.ts
 ```
 
 Expected: 2 tests pass.
@@ -872,7 +872,7 @@ Expected: 2 tests pass.
 - [ ] **Step 8: Run full test suite**
 
 ```bash
-cd packages/client && pnpm test
+cd packages/client && npm test
 ```
 
 Expected: All existing tests still pass.
@@ -943,7 +943,7 @@ describe('AppLayout', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/AppLayout.test.tsx
+cd packages/client && npm test src/__tests__/AppLayout.test.tsx
 ```
 
 Expected: FAIL — skip link not found.
@@ -1175,7 +1175,7 @@ export default function AppLayout() {
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/AppLayout.test.tsx
+cd packages/client && npm test src/__tests__/AppLayout.test.tsx
 ```
 
 Expected: Tests pass (may need to fix mock patterns — use `vi.mock` at module level, not inline `require`).
@@ -1235,7 +1235,7 @@ describe('AppLayout', () => {
 - [ ] **Step 6: Run full test suite**
 
 ```bash
-cd packages/client && pnpm test
+cd packages/client && npm test
 ```
 
 Expected: All tests pass.

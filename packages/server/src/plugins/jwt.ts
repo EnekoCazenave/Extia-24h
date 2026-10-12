@@ -3,8 +3,9 @@ import jwtPlugin from '@fastify/jwt'
 import { env } from '../env.js'
 import type { JWTPayload } from '@extia-gaming/shared'
 
-declare module 'fastify' {
-  interface FastifyRequest {
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    payload: JWTPayload
     user: JWTPayload
   }
 }

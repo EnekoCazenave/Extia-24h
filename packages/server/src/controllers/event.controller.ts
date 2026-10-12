@@ -1,3 +1,4 @@
+import { EventError } from '../services/event-scoring.service.js'
 import type {FastifyReply, FastifyRequest} from 'fastify'
 import type {
     CreateEventInput,
@@ -17,6 +18,7 @@ import {
 } from '../services/event.service.js'
 
 function sendServiceError(error: unknown, reply: FastifyReply) {
+    if (error instanceof EventError) return reply.code(error.statusCode).send({error:error.message})
     if (!(error instanceof Error)) return undefined
 
     switch (error.message) {

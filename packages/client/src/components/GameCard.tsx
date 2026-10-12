@@ -39,7 +39,7 @@ export default function GameCard({ game }: GameCardProps) {
         )}
         <div className={styles.meta}>
           <span className={styles.score}>
-            Score total : <span className={styles.scoreValue}>{game.totalScore.toLocaleString('fr-FR')}</span>
+            Score total : <span className={styles.scoreValue}>{game.totalScore.toLocaleString('fr-FR', { maximumFractionDigits: 6 })}</span>
           </span>
         </div>
       </div>

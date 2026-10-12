@@ -4,6 +4,7 @@
 .tabList {
   display: flex;
   gap: 4px;
+  flex-wrap: wrap;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 32px;
   overflow-x: auto;
@@ -228,3 +229,8 @@
   margin-bottom: 8px;
 }
 .gameGroupTitle { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); }
+
+.rulesEditor { display: grid; gap: 18px; min-width: 0; }
+.rulesEditor fieldset { min-width: 0; }
+.rulesEditor button { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); background: var(--bg-elevated); cursor: pointer; margin: 6px 4px 6px 0; }
+.rulesEditor button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }

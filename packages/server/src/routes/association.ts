@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod'
 import {
   CreateAssociationSchema,
@@ -27,39 +27,31 @@ export async function associationRoutes(fastify: FastifyInstance) {
   fastify.setSerializerCompiler(serializerCompiler)
   const f = fastify.withTypeProvider<ZodTypeProvider>()
 
-  f.get('/api/associations', handleListPublishedAssociations)
-  f.get('/api/associations/:slug', handleGetAssociationBySlug)
+  f.get<RouteOf<typeof handleListPublishedAssociations>>('/api/associations', handleListPublishedAssociations)
+  f.get<RouteOf<typeof handleGetAssociationBySlug>>('/api/associations/:slug', handleGetAssociationBySlug)
 
   const adminGuard = { preHandler: [requireAdmin] }
 
-  f.get('/api/admin/associations', adminGuard, handleListAllAssociations)
-  f.get('/api/admin/associations/:id', adminGuard, handleGetAdminAssociation)
-  f.post(
+  f.get<RouteOf<typeof handleListAllAssociations>>('/api/admin/associations', adminGuard, handleListAllAssociations)
+  f.get<RouteOf<typeof handleGetAdminAssociation>>('/api/admin/associations/:id', adminGuard, handleGetAdminAssociation)
+  f.post<RouteOf<typeof handleCreateAssociation>>(
     '/api/admin/associations',
-    { ...adminGuard, schema: { body: CreateAssociationSchema } },
-    handleCreateAssociation,
-  )
-  f.put(
+    { ...adminGuard, schema: { body: CreateAssociationSchema } }, handleCreateAssociation)
+  f.put<RouteOf<typeof handleUpdateAssociation>>(
     '/api/admin/associations/:id',
-    { ...adminGuard, schema: { body: UpdateAssociationSchema } },
-    handleUpdateAssociation,
-  )
-  f.delete('/api/admin/associations/:id', adminGuard, handleDeleteAssociation)
+    { ...adminGuard, schema: { body: UpdateAssociationSchema } }, handleUpdateAssociation)
+  f.delete<RouteOf<typeof handleDeleteAssociation>>('/api/admin/associations/:id', adminGuard, handleDeleteAssociation)
 
-  f.post(
+  f.post<RouteOf<typeof handleReorderBlocks>>(
     '/api/admin/associations/:id/blocks/reorder',
-    { ...adminGuard, schema: { body: ReorderBlocksSchema } },
-    handleReorderBlocks,
-  )
-  f.post(
+    { ...adminGuard, schema: { body: ReorderBlocksSchema } }, handleReorderBlocks)
+  f.post<RouteOf<typeof handleCreateBlock>>(
     '/api/admin/associations/:id/blocks',
-    { ...adminGuard, schema: { body: CreateBlockSchema } },
-    handleCreateBlock,
-  )
-  f.put(
+    { ...adminGuard, schema: { body: CreateBlockSchema } }, handleCreateBlock)
+  f.put<RouteOf<typeof handleUpdateBlock>>(
     '/api/admin/associations/:id/blocks/:blockId',
-    { ...adminGuard, schema: { body: UpdateBlockSchema } },
-    handleUpdateBlock,
-  )
-  f.delete('/api/admin/associations/:id/blocks/:blockId', adminGuard, handleDeleteBlock)
+    { ...adminGuard, schema: { body: UpdateBlockSchema } }, handleUpdateBlock)
+  f.delete<RouteOf<typeof handleDeleteBlock>>('/api/admin/associations/:id/blocks/:blockId', adminGuard, handleDeleteBlock)
 }
+
+type RouteOf<T> = T extends (request: FastifyRequest<infer R>, reply: FastifyReply) => unknown ? R : never

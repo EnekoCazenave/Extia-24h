@@ -6,7 +6,7 @@ const leaderboardScores = Prisma.sql`
            u.login,
            u.firstname,
            u.lastname,
-           COALESCE(ug_agg.total, 0) + COALESCE(pb_agg.total, 0) AS "totalScore"
+           COALESCE(ug_agg.total, 0) + COALESCE(pb_agg.total, 0) + COALESCE((SELECT SUM(points) FROM "EventAward" WHERE "userId"=u.id),0) AS "totalScore"
     FROM "User" u
              LEFT JOIN (SELECT "userId", SUM(score) AS total
                         FROM "UserGame"
@@ -46,7 +46,7 @@ export async function getGlobalLeaderboard(limit = 20) {
 export async function getPersonalSessions(userId: number, page: number) {
     const pageSize = 20
     const rows = await prisma.gameSession.findMany({
-        where: {submitterId: userId},
+        where: {OR: [{submitterId: userId}, {teamMembers: {some: {userId}}}]},
         orderBy: [{createdAt: 'desc'}, {id: 'desc'}],
         skip: (page - 1) * pageSize,
         take: pageSize + 1,
@@ -113,11 +113,13 @@ export async function getFilteredLeaderboard(opts: {
                    COALESCE(SUM(ug.score), 0) AS "totalScore",
                    COUNT(ug.id)               AS "gameCount"
             FROM "User" u
-                     INNER JOIN "UserGame" ug ON ug."userId" = u.id
-                     INNER JOIN "GameType" gt ON gt.id = ug."gameTypeId"
-                     INNER JOIN "VideoGame" vg ON vg.id = gt."videoGameId"
+                     INNER JOIN (
+                       SELECT g."userId",g.score,g.id,gt."videoGameId",gt.id AS "gameTypeId",gt.team FROM "UserGame" g JOIN "GameType" gt ON gt.id=g."gameTypeId"
+                       UNION ALL
+                       SELECT a."userId",a.points,a.id,e."videoGameId",NULL::integer,TRUE FROM "EventAward" a JOIN "Event" e ON e.id=a."eventId"
+                     ) ug ON ug."userId"=u.id
             WHERE 1 = 1
-                ${gameId !== undefined ? Prisma.sql`AND vg.id = ${gameId}` : Prisma.sql``} ${gameTypeId !== undefined ? Prisma.sql`AND gt.id = ${gameTypeId}` : Prisma.sql``} ${team !== undefined ? Prisma.sql`AND gt.team = ${team}` : Prisma.sql``}
+                ${gameId !== undefined ? Prisma.sql`AND ug."videoGameId" = ${gameId}` : Prisma.sql``} ${gameTypeId !== undefined ? Prisma.sql`AND ug."gameTypeId" = ${gameTypeId}` : Prisma.sql``} ${team !== undefined ? Prisma.sql`AND ug.team = ${team}` : Prisma.sql``}
             GROUP BY u.id, u.login, u.firstname, u.lastname
             ORDER BY "totalScore" DESC
                 LIMIT ${limit}
@@ -148,7 +150,7 @@ export async function getTopGamesByScore(limit = 5) {
             SELECT vg.id                      AS "videoGameId",
                    vg.nom,
                    vg."imageUrl",
-                   COALESCE(SUM(ug.score), 0) AS "totalScore"
+                   COALESCE(SUM(ug.score), 0) + COALESCE((SELECT SUM(a.points) FROM "EventAward" a JOIN "Event" e ON e.id=a."eventId" WHERE e."videoGameId"=vg.id),0) AS "totalScore"
             FROM "VideoGame" vg
                      LEFT JOIN "GameType" gt ON gt."videoGameId" = vg.id
                      LEFT JOIN "UserGame" ug ON ug."gameTypeId" = gt.id

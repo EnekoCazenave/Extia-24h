@@ -37,6 +37,7 @@ export async function register(
     setTokenCookies(reply, accessToken, refreshToken)
     return reply.code(201).send({ user })
   } catch (err) {
+    if(err instanceof Error && err.message==='GROUP_NOT_FOUND') return reply.code(400).send({error:'Groupe indisponible'})
     if (err instanceof Error && err.message === 'EMAIL_TAKEN') {
       return reply.code(409).send({ error: 'Email already in use', statusCode: 409 })
     }

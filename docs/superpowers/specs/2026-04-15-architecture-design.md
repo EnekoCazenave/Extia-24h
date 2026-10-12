@@ -29,7 +29,7 @@ Site public pour l'événement gaming 24h d'Extia. Inscription ouverte à tous (
 
 ## 3. Architecture monorepo
 
-**Gestionnaire de paquets :** pnpm Workspaces
+**Gestionnaire de paquets :** npm Workspaces
 
 ```
 /
@@ -56,7 +56,7 @@ Site public pour l'événement gaming 24h d'Extia. Inscription ouverte à tous (
 │           ├── schemas/      # Schémas Zod (user, game, team…)
 │           └── types/        # Types TS dérivés des schémas Zod
 ├── .env.example
-├── pnpm-workspace.yaml
+├── package.json (workspaces)
 └── package.json
 ```
 
@@ -105,7 +105,7 @@ Les schémas Zod du package `shared` valident les requêtes côté server et typ
 
 - `.env` non commité — `.env.example` commité avec clés vides
 - Variables critiques : `JWT_SECRET`, `REFRESH_SECRET`, `DATABASE_URL`
-- `pnpm audit` dans le pipeline CI
+- `npm audit` dans le pipeline CI
 
 ---
 

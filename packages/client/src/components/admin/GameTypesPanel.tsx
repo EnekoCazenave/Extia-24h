@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useGames } from '../../hooks/useGames.ts'
 import { useAddGameType, useUpdateGameType, useDeleteGameType } from '../../hooks/useAdmin.ts'
-import type { CalculConfig } from '@extia-gaming/shared'
+import { methodLabels, type CalculConfig } from '@extia-gaming/shared'
 import Modal from '../Modal.tsx'
 import GameTypeForm, { type GameTypeFormValues } from './GameTypeForm.tsx'
 import styles from '../../pages/AdminPage.module.css'
@@ -12,6 +12,7 @@ type Mode =
   | { kind: 'edit'; gameTypeId: number; videoGameId: number }
 
 function calculLabel(cfg: CalculConfig): string {
+  if (cfg.type === 'RULES') return methodLabels[cfg.method]
   if (cfg.type === 'BOOLEAN') return `Booléen (${cfg.trueValue}/${cfg.falseValue})`
   if (cfg.type === 'NUMBER') return `Nombre ×${cfg.multiplier}`
   return `Temps — ${cfg.tiers.length} palier${cfg.tiers.length > 1 ? 's' : ''}`
@@ -81,6 +82,7 @@ export default function GameTypesPanel() {
                         </div>
                         <div className={styles.listMeta}>
                           {calculLabel(gt.calculConfig)} • Victoire : {gt.win}
+                          {' • '}{gt.maxPointsPerUser != null ? `${gt.maxPointsPerUser} points maximum par utilisateur` : gt.maxPlaysPerUser == null ? 'Illimité' : `${gt.maxPlaysPerUser} partie(s) maximum par utilisateur`}
                         </div>
                       </div>
                       <div className={styles.listActions}>
@@ -114,7 +116,8 @@ export default function GameTypesPanel() {
         onClose={() => { setMode({ kind: 'closed' }); setCreateGameId(0) }}
       >
         <GameTypeForm
-          submitLabel="+ Ajouter le type"
+          onCancel={() => { setMode({ kind: 'closed' }); setCreateGameId(0) }}
+          submitLabel="Créer le type de partie"
           pendingLabel="Ajout…"
           isPending={addGameType.isPending}
           onSubmit={handleCreate}
@@ -136,8 +139,11 @@ export default function GameTypesPanel() {
               name: editing.name,
               win: editing.win,
               team: editing.team,
+              maxPlaysPerUser: editing.maxPlaysPerUser,
+              maxPointsPerUser: editing.maxPointsPerUser,
               calculConfig: editing.calculConfig,
             }}
+            onCancel={() => setMode({ kind: 'closed' })}
             submitLabel="Enregistrer"
             pendingLabel="Enregistrement…"
             isPending={updateGameType.isPending}

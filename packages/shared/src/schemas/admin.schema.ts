@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { RulesConfigSchema } from './scoring.schema.js'
 
 export const CreateGameSchema = z.object({
   nom: z.string().min(1).max(100),
@@ -14,12 +15,12 @@ export const UpdateGameSchema = z.object({
   happyHourEnd: z.string().datetime().nullable().optional(),
 })
 
-export const CalculTypeSchema = z.enum(['BOOLEAN', 'NUMBER', 'TIME'])
+export const CalculTypeSchema = z.enum(['BOOLEAN', 'NUMBER', 'TIME', 'RULES'])
 
 export const BooleanCalculConfigSchema = z.object({
   type: z.literal('BOOLEAN'),
-  trueValue: z.number().int(),
-  falseValue: z.number().int(),
+  trueValue: z.number().finite(),
+  falseValue: z.number().finite(),
 })
 
 export const NumberCalculConfigSchema = z.object({
@@ -29,7 +30,7 @@ export const NumberCalculConfigSchema = z.object({
 
 export const TimeTierSchema = z.object({
   timeSeconds: z.number().int().positive(),
-  points: z.number().int(),
+  points: z.number().finite(),
 })
 
 export const TimeCalculConfigSchema = z.object({
@@ -37,10 +38,11 @@ export const TimeCalculConfigSchema = z.object({
   tiers: z.array(TimeTierSchema).min(1),
 })
 
-export const CalculConfigSchema = z.discriminatedUnion('type', [
+export const CalculConfigSchema = z.union([
   BooleanCalculConfigSchema,
   NumberCalculConfigSchema,
   TimeCalculConfigSchema,
+  RulesConfigSchema,
 ])
 
 export const CreateGameTypeSchema = z.object({
@@ -48,6 +50,10 @@ export const CreateGameTypeSchema = z.object({
   calculConfig: CalculConfigSchema,
   win: z.string().min(1),
   team: z.boolean().default(false),
+  maxPlaysPerUser: z.number().int().min(1).max(2147483647).nullable().optional(),
+  maxPointsPerUser: z.number().finite().min(0.000001).max(1e9).multipleOf(0.000001).nullable().optional(),
+}).refine(data => data.maxPlaysPerUser == null || data.maxPointsPerUser == null, {
+  message: 'Choisissez une limite de parties ou de points, pas les deux.', path: ['maxPointsPerUser'],
 })
 
 export const UpdateGameTypeSchema = CreateGameTypeSchema

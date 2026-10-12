@@ -9,6 +9,7 @@ export async function registerUser(input: RegisterData) {
   const existing = await prisma.user.findUnique({ where: { email: input.email } })
   if (existing) throw new Error('EMAIL_TAKEN')
 
+  if(input.groupId && !await prisma.organizationGroup.findFirst({where:{id:input.groupId,active:true}})) throw new Error('GROUP_NOT_FOUND')
   const hashedPassword = await bcrypt.hash(input.password, 12)
 
   const user = await prisma.user.create({
@@ -20,6 +21,7 @@ export async function registerUser(input: RegisterData) {
       lastname: input.lastname,
       intern: input.intern,
       roleId: 1,
+      groupId: input.groupId ?? null,
     },
     include: { role: true },
   })

@@ -4,6 +4,7 @@ import { buildApp } from '../src/app.js'
 vi.mock('@prisma/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@prisma/client')>()
   const mockPrisma = {
+    eventAward: {findMany:vi.fn().mockResolvedValue([]),groupBy:vi.fn().mockResolvedValue([])},
     videoGame: {
       findMany: vi.fn(),
       findUnique: vi.fn(),

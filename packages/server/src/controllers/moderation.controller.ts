@@ -1,3 +1,4 @@
+import { ScoringError } from '@extia-gaming/shared'
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { getSessions, approveSession, rejectSession } from '../services/moderation.service.js'
 
@@ -19,6 +20,7 @@ export async function approve(
     await approveSession(parseInt(request.params.id, 10))
     return reply.send({ ok: true })
   } catch (err) {
+    if (err instanceof ScoringError) return reply.code(409).send({ error: err.message, statusCode: 409 })
     if (err instanceof Error && err.message === 'SESSION_NOT_FOUND') {
       return reply.code(404).send({ error: 'Session not found', statusCode: 404 })
     }
@@ -37,6 +39,7 @@ export async function reject(
     await rejectSession(parseInt(request.params.id, 10))
     return reply.send({ ok: true })
   } catch (err) {
+    if (err instanceof ScoringError) return reply.code(409).send({ error: err.message, statusCode: 409 })
     if (err instanceof Error && err.message === 'SESSION_NOT_FOUND') {
       return reply.code(404).send({ error: 'Session not found', statusCode: 404 })
     }

@@ -9,10 +9,9 @@
     "rootDir": "./src",
     "declaration": true,
     "sourceMap": true,
-    "esModuleInterop": true,
-    "paths": {
-      "@extia-gaming/shared": ["../shared/src/index.ts"]
-    }
+    "esModuleInterop": true
   },
-  "include": ["src", "prisma", "__tests__"]
+  "include": [
+    "src"
+  ]
 }

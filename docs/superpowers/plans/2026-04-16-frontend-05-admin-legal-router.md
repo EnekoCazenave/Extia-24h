@@ -115,7 +115,7 @@ describe('AdminPage', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/AdminPage.test.tsx
+cd packages/client && npm test src/__tests__/AdminPage.test.tsx
 ```
 
 Expected: FAIL — `AdminPage` not found.
@@ -628,7 +628,7 @@ export default function AdminPage() {
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/AdminPage.test.tsx
+cd packages/client && npm test src/__tests__/AdminPage.test.tsx
 ```
 
 Expected: All 6 tests pass.
@@ -696,7 +696,7 @@ describe('ErrorBoundary', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/ErrorBoundary.test.tsx
+cd packages/client && npm test src/__tests__/ErrorBoundary.test.tsx
 ```
 
 Expected: FAIL — `ErrorBoundary` not found.
@@ -1102,7 +1102,7 @@ export default function NotFoundPage() {
 - [ ] **Step 9: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/ErrorBoundary.test.tsx
+cd packages/client && npm test src/__tests__/ErrorBoundary.test.tsx
 ```
 
 Expected: 2 tests pass.
@@ -1185,7 +1185,7 @@ describe('App routing', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/App.test.tsx
+cd packages/client && npm test src/__tests__/App.test.tsx
 ```
 
 Expected: FAIL — routes `/register`, `/jeux`, etc. not registered.
@@ -1316,7 +1316,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 - [ ] **Step 6: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/App.test.tsx
+cd packages/client && npm test src/__tests__/App.test.tsx
 ```
 
 Expected: All 6 tests pass.
@@ -1324,7 +1324,7 @@ Expected: All 6 tests pass.
 - [ ] **Step 7: Run full test suite**
 
 ```bash
-cd packages/client && pnpm test
+cd packages/client && npm test
 ```
 
 Expected: All tests pass.

@@ -4,6 +4,9 @@ import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '../test-utils.tsx'
 import PlayGamePage from '../pages/PlayGamePage.tsx'
 
+vi.mock('../hooks/useAuth.ts', () => ({ useAuth: () => ({ user: { id: 1, login: 'Player' } }) }))
+vi.mock('../hooks/useUsers.ts', () => ({ useUsers: () => ({ data: [] }) }))
+
 const mockUseGame = vi.fn()
 const mockUseSubmitPlay = vi.fn()
 const mockUseParams = vi.fn()
@@ -48,6 +51,17 @@ describe('PlayGamePage', () => {
     mockNavigate.mockReset()
   })
 
+  it('affiche le prochain palier et la validation automatique après une déclaration', async () => {
+    mockUseSubmitPlay.mockReturnValue({mutateAsync:vi.fn().mockResolvedValue({id:1,status:'APPROVED',honor:{totalPoints:125,current:{name:'Découvreur',points:100},next:{name:'Expert',points:200},remaining:75}}),isPending:false})
+    renderWithProviders(<PlayGamePage/>,{initialEntries:['/jeux/1/jouer?gameTypeId=2']})
+    await userEvent.type(screen.getByLabelText(/score obtenu/i),'125')
+    await userEvent.click(screen.getByRole('button',{name:/soumettre/i}))
+    expect(await screen.findByRole('dialog')).toHaveTextContent('75 points')
+    expect(screen.getByRole('dialog')).toHaveTextContent('Expert')
+    expect(screen.getByText(/Partie validée automatiquement/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button',{name:'Continuer'}))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
   it('renders heading', () => {
     renderWithProviders(<PlayGamePage />, { initialEntries: ['/jeux/1/jouer?gameTypeId=1'] })
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()

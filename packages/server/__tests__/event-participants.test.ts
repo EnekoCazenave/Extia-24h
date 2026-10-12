@@ -12,8 +12,8 @@ describe('Event participants', () => {
     beforeEach(() => {
         vi.resetAllMocks()
         db.event.findUnique.mockResolvedValue({
-            id: 3, maxPlaces: 10, startsAt: new Date('2026-09-10'),
-            endsAt: new Date('2026-09-11'), createdAt: new Date(), updatedAt: new Date(),
+            id: 3, maxPlaces: 10, startsAt: new Date(Date.now()-60000),
+            endsAt: new Date(Date.now()+60000), createdAt: new Date(), updatedAt: new Date(),
             _count: {userEvents: 1}, userEvents: [],
         })
         db.$transaction.mockImplementation((callback) => callback(db))

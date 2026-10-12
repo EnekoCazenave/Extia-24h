@@ -1,3 +1,4 @@
+import {PlayerExtras} from '../components/CommunityContent.tsx'
 import {Link} from 'react-router-dom'
 import {useState} from 'react'
 import SEOHead from '../components/SEOHead.tsx'
@@ -34,5 +35,6 @@ export default function PersonalLeaderboardPage() {
       </dl>
     </section>}
     {result.data && !result.isError && <PersonalSessions data={result.data} page={page} setPage={setPage} isFetching={result.isFetching}/>}
+    {user && <PlayerExtras userId={user.id} details />}
   </div>
 }

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { isAxiosError } from 'axios'
+import ScoringDetails from '../components/ScoringDetails.tsx'
 import SEOHead from '../components/SEOHead.tsx'
 import { useModerationSessions, useApproveSession, useRejectSession } from '../hooks/useModeration.ts'
 import { useGames } from '../hooks/useGames.ts'
@@ -55,8 +57,8 @@ function SessionCard({ session, onApprove, onReject, approving, rejecting }: {
             </span>
           </div>
           <div className={styles.infoItem}>
-            <span className={styles.infoLabel}>Score déclaré</span>
-            <span className={styles.infoValue}>{session.score.toLocaleString('fr-FR')} pts</span>
+            <span className={styles.infoLabel}>Score calculé (total du groupe)</span>
+            <span className={styles.infoValue}>{session.score.toLocaleString('fr-FR', { maximumFractionDigits: 6 })} pts</span>
           </div>
           {session.teamMembers.length > 0 && (
             <div className={styles.infoItem} style={{ gridColumn: '1 / -1' }}>
@@ -72,6 +74,7 @@ function SessionCard({ session, onApprove, onReject, approving, rejecting }: {
           )}
         </div>
 
+        <ScoringDetails data={session.scoringData} participants={[session.submitter, ...session.teamMembers.map(m => ({ id: m.userId, login: m.user.login }))]} awarded={session.userGames} />
         {session.proofUrl && (
           <div className={styles.proofSection}>
             <span className={styles.infoLabel}>Preuve</span>
@@ -80,7 +83,7 @@ function SessionCard({ session, onApprove, onReject, approving, rejecting }: {
         )}
       </div>
 
-      {session.status === 'PENDING' && (
+      {session.status !== 'REJECTED' && (
         <div className={styles.cardActions}>
           <button
             type="button"
@@ -90,14 +93,14 @@ function SessionCard({ session, onApprove, onReject, approving, rejecting }: {
           >
             {rejecting ? 'Rejet…' : '✕ Rejeter'}
           </button>
-          <button
+          {session.status === 'PENDING' && <button
             type="button"
             className={styles.approveBtn}
             onClick={onApprove}
             disabled={approving || rejecting}
           >
             {approving ? 'Validation…' : '✓ Valider'}
-          </button>
+          </button>}
         </div>
       )}
       {session.status !== 'PENDING' && (
@@ -112,11 +115,12 @@ function SessionCard({ session, onApprove, onReject, approving, rejecting }: {
 export default function ModerationPage() {
   const games = useGames()
   const [filterGameId, setFilterGameId] = useState<number | undefined>()
-  const [filterStatus, setFilterStatus] = useState('PENDING')
+  const [filterStatus, setFilterStatus] = useState('APPROVED')
 
   const sessions = useModerationSessions(filterGameId, filterStatus)
   const approve = useApproveSession()
   const reject = useRejectSession()
+  const moderationError = approve.error ?? reject.error
 
   return (
     <div className={styles.page}>
@@ -127,7 +131,7 @@ export default function ModerationPage() {
       />
       <div className={styles.header}>
         <h1 className={styles.title}>Modération des parties</h1>
-        <p className={styles.subtitle}>Validez ou rejetez les parties en attente.</p>
+        <p className={styles.subtitle}>Les nouvelles parties sont validées automatiquement. Rejetez une partie pour retirer ses points à tous les participants.</p>
       </div>
 
       <div className={styles.filters}>
@@ -160,6 +164,7 @@ export default function ModerationPage() {
         </div>
       </div>
 
+      {(approve.isError || reject.isError) && <p role="alert">{isAxiosError(moderationError) ? moderationError.response?.data?.error ?? "Validation impossible." : "Validation impossible."}</p>}
       {sessions.isLoading && (
         <p className={styles.state} aria-live="polite">Chargement…</p>
       )}
@@ -178,7 +183,7 @@ export default function ModerationPage() {
               key={s.id}
               session={s}
               onApprove={() => approve.mutate(s.id)}
-              onReject={() => reject.mutate(s.id)}
+              onReject={() => { if(s.status !== 'APPROVED' || confirm('Rejeter cette partie et retirer ses points à tous les participants ?')) reject.mutate(s.id) }}
               approving={approve.isPending && approve.variables === s.id}
               rejecting={reject.isPending && reject.variables === s.id}
             />

@@ -3,25 +3,25 @@
   "private": true,
   "engines": {
     "node": ">=20",
-    "pnpm": ">=9"
+    "npm": ">=10"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter=!@extia-gaming/shared run dev",
-    "build": "pnpm --filter @extia-gaming/shared run build && pnpm --parallel --filter=!@extia-gaming/shared run build",
-    "test": "pnpm -r run test",
-    "db:migrate": "pnpm --filter @extia-gaming/server run db:migrate",
-    "db:seed": "pnpm --filter @extia-gaming/server run db:seed",
-    "audit": "pnpm -r audit"
+    "dev": "npm run build -w @extia-gaming/shared && concurrently -k \"npm run dev -w @extia-gaming/shared\" \"npm run dev -w @extia-gaming/server\" \"npm run dev -w @extia-gaming/client\"",
+    "build": "npm run build --workspaces",
+    "test": "npm run build -w @extia-gaming/shared && npm run test --workspaces --if-present",
+    "db:generate": "npm run db:generate -w @extia-gaming/server",
+    "db:migrate": "npm run db:migrate -w @extia-gaming/server",
+    "db:deploy": "npm run db:deploy -w @extia-gaming/server",
+    "db:seed": "npm run db:seed -w @extia-gaming/server",
+    "audit": "npm audit"
   },
   "devDependencies": {
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "concurrently": "^9.2.1"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "esbuild",
-      "prisma"
-    ]
-  }
+  "workspaces": [
+    "packages/shared",
+    "packages/server",
+    "packages/client"
+  ]
 }

@@ -27,7 +27,7 @@ export default function TopGamesTable({ games }: TopGamesTableProps) {
                 <span className={styles.rank} data-rank={rank <= 3 ? rank : undefined}>{rank}</span>
               </td>
               <td><span className={styles.gameName}>{game.nom}</span></td>
-              <td><span className={styles.score}>{game.totalScore.toLocaleString('fr-FR')}</span></td>
+              <td><span className={styles.score}>{game.totalScore.toLocaleString('fr-FR', { maximumFractionDigits: 6 })}</span></td>
             </tr>
           )
         })}

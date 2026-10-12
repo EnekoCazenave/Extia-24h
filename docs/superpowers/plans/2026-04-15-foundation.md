@@ -4,9 +4,9 @@
 
 **Goal:** Scaffold the full monorepo with Fastify server, React SPA client, shared Zod schemas, Prisma DB with migrations, JWT auth (httpOnly cookies), security plugins, SEO basics, and accessibility tooling — zero business features.
 
-**Architecture:** pnpm workspaces with three packages (`shared`, `server`, `client`). JWT in httpOnly cookies only. Zod schemas defined once in `shared`, used by server for validation and by client for type inference. Prisma manages all migrations. Vitest tests across all packages.
+**Architecture:** npm workspaces with three packages (`shared`, `server`, `client`). JWT in httpOnly cookies only. Zod schemas defined once in `shared`, used by server for validation and by client for type inference. Prisma manages all migrations. Vitest tests across all packages.
 
-**Tech Stack:** pnpm 9, TypeScript 5 (strict), Node 20, Fastify 4, Prisma 5, Zod 3, React 18, Vite 5, React Router 6, TanStack Query 5, Axios 1, React Helmet Async 2, Vitest 1, @testing-library/react 14, bcryptjs, @fastify/jwt, @fastify/cookie, @fastify/cors, @fastify/helmet, @fastify/rate-limit, @fastify/csrf-protection, eslint-plugin-jsx-a11y
+**Tech Stack:** npm 10+, TypeScript 5 (strict), Node 20, Fastify 4, Prisma 5, Zod 3, React 18, Vite 5, React Router 6, TanStack Query 5, Axios 1, React Helmet Async 2, Vitest 1, @testing-library/react 14, bcryptjs, @fastify/jwt, @fastify/cookie, @fastify/cors, @fastify/helmet, @fastify/rate-limit, @fastify/csrf-protection, eslint-plugin-jsx-a11y
 
 ---
 
@@ -94,7 +94,7 @@
 │               └── focusTrap.test.ts
 ├── .env.example
 ├── .gitignore
-├── pnpm-workspace.yaml
+├── package.json (workspaces)
 └── package.json
 ```
 
@@ -103,19 +103,11 @@
 ### Task 1: Monorepo root scaffolding
 
 **Files:**
-- Create: `pnpm-workspace.yaml`
 - Create: `package.json` (root)
 - Create: `.env.example`
 - Modify: `.gitignore`
 
-- [ ] **Step 1: Create `pnpm-workspace.yaml`**
-
-```yaml
-packages:
-  - 'packages/*'
-```
-
-- [ ] **Step 2: Create root `package.json`**
+- [ ] **Steps 1 and 2: Create root `package.json` with npm workspaces**
 
 ```json
 {
@@ -123,19 +115,27 @@ packages:
   "private": true,
   "engines": {
     "node": ">=20",
-    "pnpm": ">=9"
+    "npm": ">=10"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter=!@extia-gaming/shared run dev",
-    "build": "pnpm --filter @extia-gaming/shared run build && pnpm --parallel --filter=!@extia-gaming/shared run build",
-    "test": "pnpm -r run test",
-    "db:migrate": "pnpm --filter @extia-gaming/server run db:migrate",
-    "db:seed": "pnpm --filter @extia-gaming/server run db:seed",
-    "audit": "pnpm -r audit"
+    "dev": "npm run build -w @extia-gaming/shared && concurrently -k \"npm run dev -w @extia-gaming/shared\" \"npm run dev -w @extia-gaming/server\" \"npm run dev -w @extia-gaming/client\"",
+    "build": "npm run build --workspaces",
+    "test": "npm run build -w @extia-gaming/shared && npm run test --workspaces --if-present",
+    "db:generate": "npm run db:generate -w @extia-gaming/server",
+    "db:migrate": "npm run db:migrate -w @extia-gaming/server",
+    "db:deploy": "npm run db:deploy -w @extia-gaming/server",
+    "db:seed": "npm run db:seed -w @extia-gaming/server",
+    "audit": "npm audit"
   },
   "devDependencies": {
-    "typescript": "^5.4.5"
-  }
+    "typescript": "^5.4.5",
+    "concurrently": "^9.2.1"
+  },
+  "workspaces": [
+    "packages/shared",
+    "packages/server",
+    "packages/client"
+  ]
 }
 ```
 
@@ -161,7 +161,7 @@ VITE_API_URL=http://localhost:3000
 ```gitignore
 # Dependencies
 node_modules/
-.pnpm-store/
+
 
 # Environment
 .env
@@ -188,21 +188,21 @@ Thumbs.db
 coverage/
 ```
 
-- [ ] **Step 5: Verify pnpm is installed**
+- [ ] **Step 5: Verify npm is installed**
 
-Run: `pnpm --version`
-Expected: version 9.x printed. If not installed: `npm install -g pnpm@9`
+Run: `npm --version`
+Expected: version 10 or newer printed. If not installed: `install Node.js with npm 10 or newer`
 
 - [ ] **Step 6: Install root deps**
 
-Run: `pnpm install`
+Run: `npm install`
 Expected: `node_modules` created at root.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add pnpm-workspace.yaml package.json .env.example .gitignore
-git commit -m "chore: initialize pnpm monorepo workspace"
+git add package.json package-lock.json .env.example .gitignore
+git commit -m "chore: initialize npm monorepo workspace"
 ```
 
 ---
@@ -346,8 +346,8 @@ export * from './types/index.js'
 
 - [ ] **Step 8: Install shared deps and verify typecheck**
 
-Run: `pnpm --filter @extia-gaming/shared install`
-Run: `pnpm --filter @extia-gaming/shared run typecheck`
+Run: `npm install -w @extia-gaming/shared`
+Run: `npm run typecheck` -w @extia-gaming/shared
 Expected: no errors.
 
 - [ ] **Step 9: Commit**
@@ -391,7 +391,7 @@ git commit -m "feat(shared): add Zod schemas and TypeScript types"
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@extia-gaming/shared": "workspace:*",
+    "@extia-gaming/shared": "0.0.1",
     "@fastify/cookie": "^9.4.0",
     "@fastify/cors": "^9.0.1",
     "@fastify/csrf-protection": "^6.4.1",
@@ -545,11 +545,11 @@ model RefreshToken {
 
 - [ ] **Step 4: Install Prisma deps**
 
-Run: `pnpm --filter @extia-gaming/server install`
+Run: `npm install -w @extia-gaming/server`
 
 - [ ] **Step 5: Run first migration**
 
-Run (from `packages/server/`): `pnpm db:migrate`
+Run (from `packages/server/`): `npm run db:migrate`
 When prompted for migration name, enter: `init`
 Expected: `packages/server/prisma/migrations/` created with SQL file. Prisma client generated.
 
@@ -636,7 +636,7 @@ main()
 
 - [ ] **Step 7: Run seed**
 
-Run: `pnpm --filter @extia-gaming/server run db:seed`
+Run: `npm run db:seed` -w @extia-gaming/server
 Expected: `Seed complete. Roles: { userRole: ..., adminRole: ... }` logged.
 
 - [ ] **Step 8: Commit**
@@ -800,7 +800,7 @@ describe('GET /health', () => {
 
 - [ ] **Step 8: Run test to verify it fails**
 
-Run: `pnpm --filter @extia-gaming/server run test`
+Run: `npm run test` -w @extia-gaming/server
 Expected: FAIL (module resolution errors, env missing).
 
 Create a `.env.test` for tests:
@@ -831,11 +831,11 @@ export default defineConfig(({ mode }) => ({
 }))
 ```
 
-Install `vite` in server devDeps: add `"vite": "^5.3.0"` to `packages/server/package.json` devDependencies, then `pnpm --filter @extia-gaming/server install`.
+Install `vite` in server devDeps: add `"vite": "^5.3.0"` to `packages/server/package.json` devDependencies, then `npm install -w @extia-gaming/server`.
 
 - [ ] **Step 9: Run test to verify it passes**
 
-Run: `pnpm --filter @extia-gaming/server run test`
+Run: `npm run test` -w @extia-gaming/server
 Expected: `GET /health > returns 200 with status ok` PASS.
 
 - [ ] **Step 10: Commit**
@@ -872,7 +872,7 @@ export default fp(async (fastify) => {
 })
 ```
 
-Add `"fastify-plugin": "^4.5.1"` to server dependencies, run `pnpm --filter @extia-gaming/server install`.
+Add `"fastify-plugin": "^4.5.1"` to server dependencies, run `npm install -w @extia-gaming/server`.
 
 - [ ] **Step 2: Create `packages/server/src/plugins/cors.ts`**
 
@@ -1007,7 +1007,7 @@ describe('GET /health', () => {
 
 - [ ] **Step 8: Run tests**
 
-Run: `pnpm --filter @extia-gaming/server run test`
+Run: `npm run test` -w @extia-gaming/server
 Expected: both health tests PASS.
 
 - [ ] **Step 9: Commit**
@@ -1158,7 +1158,7 @@ describe('authenticate hook', () => {
 
 - [ ] **Step 5: Run tests**
 
-Run: `pnpm --filter @extia-gaming/server run test`
+Run: `npm run test` -w @extia-gaming/server
 Expected: all tests PASS including the 2 new authenticate tests.
 
 - [ ] **Step 6: Commit**
@@ -1564,7 +1564,7 @@ describe('Auth routes', () => {
 
 - [ ] **Step 7: Run tests**
 
-Run: `pnpm --filter @extia-gaming/server run test`
+Run: `npm run test` -w @extia-gaming/server
 Expected: all auth tests PASS.
 
 - [ ] **Step 8: Commit**
@@ -1605,7 +1605,7 @@ git commit -m "feat(server): implement auth routes (register, login, refresh, lo
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@extia-gaming/shared": "workspace:*",
+    "@extia-gaming/shared": "0.0.1",
     "@tanstack/react-query": "^5.51.1",
     "axios": "^1.7.2",
     "react": "^18.3.1",
@@ -1794,7 +1794,7 @@ export default function App() {
 
 - [ ] **Step 9: Install client deps**
 
-Run: `pnpm --filter @extia-gaming/client install`
+Run: `npm install -w @extia-gaming/client`
 
 - [ ] **Step 10: Write failing smoke test**
 
@@ -1831,7 +1831,7 @@ describe('App', () => {
 
 - [ ] **Step 11: Run test**
 
-Run: `pnpm --filter @extia-gaming/client run test`
+Run: `npm run test` -w @extia-gaming/client
 Expected: `App > renders without crashing` PASS.
 
 - [ ] **Step 12: Commit**
@@ -1897,7 +1897,7 @@ api.interceptors.response.use(
 
 - [ ] **Step 2: Verify typecheck**
 
-Run: `pnpm --filter @extia-gaming/client run typecheck`
+Run: `npm run typecheck` -w @extia-gaming/client
 Expected: no errors.
 
 - [ ] **Step 3: Commit**
@@ -2116,7 +2116,7 @@ describe('ProtectedRoute', () => {
 
 - [ ] **Step 6: Run tests**
 
-Run: `pnpm --filter @extia-gaming/client run test`
+Run: `npm run test` -w @extia-gaming/client
 Expected: all 3 ProtectedRoute tests PASS.
 
 - [ ] **Step 7: Commit**
@@ -2301,7 +2301,7 @@ export default function App() {
 
 - [ ] **Step 6: Run tests**
 
-Run: `pnpm --filter @extia-gaming/client run test`
+Run: `npm run test` -w @extia-gaming/client
 Expected: all existing tests still PASS.
 
 - [ ] **Step 7: Commit**
@@ -2458,7 +2458,7 @@ describe('SEOHead', () => {
 
 - [ ] **Step 4: Run tests**
 
-Run: `pnpm --filter @extia-gaming/client run test`
+Run: `npm run test` -w @extia-gaming/client
 Expected: all SEOHead tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -2552,11 +2552,11 @@ export default tseslint.config(
 Add to `packages/client/package.json` scripts: `"lint": "eslint . --max-warnings 0"`
 Add devDependencies: `"@eslint/js": "^9.7.0"`, `"typescript-eslint": "^7.16.0"`, `"eslint-plugin-react-refresh": "^0.4.8"`
 
-Run: `pnpm --filter @extia-gaming/client install`
+Run: `npm install -w @extia-gaming/client`
 
 - [ ] **Step 2: Verify lint passes on existing code**
 
-Run: `pnpm --filter @extia-gaming/client run lint`
+Run: `npm run lint` -w @extia-gaming/client
 Expected: no errors (fix any reported violations before continuing).
 
 - [ ] **Step 3: Create `packages/client/src/utils/focusTrap.ts`**
@@ -2685,7 +2685,7 @@ describe('createFocusTrap', () => {
 
 - [ ] **Step 5: Run tests**
 
-Run: `pnpm --filter @extia-gaming/client run test`
+Run: `npm run test` -w @extia-gaming/client
 Expected: all 4 focusTrap tests PASS.
 
 - [ ] **Step 6: Commit**
@@ -2703,7 +2703,7 @@ git commit -m "feat(client): add eslint-plugin-jsx-a11y and focusTrap accessibil
 
 | Spec section | Covered by task |
 |---|---|
-| Monorepo pnpm workspaces | Task 1 |
+| Monorepo npm workspaces | Task 1 |
 | Shared Zod schemas | Task 2 |
 | Prisma schema + migrations + seed | Task 3 |
 | Fastify foundation + env validation | Task 4 |

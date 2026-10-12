@@ -2,10 +2,11 @@ import { Link, useParams } from 'react-router-dom'
 import SEOHead from '../components/SEOHead.tsx'
 import PlayerLeaderboard from '../components/PlayerLeaderboard.tsx'
 import { useGame } from '../hooks/useGames.ts'
-import type { CalculConfig } from '@extia-gaming/shared'
+import { methodLabels, type CalculConfig } from '@extia-gaming/shared'
 import styles from './GameDetailPage.module.css'
 
 function formatCalcul(config: CalculConfig): string {
+  if (config.type === 'RULES') return methodLabels[config.method]
   if (config.type === 'BOOLEAN') return `Booléen — ${config.trueValue} pts si vrai, ${config.falseValue} pts si faux`
   if (config.type === 'NUMBER') return `Nombre — multiplicateur ×${config.multiplier}`
   return `Temps — ${config.tiers.length} palier${config.tiers.length > 1 ? 's' : ''}`
@@ -55,7 +56,7 @@ export default function GameDetailPage() {
           <div className={styles.statsRow}>
             <div className={styles.stat}>
               <span className={styles.statLabel}>Score total</span>
-              <span className={styles.statValue}>{game.totalScore.toLocaleString('fr-FR')}</span>
+              <span className={styles.statValue}>{game.totalScore.toLocaleString('fr-FR', { maximumFractionDigits: 6 })}</span>
             </div>
             <div className={styles.stat}>
               <span className={styles.statLabel}>Participants</span>

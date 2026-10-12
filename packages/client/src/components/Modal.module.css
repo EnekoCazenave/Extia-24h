@@ -15,9 +15,10 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  max-width: 640px;
+  max-width: 780px;
   width: 100%;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   position: relative;
 }
@@ -60,4 +61,19 @@
 
 .body {
   padding: 24px;
+}
+
+@media (max-width: 600px) {
+  .overlay {
+    padding: 12px;
+  }
+
+  .header {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .body {
+    padding: 16px;
+  }
 }

@@ -44,7 +44,7 @@ export default function EventCard({
                         ? <span className={styles.endedBadge}>Terminé</span>
                         : isOngoing
                             ? <span className={styles.ongoingBadge}>En cours</span>
-                            : event.isRegistered && <span className={styles.registeredBadge}>✓ Inscrit</span>}
+                            : <span className={styles.registeredBadge}>{event.isRegistered?'✓ Inscrit':'À venir'}</span>}
                 </div>
                 <p className={styles.description}>{event.description}</p>
                 <div className={styles.meta}>
@@ -53,6 +53,7 @@ export default function EventCard({
                 </div>
             </Link>
             <div className={styles.actions}>
+                {event.twitchUrl&&<a href={event.twitchUrl} target="_blank" rel="noreferrer">Voir le direct Twitch ↗</a>}
                 {isAdmin ? <>
                     <button className={styles.secondaryButton} type="button" onClick={() => onEdit(event)}>Modifier
                     </button>

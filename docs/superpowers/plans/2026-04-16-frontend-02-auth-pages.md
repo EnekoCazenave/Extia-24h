@@ -114,7 +114,7 @@ describe('LoginPage', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/LoginPage.test.tsx
+cd packages/client && npm test src/__tests__/LoginPage.test.tsx
 ```
 
 Expected: FAIL — link to register not found, styles missing (no visual failures but link test fails).
@@ -355,7 +355,7 @@ export default function LoginPage() {
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/LoginPage.test.tsx
+cd packages/client && npm test src/__tests__/LoginPage.test.tsx
 ```
 
 Expected: All 5 tests pass.
@@ -477,7 +477,7 @@ describe('RegisterPage', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/RegisterPage.test.tsx
+cd packages/client && npm test src/__tests__/RegisterPage.test.tsx
 ```
 
 Expected: FAIL — cannot find `RegisterPage`.
@@ -831,7 +831,7 @@ export default function RegisterPage() {
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/RegisterPage.test.tsx
+cd packages/client && npm test src/__tests__/RegisterPage.test.tsx
 ```
 
 Expected: All 5 tests pass.
@@ -839,7 +839,7 @@ Expected: All 5 tests pass.
 - [ ] **Step 6: Run full test suite**
 
 ```bash
-cd packages/client && pnpm test
+cd packages/client && npm test
 ```
 
 Expected: All tests pass.

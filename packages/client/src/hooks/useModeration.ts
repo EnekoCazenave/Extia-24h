@@ -13,6 +13,8 @@ export interface ModerationSession {
     videoGame: { id: number; nom: string }
   }
   score: number
+  scoringData?: { config?: unknown; input?: unknown; awards?: Array<{ userId: number; score: number }>; happyHourMultiplier?: number } | null
+  userGames?: Array<{ userId: number; score: number }>
   proofUrl: string | null
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
   createdAt: string
@@ -41,11 +43,7 @@ export function useApproveSession() {
     mutationFn: async (id: number) => {
       await api.patch(`/api/moderation/sessions/${id}/approve`)
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['moderation'] })
-      qc.invalidateQueries({ queryKey: ['leaderboard'] })
-      qc.invalidateQueries({ queryKey: ['games'] })
-    },
+    onSuccess: () => { qc.invalidateQueries() },
   })
 }
 
@@ -55,8 +53,6 @@ export function useRejectSession() {
     mutationFn: async (id: number) => {
       await api.patch(`/api/moderation/sessions/${id}/reject`)
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['moderation'] })
-    },
+    onSuccess: () => { qc.invalidateQueries() },
   })
 }

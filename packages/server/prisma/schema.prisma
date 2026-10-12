@@ -8,6 +8,9 @@ datasource db {
 }
 
 model User {
+  groupId Int?
+  group OrganizationGroup? @relation(fields: [groupId], references: [id])
+  eventAwards EventAward[]
   id                        Int                        @id @default(autoincrement())
   login                     String
   password                  String
@@ -49,6 +52,7 @@ enum CalculType {
   BOOLEAN
   NUMBER
   TIME
+  RULES
 }
 
 model GameType {
@@ -58,6 +62,8 @@ model GameType {
   calculConfig Json
   win          String
   team         Boolean       @default(false)
+  maxPlaysPerUser Int?
+  maxPointsPerUser Float?
   videoGame    VideoGame     @relation(fields: [videoGameId], references: [id])
   videoGameId  Int
   teams        Team[]
@@ -87,10 +93,12 @@ model UserGame {
   userId        Int
   gameType      GameType     @relation(fields: [gameTypeId], references: [id])
   gameTypeId    Int
-  score         Int          @default(0)
+  score         Float        @default(0)
   playedAt      DateTime     @default(now())
   gameSession   GameSession? @relation(fields: [gameSessionId], references: [id])
   gameSessionId Int?
+
+  @@unique([gameSessionId, userId])
 }
 
 enum SessionStatus {
@@ -105,7 +113,8 @@ model GameSession {
   submitterId Int
   gameType    GameType            @relation(fields: [gameTypeId], references: [id])
   gameTypeId  Int
-  score       Int
+  score       Float
+  scoringData Json?
   proofUrl    String?
   status      SessionStatus       @default(PENDING)
   createdAt   DateTime            @default(now())
@@ -151,6 +160,11 @@ model UserAchievement {
 }
 
 model Event {
+  notifyPush Boolean @default(true)
+  notifyEmail Boolean @default(false)
+  notifyDiscord Boolean @default(false)
+  reminderMinutes Int @default(10)
+  channelDeliveries EventChannelDelivery[]
   id          Int      @id @default(autoincrement())
   name        String
   description String
@@ -163,7 +177,12 @@ model Event {
 
   userEvents UserEvent[]
 
-  pointsEarned Int
+  twitchUrl String?
+  winnerShare Float @default(0.05)
+  winnerId Int?
+  settledAt DateTime?
+  awards EventAward[]
+  pointsEarned Float
 
   createdAt              DateTime                    @default(now())
   updatedAt              DateTime                    @updatedAt
@@ -244,9 +263,83 @@ model EventNotificationDelivery {
   eventId        Int
   subscriptionId Int
   sentAt         DateTime?
+  leaseUntil DateTime?
+  attempts Int @default(0)
 
   event        Event                    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   subscription SubscriptionNotification @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, subscriptionId])
+}
+
+model EventAward {
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  eventId Int
+  event Event @relation(fields: [eventId], references: [id])
+  points Float
+  createdAt DateTime @default(now())
+  @@unique([eventId, userId])
+}
+
+model OrganizationGroup {
+  id Int @id @default(autoincrement())
+  name String @unique
+  kind String @default("AGENCY")
+  active Boolean @default(true)
+  users User[]
+  points GroupPoint[]
+}
+
+model GroupPoint {
+  id Int @id @default(autoincrement())
+  groupId Int
+  group OrganizationGroup @relation(fields: [groupId], references: [id])
+  points Float
+  reason String
+  grantedById Int
+  createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  notifyStartDiscord Boolean @default(false)
+  notifyEndDiscord Boolean @default(false)
+  startReminderMinutes Int @default(0)
+  endReminderMinutes Int @default(0)
+  discordUrl String?
+  honorTiers Json @default("[]")
+  id Int @id @default(1)
+  eventStart DateTime?
+  eventEnd DateTime?
+}
+
+model ProjectTask {
+  id Int @id @default(autoincrement())
+  title String
+  description String @default("")
+  assignee String @default("")
+  status String @default("TODO")
+  updatedAt DateTime @updatedAt
+}
+
+model EventChannelDelivery {
+  id Int @id @default(autoincrement())
+  eventId Int
+  event Event @relation(fields:[eventId], references:[id], onDelete:Cascade)
+  destination String
+  sentAt DateTime?
+  leaseUntil DateTime?
+  attempts Int @default(0)
+  @@unique([eventId,destination])
+}
+
+model SiteNotificationDelivery {
+  id Int @id @default(autoincrement())
+  kind String
+  scheduledAt DateTime
+  sentAt DateTime?
+  leaseUntil DateTime?
+  attempts Int @default(0)
+  @@unique([kind,scheduledAt])
 }

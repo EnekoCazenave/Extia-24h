@@ -1,3 +1,5 @@
+import {usePlatformAction} from '../hooks/usePlatform.ts'
+import {api} from '../services/api.ts'
 import {useState} from 'react'
 import {Link, useParams} from 'react-router-dom'
 import SEOHead from '../components/SEOHead.tsx'
@@ -14,6 +16,8 @@ export default function EventDetailPage() {
     const unregister = useUnregisterFromEvent()
     const updateEvent = useUpdateEvent()
     const [actionError, setActionError] = useState('')
+    const action=usePlatformAction()
+    const [winner,setWinner]=useState('')
     const [notice, setNotice] = useState('')
 
     if (isLoading) return <main className={styles.page}><p className={styles.state}>Chargement de l’évènement…</p></main>
@@ -80,6 +84,8 @@ export default function EventDetailPage() {
         {notice && <p className={styles.notice} role="status">{notice}</p>}
         {actionError && <p className={styles.error} role="alert">{actionError}</p>}
 
+        {event.twitchUrl&&<a href={event.twitchUrl} target="_blank" rel="noreferrer">Voir le direct Twitch ↗</a>}
+        {action.error&&<p role="alert">{action.error}</p>}
         <div className={styles.grid}>
             <section className={styles.details} aria-labelledby="event-information-title">
                 <h2 id="event-information-title">Informations</h2>
@@ -112,6 +118,7 @@ export default function EventDetailPage() {
         </div>
         {user?.role?.name === 'admin' && event.participants &&
             <section className={`${styles.details} ${styles.participants}`} aria-labelledby="event-participants-title">
+                {event.settledAt?<p>Points distribués.</p>:hasEnded&&<div><label>Gagnant<select value={winner} onChange={e=>setWinner(e.target.value)}><option value="">Choisir un participant présent</option>{event.participants.filter(p=>p.isPresent).map(p=><option key={p.id} value={p.id}>{p.firstname} {p.lastname}</option>)}</select></label><button type="button" disabled={action.busy||((event.winnerShare??0.05)>0&&!winner)} onClick={()=>action.run(()=>api.post(`/api/admin/events/${eventId}/settle`,{winnerId:winner?Number(winner):null}))}>Distribuer les points</button></div>}
                 <h2 id="event-participants-title">Participants inscrits ({event.participants.length})</h2>
                 {event.participants.length === 0 ? <p>Aucun participant inscrit pour le moment.</p> :
                     <ul className={styles.participantList}>
@@ -119,12 +126,13 @@ export default function EventDetailPage() {
                             <span>{participant.firstname} {participant.lastname}</span>
                             <select aria-label={`Présence de ${participant.firstname} ${participant.lastname}`}
                                 value={participant.isPresent === null ? '' : participant.isPresent ? 'yes' : 'no'}
-                                disabled={updateEvent.isPending}
+                                disabled={updateEvent.isPending || !isOngoing || Boolean(event.settledAt)}
                                 onChange={(change) => void saveAttendance(participant.id, change.target.value)}>
                                 <option value="">Non renseigné</option>
                                 <option value="yes">Oui — Présent</option>
                                 <option value="no">Non — Absent</option>
                             </select>
+                            <button type="button" disabled={action.busy||Boolean(event.settledAt)} onClick={()=>{if(confirm('Retirer ce participant ?'))void action.run(()=>api.delete(`/api/admin/events/${eventId}/participants/${participant.id}`))}}>Retirer l’inscription</button>
                         </li>)}
                     </ul>}
             </section>}

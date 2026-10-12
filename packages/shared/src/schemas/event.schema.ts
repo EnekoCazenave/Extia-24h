@@ -21,9 +21,15 @@ const EventDateSchema = z
 const MaxPlacesSchema = z
     .number()
     .int('Le nombre de places doit être un entier')
-    .positive('Le nombre de places doit être supérieur à zéro')
+    .positive('Le nombre de places doit être supérieur à zéro').max(10000)
 
 const EventWriteSchema = z.object({
+    notifyPush: z.boolean().optional(),
+    notifyEmail: z.boolean().optional(),
+    notifyDiscord: z.boolean().optional(),
+    reminderMinutes: z.number().int().min(0).max(10080).optional(),
+    twitchUrl: z.string().url().refine(v=>new URL(v).protocol==='https:'&&['twitch.tv','www.twitch.tv'].includes(new URL(v).hostname),'Lien Twitch HTTPS requis').nullable().optional(),
+    winnerShare: z.number().min(0).max(1).optional(),
     name: EventNameSchema,
     description: EventDescriptionSchema,
     videoGameId: z
@@ -33,7 +39,7 @@ const EventWriteSchema = z.object({
         .nullable()
         .optional(),
     startsAt: EventDateSchema,
-    pointsEarned: z.number().int().positive(),
+    pointsEarned: z.number().finite().positive().max(100000),
     endsAt: EventDateSchema,
     maxPlaces: MaxPlacesSchema,
 })
@@ -93,7 +99,7 @@ export const EventSchema = EventWriteSchema.extend({
     isRegistered: z.boolean(),
     myAttendance: z.boolean().nullable(),
     isFull: z.boolean(),
-    pointsEarned: z.number().int().positive(),
+    pointsEarned: z.number().finite().positive().max(100000),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
 })
@@ -118,6 +124,8 @@ export const EventParticipantSchema = z.object({
 
 export const EventDetailSchema = EventSchema.extend({
     participants: z.array(EventParticipantSchema).optional(),
+    settledAt: z.string().datetime().nullable().optional(),
+    winnerId: z.number().nullable().optional(),
 })
 
 export type EventDetail = z.infer<typeof EventDetailSchema>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.ts'
 import SEOHead from '../components/SEOHead.tsx'
 import styles from './LoginPage.module.css'
@@ -7,6 +7,7 @@ import styles from './LoginPage.module.css'
 export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location=useLocation()
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -20,7 +21,9 @@ export default function LoginPage() {
     setIsSubmitting(true)
     try {
       await login(email, password)
-      navigate('/')
+      const from=location.state?.from
+      const path=typeof from==='string'?from:from?.pathname
+      navigate(typeof path==='string'&&path.startsWith('/')&&!path.startsWith('//')?path:'/')
     } catch {
       setError('Email ou mot de passe incorrect.')
     } finally {

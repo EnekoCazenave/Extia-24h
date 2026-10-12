@@ -1,3 +1,4 @@
+import { eventTransaction, EventError } from './event-scoring.service.js'
 import {prisma} from '../lib/prisma.js'
 import type {CreateEventInput, UpdateEventInput} from '@extia-gaming/shared'
 
@@ -28,6 +29,7 @@ export async function listAllEvents(userId?: number) {
 
         return {
             ...event,
+            settledAt: event.settledAt?.toISOString() ?? null,
             startsAt: event.startsAt.toISOString(),
             endsAt: event.endsAt.toISOString(),
             createdAt: event.createdAt.toISOString(),
@@ -75,6 +77,7 @@ export async function getEventById(eventId: number, userId?: number, isAdmin = f
     return {
         ...eventData,
         ...(participants ? {participants: participants.map(({user, isPresent}) => ({...user, isPresent}))} : {}),
+        settledAt: event.settledAt?.toISOString() ?? null,
         startsAt: event.startsAt.toISOString(),
         endsAt: event.endsAt.toISOString(),
         createdAt: event.createdAt.toISOString(),
@@ -101,7 +104,7 @@ export async function confirmEventAttendance(userId: number, eventId: number, is
 }
 
 export async function registerToEvent(userId: number, eventId: number) {
-    return prisma.$transaction(async (tx) => {
+    return eventTransaction(async (tx) => {
         const [event, user, existingRegistration] = await Promise.all([
             tx.event.findUnique({
                 where: {id: eventId},
@@ -121,6 +124,7 @@ export async function registerToEvent(userId: number, eventId: number) {
         ])
 
         if (!event) throw new Error('EVENT_NOT_FOUND')
+        if (event.settledAt) throw new EventError('Cet événement a déjà été récompensé')
         if (!user) throw new Error('USER_NOT_FOUND')
         if (event.endsAt.getTime() <= Date.now()) throw new Error('EVENT_ENDED')
         if (existingRegistration) throw new Error('ALREADY_REGISTERED')
@@ -135,11 +139,11 @@ export async function registerToEvent(userId: number, eventId: number) {
 }
 
 export async function unregisterToEvent(userId: number, eventId: number) {
-    return prisma.$transaction(async (tx) => {
+    return eventTransaction(async (tx) => {
         const [event, user, existingRegistration] = await Promise.all([
             tx.event.findUnique({
                 where: {id: eventId},
-                select: {id: true},
+                select: {id: true, settledAt: true},
             }),
             tx.user.findUnique({
                 where: {id: userId},
@@ -153,6 +157,7 @@ export async function unregisterToEvent(userId: number, eventId: number) {
         ])
 
         if (!event) throw new Error('EVENT_NOT_FOUND')
+        if (event.settledAt) throw new EventError('Cet événement a déjà été récompensé')
         if (!user) throw new Error('USER_NOT_FOUND')
         if (!existingRegistration) throw new Error('NOT_REGISTERED')
 
@@ -177,18 +182,25 @@ export async function createEvent(eventInfos: CreateEventInput) {
     return prisma.event.create({
         data: {
             name: eventInfos.name,
+            notifyPush: eventInfos.notifyPush,
+            notifyEmail: eventInfos.notifyEmail,
+            notifyDiscord: eventInfos.notifyDiscord,
+            reminderMinutes: eventInfos.reminderMinutes,
             description: eventInfos.description,
             videoGameId: eventInfos.videoGameId ?? null,
             startsAt: new Date(eventInfos.startsAt),
             endsAt: new Date(eventInfos.endsAt),
             maxPlaces: eventInfos.maxPlaces,
             pointsEarned: eventInfos.pointsEarned,
+            twitchUrl: eventInfos.twitchUrl,
+            winnerShare: eventInfos.winnerShare,
         },
     })
 }
 
 export async function updateEvent(eventId: number, eventInfos: UpdateEventInput) {
-    const existingEvent = await prisma.event.findUnique({
+    return eventTransaction(async tx => {
+    const existingEvent = await tx.event.findUnique({
         where: {id: eventId},
         include: {
             _count: {select: {userEvents: true}},
@@ -196,9 +208,12 @@ export async function updateEvent(eventId: number, eventInfos: UpdateEventInput)
     })
 
     if (!existingEvent) throw new Error('EVENT_NOT_FOUND')
+    if(existingEvent.settledAt) throw new EventError('Cet événement a déjà été récompensé')
+    if(eventInfos.attendance && (existingEvent.startsAt>new Date() || existingEvent.endsAt<=new Date())) throw new Error('ATTENDANCE_UNAVAILABLE')
+    if(existingEvent.startsAt<=new Date() && ((eventInfos.pointsEarned!==undefined && eventInfos.pointsEarned!==existingEvent.pointsEarned) || (eventInfos.winnerShare!==undefined && eventInfos.winnerShare!==existingEvent.winnerShare) || (eventInfos.startsAt!==undefined && new Date(eventInfos.startsAt).getTime()!==existingEvent.startsAt.getTime()) || (eventInfos.endsAt!==undefined && new Date(eventInfos.endsAt).getTime()!==existingEvent.endsAt.getTime()))) throw new EventError('Horaires et barème sont figés après le début')
 
     if (eventInfos.videoGameId) {
-        const videoGame = await prisma.videoGame.findUnique({
+        const videoGame = await tx.videoGame.findUnique({
             where: {id: eventInfos.videoGameId},
             select: {id: true},
         })
@@ -222,7 +237,6 @@ export async function updateEvent(eventId: number, eventInfos: UpdateEventInput)
         throw new Error('MAX_PLACES_BELOW_PARTICIPANTS')
     }
 
-    return prisma.$transaction(async (tx) => {
         if (eventInfos.attendance) {
             const {userId, isPresent} = eventInfos.attendance
             const result = await tx.userEvent.updateMany({
@@ -235,26 +249,28 @@ export async function updateEvent(eventId: number, eventInfos: UpdateEventInput)
         where: {id: eventId},
         data: {
             name: eventInfos.name,
+            notifyPush: eventInfos.notifyPush,
+            notifyEmail: eventInfos.notifyEmail,
+            notifyDiscord: eventInfos.notifyDiscord,
+            reminderMinutes: eventInfos.reminderMinutes,
             description: eventInfos.description,
             videoGameId: eventInfos.videoGameId,
             startsAt: eventInfos.startsAt ? startsAt : undefined,
             endsAt: eventInfos.endsAt ? endsAt : undefined,
             maxPlaces: eventInfos.maxPlaces,
             pointsEarned: eventInfos.pointsEarned,
+            twitchUrl: eventInfos.twitchUrl,
+            winnerShare: eventInfos.winnerShare,
         },
         })
     })
 }
 
 export async function deleteEvent(eventId: number) {
-    const existingEvent = await prisma.event.findUnique({
-        where: {id: eventId},
-        select: {id: true},
-    })
-
-    if (!existingEvent) throw new Error('EVENT_NOT_FOUND')
-
-    return prisma.event.delete({
-        where: {id: eventId},
+    return eventTransaction(async tx => {
+        const event=await tx.event.findUnique({where:{id:eventId}})
+        if(!event) throw new Error('EVENT_NOT_FOUND')
+        if(event.settledAt) throw new EventError('Un événement récompensé doit être conservé')
+        return tx.event.delete({where:{id:eventId}})
     })
 }

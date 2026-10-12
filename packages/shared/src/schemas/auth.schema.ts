@@ -6,6 +6,7 @@ export const RegisterSchema = z.object({
   password: z.string().min(8).max(100),
   firstname: z.string().min(1).max(100),
   lastname: z.string().min(1).max(100),
+  groupId: z.number().int().positive().nullable().optional(),
   intern: z.boolean().default(false),
   consentAccepted: z.literal(true, {
     errorMap: () => ({ message: 'Vous devez accepter la politique de confidentialité' }),

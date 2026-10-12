@@ -1,3 +1,4 @@
+import {usePlatform,type PublicSettings} from '../hooks/usePlatform.ts'
 import { useEffect, useRef, useState } from 'react'
 import { useGames } from '../hooks/useGames.ts'
 import styles from './PrizePoolBanner.module.css'
@@ -18,7 +19,7 @@ function useCountUp(target: number, durationMs = 1400): number {
       const progress = Math.min(1, elapsed / durationMs)
       // easeOutCubic
       const eased = 1 - Math.pow(1 - progress, 3)
-      const next = Math.round(fromRef.current + (target - fromRef.current) * eased)
+      const next = progress === 1 ? target : Math.round(fromRef.current + (target - fromRef.current) * eased)
       setValue(next)
       if (progress < 1) rafRef.current = requestAnimationFrame(tick)
     }
@@ -35,9 +36,10 @@ function useCountUp(target: number, durationMs = 1400): number {
 
 export default function PrizePoolBanner() {
   const games = useGames({ refetchInterval: 60_000 })
-  const total = games.data?.reduce((sum, g) => sum + g.totalScore, 0) ?? 0
+  const settings=usePlatform<{settings:PublicSettings}>('/api/settings')
+  const total = settings.data?.settings.totalPoints ?? games.data?.reduce((sum, g) => sum + g.totalScore, 0) ?? 0
   const animated = useCountUp(total)
-  const formatted = animated.toLocaleString('fr-FR')
+  const formatted = animated.toLocaleString('fr-FR', { maximumFractionDigits: 0 })
   const gameCount = games.data?.length ?? 0
 
   return (

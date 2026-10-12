@@ -122,7 +122,7 @@ describe('HomePage', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/HomePage.test.tsx
+cd packages/client && npm test src/__tests__/HomePage.test.tsx
 ```
 
 Expected: FAIL — mocked hooks not found.
@@ -524,7 +524,7 @@ export default function HomePage() {
 - [ ] **Step 9: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/HomePage.test.tsx
+cd packages/client && npm test src/__tests__/HomePage.test.tsx
 ```
 
 Expected: All 5 tests pass.
@@ -612,7 +612,7 @@ describe('GamesPage', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/GamesPage.test.tsx
+cd packages/client && npm test src/__tests__/GamesPage.test.tsx
 ```
 
 Expected: FAIL — `GamesPage` not found.
@@ -900,7 +900,7 @@ export default function GamesPage() {
 - [ ] **Step 7: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/GamesPage.test.tsx
+cd packages/client && npm test src/__tests__/GamesPage.test.tsx
 ```
 
 Expected: All 4 tests pass.
@@ -998,7 +998,7 @@ describe('GameDetailPage', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/GameDetailPage.test.tsx
+cd packages/client && npm test src/__tests__/GameDetailPage.test.tsx
 ```
 
 Expected: FAIL — `GameDetailPage` not found.
@@ -1289,7 +1289,7 @@ export default function GameDetailPage() {
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/GameDetailPage.test.tsx
+cd packages/client && npm test src/__tests__/GameDetailPage.test.tsx
 ```
 
 Expected: All 5 tests pass.
@@ -1297,7 +1297,7 @@ Expected: All 5 tests pass.
 - [ ] **Step 6: Run full test suite**
 
 ```bash
-cd packages/client && pnpm test
+cd packages/client && npm test
 ```
 
 Expected: All tests pass.

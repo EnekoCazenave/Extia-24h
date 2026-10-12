@@ -1,10 +1,12 @@
 # Dependencies
 node_modules/
-.pnpm-store/
 
 # Environment
 .env
 .env.local
+.env.docker
+.env.docker.*
+!.env.docker.example
 .env.*.local
 
 # Build outputs
@@ -32,3 +34,6 @@ coverage/
 # Project source files (not to be committed)
 /schema.drawio.txt
 /Chartes graphiques - GROUPE.pdf
+
+node_modules.previous/
+tmp/

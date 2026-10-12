@@ -201,3 +201,9 @@
     min-height: 400px;
   }
 }
+
+.heroActions { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-top:28px; }
+.primaryAction, .discordAction { display:inline-flex; align-items:center; padding:12px 22px; border-radius:10px; font-weight:700; text-decoration:none; }
+.primaryAction { background:var(--color-accent); color:white; }
+.discordAction { background:#5865f2; color:white; }
+.primaryAction:focus-visible, .discordAction:focus-visible { outline:3px solid var(--text-primary); outline-offset:3px; }

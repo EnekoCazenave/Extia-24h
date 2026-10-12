@@ -11,11 +11,13 @@ export const SubscriptionNotificationSchema = z.object({
     updatedAt: z.string().datetime(),
 })
 
+const PushEndpointSchema=z.string().url().max(3000).refine(value=>{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&(!u.port||u.port==='443')&&['fcm.googleapis.com','updates.push.services.mozilla.com','push.services.mozilla.com','web.push.apple.com'].some(host=>u.hostname===host||u.hostname.endsWith('.'+host))},'Service de notifications non autorisé')
+
 export const CreateSubscriptionNotificationSchema = z.object({
-    endpoint: z.string().url(),
+    endpoint: PushEndpointSchema,
     keys: z.object({
-        p256dh: z.string().min(1),
-        auth: z.string().min(1),
+        p256dh: z.string().regex(/^[A-Za-z0-9_-]+={0,2}$/).min(80).max(150),
+        auth: z.string().regex(/^[A-Za-z0-9_-]+={0,2}$/).min(20).max(50),
     }),
     expirationTime: z.number().nonnegative().nullable().optional(),
 })

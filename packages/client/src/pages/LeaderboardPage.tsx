@@ -1,3 +1,4 @@
+import {GroupsLeaderboard} from '../components/CommunityContent.tsx'
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.ts'
@@ -62,6 +63,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className={styles.page}>
+      <GroupsLeaderboard />
       <SEOHead
         title="Classement — Extia Gaming 24h"
         description="Classement des joueurs de l'Extia Gaming 24h."
@@ -178,7 +180,7 @@ export default function LeaderboardPage() {
                     <div className={styles.playerSub}>{entry.firstname} {entry.lastname}</div>
                   </td>
                   <td>
-                    <span className={styles.score}>{entry.totalScore.toLocaleString('fr-FR')} pts</span>
+                    <span className={styles.score}>{entry.totalScore.toLocaleString('fr-FR', { maximumFractionDigits: 6 })} pts</span>
                   </td>
                   {!isGlobal && (
                     <td className={styles.gameCount}>

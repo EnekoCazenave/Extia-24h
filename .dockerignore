@@ -1,0 +1,20 @@
+# Allow only inputs needed to build the application.
+**
+!package.json
+!package-lock.json
+!packages/
+!packages/shared/
+!packages/shared/**
+!packages/server/
+!packages/server/**
+!packages/client/
+!packages/client/**
+!docker/
+!docker/**
+**/node_modules
+**/dist
+**/.env*
+**/uploads
+**/coverage
+**/__tests__
+**/*.test.*

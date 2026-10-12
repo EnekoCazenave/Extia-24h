@@ -146,7 +146,7 @@ describe('PlayGamePage', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/PlayGamePage.test.tsx
+cd packages/client && npm test src/__tests__/PlayGamePage.test.tsx
 ```
 
 Expected: FAIL — `PlayGamePage` not found.
@@ -485,7 +485,7 @@ export default function PlayGamePage() {
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/PlayGamePage.test.tsx
+cd packages/client && npm test src/__tests__/PlayGamePage.test.tsx
 ```
 
 Expected: All 5 tests pass.
@@ -604,7 +604,7 @@ describe('ProfilePage', () => {
 - [ ] **Step 2: Run to see failure**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/ProfilePage.test.tsx
+cd packages/client && npm test src/__tests__/ProfilePage.test.tsx
 ```
 
 Expected: FAIL — `ProfilePage` not found.
@@ -902,7 +902,7 @@ export default function ProfilePage() {
 - [ ] **Step 5: Run tests**
 
 ```bash
-cd packages/client && pnpm test src/__tests__/ProfilePage.test.tsx
+cd packages/client && npm test src/__tests__/ProfilePage.test.tsx
 ```
 
 Expected: All 6 tests pass.
@@ -910,7 +910,7 @@ Expected: All 6 tests pass.
 - [ ] **Step 6: Run full test suite**
 
 ```bash
-cd packages/client && pnpm test
+cd packages/client && npm test
 ```
 
 Expected: All tests pass.

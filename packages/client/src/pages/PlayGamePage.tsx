@@ -1,11 +1,15 @@
+import Modal from '../components/Modal.tsx'
+import type { HonorProgress } from '@extia-gaming/shared'
 import { useState, useRef, useEffect, type FormEvent, type ChangeEvent } from 'react'
+import { isAxiosError } from 'axios'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import SEOHead from '../components/SEOHead.tsx'
 import { useGame, useSubmitPlay } from '../hooks/useGames.ts'
 import { useUsers } from '../hooks/useUsers.ts'
 import { useAuth } from '../hooks/useAuth.ts'
 import { api } from '../services/api.ts'
-import type { PlayInput } from '@extia-gaming/shared'
+import { computeAwards, PlayInputSchema, type PlayInput } from '@extia-gaming/shared'
+import RulesPlayFields, { type RulesDraft } from '../components/RulesPlayFields.tsx'
 import styles from './PlayGamePage.module.css'
 
 function isHappyHourActive(start: string | null, end: string | null): boolean {
@@ -32,9 +36,13 @@ export default function PlayGamePage() {
   const teamBoxRef = useRef<HTMLDivElement>(null)
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [proofPreview, setProofPreview] = useState<string | null>(null)
+  const [honor, setHonor] = useState<HonorProgress | null>(null)
+  const [honorOpen, setHonorOpen] = useState(false)
+  const [approved, setApproved] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [rulesDraft, setRulesDraft] = useState<RulesDraft>({ values: {} })
   const [boolValue, setBoolValue] = useState<boolean>(true)
   const [numValue, setNumValue] = useState<string>('')
   const [timeSeconds, setTimeSeconds] = useState<string>('')
@@ -93,7 +101,13 @@ export default function PlayGamePage() {
 
   function buildPlayInput(gameTypeId: number, proofUrl: string | undefined): PlayInput | null {
     if (!selectedGameType) return null
-    const base = { gameTypeId, teamMemberIds, proofUrl }
+    const base = { gameTypeId, teamMemberIds: isTeamMode ? teamMemberIds : [], proofUrl }
+    if (selectedGameType.calculType === 'RULES') {
+      const parsed = PlayInputSchema.safeParse({ ...base, calculType: 'RULES', ...rulesDraft })
+      if (!parsed.success) return null
+      computeAwards(selectedGameType.calculConfig, parsed.data, [me!.id, ...base.teamMemberIds])
+      return parsed.data
+    }
     if (selectedGameType.calculType === 'BOOLEAN') {
       return { ...base, calculType: 'BOOLEAN', value: boolValue }
     }
@@ -120,6 +134,7 @@ export default function PlayGamePage() {
     }
 
     try {
+      if (!buildPlayInput(gameTypeId, undefined)) { setError('Veuillez remplir tous les champs correctement.'); return }
       let proofUrl: string | undefined
       if (proofFile) {
         setUploading(true)
@@ -138,11 +153,14 @@ export default function PlayGamePage() {
         return
       }
 
-      await submitPlay.mutateAsync(payload)
+      const result = await submitPlay.mutateAsync(payload)
+      setApproved(result?.status === 'APPROVED')
+      setHonor(result?.honor ?? null)
+      setHonorOpen(Boolean(result?.honor?.next || result?.honor?.current))
       setSubmitted(true)
-    } catch {
+    } catch (err) {
       setUploading(false)
-      setError('Une erreur est survenue lors de la soumission. Veuillez réessayer.')
+      setError(isAxiosError(err) ? err.response?.data?.error ?? 'Erreur de soumission.' : err instanceof Error ? err.message : 'Erreur de soumission.')
     }
   }
 
@@ -168,6 +186,12 @@ export default function PlayGamePage() {
 
   return (
     <div className={styles.page}>
+      <Modal open={honorOpen} title="Votre progression" onClose={()=>setHonorOpen(false)}>
+        {honor&&<><p>{honor.totalPoints.toLocaleString('fr-FR')} points validés.</p>
+          {honor.current&&<p>Palier atteint : <strong>{honor.current.name}</strong></p>}
+          {honor.next?<p><strong>{honor.remaining.toLocaleString('fr-FR')} points</strong> avant d’atteindre le palier <strong>{honor.next.name}</strong>.</p>:<p>Vous avez atteint le dernier palier honorifique !</p>}
+          <button type="button" onClick={()=>setHonorOpen(false)}>Continuer</button></>}
+      </Modal>
       <SEOHead
         title={`Soumettre une partie — ${game.nom}`}
         description={`Entrez votre score pour ${game.nom}.`}
@@ -186,7 +210,7 @@ export default function PlayGamePage() {
           <div className={styles.success} role="status" aria-live="polite">
             <div>✅ Partie soumise avec succès !</div>
             <div className={styles.pendingBadge}>
-              ⏳ En attente de validation par un modérateur avant attribution des points.
+              {approved ? 'Partie validée automatiquement. Vos points sont crédités ; la modération peut encore rejeter la partie.' : '⏳ En attente de validation par un modérateur avant attribution des points.'}
             </div>
             <div style={{ marginTop: '12px' }}>
               <Link to={`/jeux/${game.id}`} style={{ color: 'var(--color-secondary)', fontSize: 'var(--text-sm)' }}>
@@ -206,6 +230,7 @@ export default function PlayGamePage() {
                 onChange={(e) => {
                   setSelectedGameTypeId(parseInt(e.target.value, 10))
                   setTeamMemberIds([])
+                  setRulesDraft({ values: {} })
                 }}
                 required
                 aria-required="true"
@@ -215,6 +240,10 @@ export default function PlayGamePage() {
                 ))}
               </select>
             </div>
+
+            {selectedGameType?.maxPointsPerUser != null && <p>Limite : {selectedGameType.maxPointsPerUser} points par participant pour ce mode. Les points validés seront plafonnés au solde disponible.</p>}
+            {selectedGameType?.maxPlaysPerUser != null && <p>Limite : {selectedGameType.maxPlaysPerUser} partie(s) par participant pour ce mode, validées ou en attente. Les parties refusées ne comptent pas.</p>}
+            {selectedGameType?.calculConfig.type === 'RULES' && me && <RulesPlayFields key={selectedGameType.id} config={selectedGameType.calculConfig} value={rulesDraft} onChange={setRulesDraft} participants={[{ id: me.id, login: me.login }, ...otherUsers.filter(u => isTeamMode && teamMemberIds.includes(u.id))]} />}
 
             {selectedGameType?.calculType === 'BOOLEAN' && (
               <div className={styles.field}>

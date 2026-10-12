@@ -15,12 +15,13 @@ export async function listGamesWithScores() {
     scoreSums.map((s) => [s.gameTypeId, s._sum.score ?? 0]),
   )
 
+  const eventScores=await prisma.eventAward.findMany({select:{points:true,event:{select:{videoGameId:true}}}})
   return games.map((game) => {
     const totalScore = game.gameTypes.reduce(
       (sum, gt) => sum + (scoreByGameType.get(gt.id) ?? 0),
       0,
     )
-    return { ...game, totalScore }
+    return { ...game, totalScore:totalScore+eventScores.filter(e=>e.event.videoGameId===game.id).reduce((sum,e)=>sum+e.points,0) }
   })
 }
 
@@ -40,6 +41,13 @@ export async function getGameDetail(id: number) {
     orderBy: { _sum: { score: 'desc' } },
   })
 
+  const eventScores=await prisma.eventAward.groupBy({by:['userId'],where:{event:{videoGameId:id}},_sum:{points:true}})
+  for(const award of eventScores) {
+    const row=userScores.find(r=>r.userId===award.userId)
+    if(row)row._sum.score=(row._sum.score??0)+(award._sum.points??0)
+    else userScores.push({userId:award.userId,_sum:{score:award._sum.points??0}})
+  }
+  userScores.sort((a,b)=>(b._sum.score??0)-(a._sum.score??0)||a.userId-b.userId)
   const userIds = userScores.map((s) => s.userId)
   const users = await prisma.user.findMany({
     where: { id: { in: userIds } },

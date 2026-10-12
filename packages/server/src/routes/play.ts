@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod'
 import { PlayInputSchema } from '@extia-gaming/shared'
 import { play } from '../controllers/play.controller.js'
@@ -9,8 +9,10 @@ export async function playRoutes(fastify: FastifyInstance) {
   fastify.setSerializerCompiler(serializerCompiler)
   const f = fastify.withTypeProvider<ZodTypeProvider>()
 
-  f.post('/api/play', {
+  f.post<RouteOf<typeof play>>('/api/play', {
     preHandler: [authenticate],
     schema: { body: PlayInputSchema },
   }, play)
 }
+
+type RouteOf<T> = T extends (request: FastifyRequest<infer R>, reply: FastifyReply) => unknown ? R : never

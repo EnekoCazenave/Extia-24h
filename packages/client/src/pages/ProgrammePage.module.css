@@ -301,6 +301,115 @@
     font-size: var(--text-sm);
 }
 
+.notificationSettings {
+    min-width: 0;
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+}
+
+.notificationSettings legend {
+    padding: 0 6px;
+    font-weight: 800;
+    font-size: var(--text-sm);
+}
+
+.notificationSettings p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+}
+
+.notificationOptions {
+    display: grid;
+    gap: 8px;
+}
+
+.form .notificationOption {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+}
+
+.notificationOption:hover {
+    border-color: var(--color-accent);
+}
+
+.notificationOption:has(input:checked) {
+    border-color: rgba(var(--accent-rgb), .5);
+    background: var(--bg-tint);
+}
+
+.form .notificationOption input {
+    appearance: none;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    place-content: center;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--bg-card);
+    cursor: pointer;
+}
+
+.form .notificationOption input:checked {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.notificationOption input:checked::after {
+    content: '';
+    width: 5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: translateY(-1px) rotate(45deg);
+}
+
+.form .notificationOption input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+.notificationOption span {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.notificationOption strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.notificationOption small {
+    font-size: var(--text-xs);
+    line-height: 1.4;
+}
+
+@media (forced-colors: active) {
+    .form .notificationOption input {
+        appearance: auto;
+    }
+
+    .notificationOption input:checked::after {
+        content: none;
+    }
+}
+
 @media (max-width: 680px) {
     .page {
         padding-top: 24px;

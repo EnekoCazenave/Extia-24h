@@ -2,7 +2,10 @@ import SEOHead from '../components/SEOHead.tsx'
 import TopGamesTable from '../components/TopGamesTable.tsx'
 import PlayerLeaderboard from '../components/PlayerLeaderboard.tsx'
 import PrizePoolBanner from '../components/PrizePoolBanner.tsx'
-import ProgrammeAgenda from '../components/programme/ProgrammeAgenda.tsx'
+import HomeProgramme from '../components/programme/HomeProgramme.tsx'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth.ts'
+import { usePlatform, type PublicSettings } from '../hooks/usePlatform.ts'
 import { useTopGames, useGlobalLeaderboard } from '../hooks/useLeaderboard.ts'
 import styles from './HomePage.module.css'
 
@@ -17,6 +20,8 @@ const EVENT_JSON_LD = {
 }
 
 export default function HomePage() {
+  const {user} = useAuth()
+  const settings = usePlatform<{settings:PublicSettings}>('/api/settings').data?.settings
   const topGames = useTopGames(5)
   const leaderboard = useGlobalLeaderboard(20)
 
@@ -35,6 +40,10 @@ export default function HomePage() {
         <p className={styles.heroSubtitle}>
           24 heures de compétition, de jeux et de fair-play. Que le meilleur gagne !
         </p>
+        <div className={styles.heroActions}>
+          <Link className={styles.primaryAction} to={user ? '/programme' : '/register'}>{user ? 'Participer aux événements' : 'S’inscrire aux 24 heures'}</Link>
+          {settings?.discordUrl && <a className={styles.discordAction} href={settings.discordUrl} target="_blank" rel="noopener noreferrer">Rejoindre le Discord ↗</a>}
+        </div>
       </section>
       <PrizePoolBanner />
       <section className={styles.videoSection} aria-labelledby="video-explication">
@@ -72,7 +81,7 @@ export default function HomePage() {
                   </div>
                   <p>Suivez l’ensemble des temps forts du défi, heure par heure.</p>
               </header>
-              <ProgrammeAgenda />
+              <HomeProgramme />
           </section>
       </div>
       <section className={styles.videoSection} aria-label="Live Twitch Extia Gaming">

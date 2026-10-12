@@ -22,7 +22,7 @@ describe('Personal sessions', () => {
       expect(response.json().sessions).toHaveLength(20)
       expect(response.json().sessions[0]).toMatchObject({submittedScore: 50, creditedPoints: 100})
       expect(db.gameSession.findMany).toHaveBeenCalledWith(expect.objectContaining({
-        where: {submitterId: 7}, skip: 20, take: 21,
+        where: {OR:[{submitterId:7},{teamMembers:{some:{userId:7}}}]}, skip: 20, take: 21,
         orderBy: [{createdAt: 'desc'}, {id: 'desc'}],
         select: expect.objectContaining({userGames: {where: {userId: 7}, select: {score: true}}}),
       }))

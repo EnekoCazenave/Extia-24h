@@ -44,6 +44,8 @@ export async function addGameType(videoGameId: number, data: CreateGameTypeInput
       calculConfig: data.calculConfig,
       win: data.win,
       team: data.team,
+      maxPlaysPerUser: data.maxPointsPerUser != null ? null : data.maxPlaysPerUser,
+      maxPointsPerUser: data.maxPlaysPerUser != null ? null : data.maxPointsPerUser,
       videoGameId,
     },
   })
@@ -61,6 +63,8 @@ export async function updateGameType(gameTypeId: number, data: UpdateGameTypeInp
       calculConfig: data.calculConfig,
       win: data.win,
       team: data.team,
+      maxPlaysPerUser: data.maxPointsPerUser != null ? null : data.maxPlaysPerUser,
+      maxPointsPerUser: data.maxPlaysPerUser != null ? null : data.maxPointsPerUser,
     },
   })
 }

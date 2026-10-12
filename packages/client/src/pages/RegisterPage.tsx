@@ -1,3 +1,4 @@
+import { GroupSelect } from '../components/CommunityContent.tsx'
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.ts'
@@ -7,6 +8,7 @@ import styles from './RegisterPage.module.css'
 export default function RegisterPage() {
   const { register } = useAuth()
   const navigate = useNavigate()
+  const [groupId,setGroupId] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [consentChecked, setConsentChecked] = useState(false)
@@ -27,6 +29,7 @@ export default function RegisterPage() {
         email: data.get('email') as string,
         password: data.get('password') as string,
         intern: false,
+        ...(groupId ? { groupId: Number(groupId) } : {}),
         consentAccepted: true,
       })
       navigate('/')
@@ -60,6 +63,7 @@ export default function RegisterPage() {
           noValidate
           aria-labelledby="register-title"
         >
+          <GroupSelect value={groupId} onChange={setGroupId} />
           <div className={styles.field}>
             <label className={`${styles.label} ${styles.required}`} htmlFor="login">
               Pseudo

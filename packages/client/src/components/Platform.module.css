@@ -1,0 +1,28 @@
+.section { margin: 24px 0; padding: 24px; border: 1px solid var(--border-color); border-radius: 14px; background: var(--bg-card); color: var(--text-primary); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,280px),1fr)); gap: 18px; }
+.card { border: 1px solid var(--border-color); border-radius: 12px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.form { display: grid; gap: 14px; }
+.field { display: grid; gap: 6px; font-weight: 500; }
+.field input, .field select, .field textarea { min-width: 0; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-elevated,#202538); color: var(--text-primary); font: inherit; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.button { cursor: pointer; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-elevated,#252e43); color: var(--text-primary); font: inherit; text-decoration: none; }
+.button:disabled { opacity:.5; cursor:not-allowed; }
+.button:focus-visible, .field :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.badge { display:inline-block; padding:4px 10px; border-radius:20px; background:var(--bg-elevated,#252e43); font-size:.85rem; width:fit-content; }
+.error { color:var(--color-error,#ff8b8b); }
+.table { overflow-x:auto; }
+.table table { width:100%; border-collapse:collapse; }
+.table th,.table td { padding:12px; text-align:left; border-bottom:1px solid var(--border-color); }
+.video { width:100%; max-height:520px; aspect-ratio:16/9; border:0; border-radius:12px; }
+.progress { width:100%; height:22px; accent-color:var(--color-accent); }
+.number { font-size:1.8rem; font-weight:700; }
+
+.section h2 { margin-bottom:16px; }
+.section h3 { margin-top:24px; margin-bottom:12px; }
+.section ul { margin:16px 0; padding-left:20px; }
+.section li { margin-bottom:10px; }
+.section li .button { margin-left:8px; }
+.reportTable { width:100%; border-collapse:collapse; margin:16px 0 24px; font-size:0.9rem; }
+.reportTable th,.reportTable td { padding:12px 14px; text-align:left; border-bottom:1px solid var(--border-color); white-space:nowrap; }
+.reportTable th { background:var(--bg-surface); font-weight:700; }
+.reportTable tbody tr:nth-child(even) { background:var(--bg-surface); }

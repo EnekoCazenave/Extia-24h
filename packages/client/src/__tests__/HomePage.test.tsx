@@ -1,3 +1,5 @@
+vi.mock('../hooks/useAuth.ts',()=>({useAuth:()=>({user:null})}))
+vi.mock('../hooks/useEvents.ts',()=>({useEvents:()=>({data:[],isLoading:false,isError:false})}))
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../test-utils.tsx'
@@ -17,6 +19,11 @@ describe('HomePage', () => {
     mockUseGlobalLeaderboard.mockReturnValue({ data: undefined, isLoading: true, isError: false })
   })
 
+  it('propose une inscription depuis l’accueil', () => {
+    renderWithProviders(<HomePage />)
+    expect(screen.getByRole('link',{name:'S’inscrire aux 24 heures'})).toHaveAttribute('href','/register')
+    expect(screen.getByRole('link',{name:/Voir tout le programme/})).toHaveAttribute('href','/programme')
+  })
   it('renders main heading', () => {
     renderWithProviders(<HomePage />)
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()

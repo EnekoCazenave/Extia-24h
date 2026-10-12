@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify'
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod'
 import { UpdateProfileSchema } from '@extia-gaming/shared'
 import { updateProfile, listUsers } from '../controllers/user.controller.js'
@@ -9,10 +9,12 @@ export async function userRoutes(fastify: FastifyInstance) {
   fastify.setSerializerCompiler(serializerCompiler)
   const f = fastify.withTypeProvider<ZodTypeProvider>()
 
-  f.put('/api/users/me', {
+  f.put<RouteOf<typeof updateProfile>>('/api/users/me', {
     preHandler: [authenticate],
     schema: { body: UpdateProfileSchema },
   }, updateProfile)
 
-  f.get('/api/users', { preHandler: [authenticate] }, listUsers)
+  f.get<RouteOf<typeof listUsers>>('/api/users', { preHandler: [authenticate] }, listUsers)
 }
+
+type RouteOf<T> = T extends (request: FastifyRequest<infer R>, reply: FastifyReply) => unknown ? R : never

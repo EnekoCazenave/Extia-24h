@@ -3,6 +3,7 @@ import {fireEvent, screen} from '@testing-library/react'
 import {renderWithProviders} from '../test-utils.tsx'
 import PersonalLeaderboardPage from '../pages/PersonalLeaderboardPage.tsx'
 import {api} from '../services/api.ts'
+vi.mock('../components/CommunityContent.tsx',()=>({PlayerExtras:()=>null}))
 vi.mock('../services/api.ts', () => ({api: {get: vi.fn()}}))
 vi.mock('../hooks/useAuth.ts', () => ({useAuth: () => ({user: {id: 7}})}))
 

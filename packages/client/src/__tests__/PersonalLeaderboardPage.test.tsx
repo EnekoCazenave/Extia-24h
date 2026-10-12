@@ -1,3 +1,4 @@
+vi.mock('../components/CommunityContent.tsx',()=>({PlayerExtras:()=>null,GroupsLeaderboard:()=>null}))
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {fireEvent, screen} from '@testing-library/react'
 import {Route, Routes} from 'react-router-dom'

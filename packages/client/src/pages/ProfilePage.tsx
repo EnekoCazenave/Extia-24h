@@ -1,3 +1,5 @@
+import NotificationControls from '../components/NotificationControls.tsx'
+import {PlayerExtras} from '../components/CommunityContent.tsx'
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../hooks/useAuth.ts'
 import { api } from '../services/api.ts'
@@ -40,6 +42,8 @@ export default function ProfilePage() {
     <div className={styles.page}>
       <SEOHead title="Mon profil" description="Modifiez vos informations personnelles." canonicalPath="/profil" />
       <h1 className={styles.title}>Mon profil</h1>
+      <PlayerExtras userId={user.id} />
+      <NotificationControls userId={user.id} />
       <p className={styles.subtitle}>Modifiez vos informations de participant.</p>
       <div className={styles.card}>
         <form className={styles.form} onSubmit={handleSubmit} aria-label="Formulaire de modification du profil">

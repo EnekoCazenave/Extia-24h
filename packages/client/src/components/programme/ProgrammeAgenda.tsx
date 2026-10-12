@@ -1,3 +1,4 @@
+import {usePlatform,type PublicSettings} from '../../hooks/usePlatform.ts'
 import {useEffect, useMemo, useState} from 'react'
 import {Link} from 'react-router-dom'
 import {useAuth} from '../../hooks/useAuth.ts'
@@ -16,8 +17,11 @@ const HOURS = Array.from({length: 24}, (_, hour) => hour)
 
 export default function ProgrammeAgenda() {
     const {user} = useAuth()
-    const {data: events = [], isLoading, isError} = useEvents(user?.id)
+    const {data: allEvents = [], isLoading, isError} = useEvents(user?.id)
 
+    const settings=usePlatform<{settings:PublicSettings}>('/api/settings').data?.settings
+    const [includeBefore,setIncludeBefore]=useState(false)
+    const events=useMemo(()=>allEvents.filter(e=>includeBefore||!settings?.eventStart||!settings.eventEnd||(Date.parse(e.endsAt)>Date.parse(settings.eventStart)&&Date.parse(e.startsAt)<Date.parse(settings.eventEnd))),[allEvents,settings,includeBefore])
     const availableDays = useMemo(
         () => [...new Set(events.flatMap(getCoveredDayKeys))].sort(),
         [events],
@@ -42,8 +46,8 @@ export default function ProgrammeAgenda() {
 
     if (isLoading) return <p className={styles.state} aria-live="polite">Chargement de l’agenda…</p>
     if (isError) return <p className={styles.error} role="alert">Impossible de charger l’agenda.</p>
-    if (events.length === 0) return <p className={styles.state}>Aucun évènement programmé.</p>
-    if (!selectedDay) return <p className={styles.state} aria-live="polite">Préparation de l’agenda…</p>
+    if (allEvents.length === 0) return <p className={styles.state}>Aucun évènement programmé.</p>
+    if (!selectedDay) return <div><p>Aucun événement dans la période principale.</p><button type="button" onClick={()=>setIncludeBefore(true)}>Inclure les événements Before</button></div>
 
     const dayStart = getDayStart(selectedDay)
     const todayKey = toDayKey(new Date())
@@ -52,6 +56,7 @@ export default function ProgrammeAgenda() {
     const currentTimeTop = (currentMinute / DAY_MINUTES) * (24 * HOUR_HEIGHT)
 
     return <div className={styles.agenda}>
+        <label><input type="checkbox" checked={includeBefore} onChange={e=>setIncludeBefore(e.target.checked)}/> Inclure les événements Before et hors période</label>
         <nav className={styles.dayPicker} aria-label="Choisir une journée">
             {availableDays.map((day) =>
                 <button key={day} type="button" className={day === selectedDay ? styles.activeDay : ''}

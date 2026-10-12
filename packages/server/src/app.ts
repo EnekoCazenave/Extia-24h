@@ -1,3 +1,4 @@
+import {startNotifications} from './services/notification-dispatch.service.js'
 import Fastify, { FastifyInstance } from 'fastify'
 import staticPlugin from '@fastify/static'
 import path from 'node:path'
@@ -9,6 +10,7 @@ import rateLimitPlugin from './plugins/rateLimit.js'
 import csrfPlugin from './plugins/csrf.js'
 import jwtPlugin from './plugins/jwt.js'
 import { registerRoutes } from './routes/index.js'
+import { env } from './env.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const UPLOADS_DIR = path.resolve(__dirname, '../uploads')
@@ -19,9 +21,10 @@ export interface BuildOptions {
 
 export async function buildApp(opts: BuildOptions = {}): Promise<FastifyInstance> {
   const fastify = Fastify({
+    trustProxy: env.TRUST_PROXY_HOPS,
     logger: opts.logger ?? {
       level: 'info',
-      transport: { target: 'pino-pretty' },
+      ...(env.NODE_ENV === 'production' ? {} : { transport: { target: 'pino-pretty' } }),
     },
   })
 
@@ -36,5 +39,6 @@ export async function buildApp(opts: BuildOptions = {}): Promise<FastifyInstance
 
   fastify.get('/health', async () => ({ status: 'ok' }))
 
+  startNotifications(fastify)
   return fastify
 }

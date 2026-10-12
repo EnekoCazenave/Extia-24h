@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../services/api.ts'
-import type { PlayInput, GameLeaderboardEntry, CalculType, CalculConfig } from '@extia-gaming/shared'
+import type { PlayInput, GameLeaderboardEntry, CalculType, CalculConfig, HonorProgress } from '@extia-gaming/shared'
 
 export interface GameWithScore {
   id: number
@@ -15,6 +15,8 @@ export interface GameWithScore {
     calculConfig: CalculConfig
     win: string
     team: boolean
+    maxPointsPerUser?: number | null
+    maxPlaysPerUser?: number | null
     videoGameId: number
   }>
   totalScore: number
@@ -52,12 +54,14 @@ export function useSubmitPlay() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: PlayInput) => {
-      const res = await api.post<{ session: { id: number; status: string } }>('/api/play', data)
+      const res = await api.post<{ session: { id: number; status: string; honor?: HonorProgress } }>('/api/play', data)
       return res.data.session
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['games'] })
       qc.invalidateQueries({ queryKey: ['leaderboard'] })
+      qc.invalidateQueries({ queryKey: ['platform'] })
+      qc.invalidateQueries({ queryKey: ['moderation'] })
     },
   })
 }

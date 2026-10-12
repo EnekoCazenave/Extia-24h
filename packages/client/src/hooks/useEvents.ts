@@ -4,6 +4,7 @@ import {api} from '../services/api.ts'
 
 export function useEvents(userId?: number, options?: {enabled?: boolean; refetchInterval?: number}) {
     return useQuery({
+        refetchInterval: 15000,
         ...options,
         queryKey: ['events', userId ?? 'anonymous'],
         queryFn: async () => {
@@ -15,6 +16,7 @@ export function useEvents(userId?: number, options?: {enabled?: boolean; refetch
 
 export function useEvent(eventId: number, userId?: number) {
     return useQuery({
+        refetchInterval: 15000,
         queryKey: ['events', eventId, userId ?? 'anonymous'],
         enabled: eventId > 0,
         queryFn: async () => {

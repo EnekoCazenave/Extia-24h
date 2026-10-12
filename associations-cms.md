@@ -463,8 +463,8 @@ Ajouter un lien "Associations" dans `navLinks`, entre "Classement" et le lien Mo
 
 ```bash
 cd packages/client
-pnpm add dompurify
-pnpm add -D @types/dompurify
+npm install dompurify
+npm install -D @types/dompurify
 ```
 
 Utilise dans `TextBlock.tsx` pour sanitiser le HTML avant `dangerouslySetInnerHTML`.
@@ -475,14 +475,14 @@ Utilise dans `TextBlock.tsx` pour sanitiser le HTML avant `dangerouslySetInnerHT
 
 ```bash
 # Rebuild shared schemas
-cd packages/shared && pnpm build
+cd packages/shared && npm run build
 
 # Generate Prisma client
 cd packages/server && npx prisma generate
 
 # TypeScript build check
-cd packages/server && pnpm build
-cd packages/client && pnpm build
+cd packages/server && npm run build
+cd packages/client && npm run build
 ```
 
 ---

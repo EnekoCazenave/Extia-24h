@@ -1,3 +1,6 @@
+import {notificationConfig} from '../services/notification-dispatch.service.js'
+import {prisma} from '../lib/prisma.js'
+import {z} from 'zod'
 import type {FastifyInstance} from 'fastify'
 import {
     serializerCompiler,
@@ -22,7 +25,10 @@ export async function notificationRoutes(
 
     const f = fastify.withTypeProvider<ZodTypeProvider>()
 
-    f.post(
+    f.get('/api/notifications/config',async()=>notificationConfig())
+    f.post('/api/notifications/status',{preHandler:[authenticate],schema:{body:z.object({endpoint:z.string()})}},async r=>({subscribed:Boolean(await prisma.subscriptionNotification.findFirst({where:{userId:r.user.sub,endpoint:r.body.endpoint},select:{id:true}}))}))
+
+    f.post<{Body:z.infer<typeof CreateSubscriptionNotificationSchema>}>(
         '/api/subscribe',
         {
             preHandler: [authenticate],
@@ -33,7 +39,7 @@ export async function notificationRoutes(
         handleSubscribeToNotifications,
     )
 
-    f.delete(
+    f.delete<{Body:z.infer<typeof DeleteSubscriptionNotificationSchema>}>(
         '/api/subscribe',
         {
             preHandler: [authenticate],
