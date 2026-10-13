@@ -1,3 +1,5 @@
+# Use an https:// address to enable automatic certificates and HTTP redirects.
+# Certificates and ACME account data persist in the caddy_data volume.
 {$SITE_ADDRESS} {
     encode zstd gzip
 

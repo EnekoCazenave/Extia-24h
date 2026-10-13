@@ -16,17 +16,21 @@ Utiliser Docker Engine et Docker Compose v2. Depuis la racine du projet, copier 
 
 Renseigner trois secrets indépendants dans `POSTGRES_PASSWORD`, `JWT_SECRET` et `REFRESH_SECRET`. Générer chaque valeur avec `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. Le fichier `.env.docker` est ignoré par Git et exclu des images. Le mot de passe PostgreSQL est encodé au démarrage pour accepter les caractères spéciaux.
 
-Les paramètres d'exemple servent à une vérification locale sur http://localhost:8080. Pour un déploiement public, adapter :
+Les paramètres d'exemple préparent le déploiement public sur https://24hsolidaires.fr :
 
 ```dotenv
-SITE_ADDRESS=gaming.example.org
-PUBLIC_SITE_URL=https://gaming.example.org
+SITE_ADDRESS=https://24hsolidaires.fr
+PUBLIC_SITE_URL=https://24hsolidaires.fr
 HTTP_BIND=0.0.0.0
 HTTP_PORT=80
 HTTPS_PORT=443
 ```
 
-Faire pointer le DNS du domaine vers le serveur et rendre les ports TCP 80 et 443 accessibles. Caddy obtient et renouvelle automatiquement le certificat. `PUBLIC_SITE_URL` doit être l'origine exacte, sans chemin ni barre oblique finale. Les cookies d'authentification sont sécurisés en production : utiliser HTTPS pour l'exploitation. La configuration suppose que Caddy reçoit directement le trafic public ; l'ajout d'un CDN ou d'un autre proxy nécessite de configurer explicitement les proxies de confiance.
+Faire pointer l'enregistrement DNS A de `24hsolidaires.fr` vers l'adresse IPv4 publique du serveur. Si un enregistrement AAAA existe, il doit également pointer vers ce serveur avec une connectivité IPv6 fonctionnelle. Rendre les ports TCP 80 et 443 accessibles et, si nécessaire, les rediriger depuis le routeur vers l'hôte Docker. Aucun autre serveur ne doit occuper ces ports.
+
+Caddy obtient et renouvelle automatiquement le certificat public, puis redirige HTTP vers HTTPS. Le volume `caddy_data` conserve les certificats et le compte ACME entre les redémarrages. Caddy garde son accès Internet via le réseau `public` ; l'API et PostgreSQL restent isolés. `PUBLIC_SITE_URL` doit être l'origine exacte, sans chemin ni barre oblique finale. Les cookies d'authentification sont sécurisés en production. La configuration suppose que Caddy reçoit directement le trafic public ; l'ajout d'un CDN ou d'un autre proxy nécessite de configurer explicitement les proxies de confiance.
+
+Pour un test HTTPS local, utiliser `SITE_ADDRESS=https://localhost`, `PUBLIC_SITE_URL=https://localhost` et `HTTP_BIND=127.0.0.1`, en conservant les ports 80 et 443. Caddy délivre alors un certificat local : son autorité doit être approuvée sur la machine du navigateur, car un conteneur ne l'installe pas automatiquement sur l'hôte.
 
 Les variables optionnelles `SMTP_*`, `VAPID_*` et `DISCORD_WEBHOOK_URL` ne suffisent pas à activer les notifications externes avec cette configuration isolée : leur utilisation nécessiterait aussi d'autoriser explicitement une sortie réseau pour l'API.
 
@@ -42,7 +46,7 @@ La tâche `migrate` attend PostgreSQL, applique les migrations versionnées, pui
 
 L'API fonctionne avec un utilisateur non root et les seules dépendances de production. Les journaux de production sont au format JSON. Caddy transmet les adresses des visiteurs à l'API, qui ne fait confiance qu'au proxy directement adjacent et n'est pas publiée sur l'hôte.
 
-Vérifier la page d'accueil, une URL interne telle que `/programme`, `/health`, `/api/games`, puis l'inscription et la connexion. Pour les erreurs :
+Vérifier que `http://24hsolidaires.fr` redirige vers `https://24hsolidaires.fr` et que le navigateur accepte le certificat sans avertissement. Vérifier ensuite la page d'accueil, une URL interne telle que `/programme`, `/health`, `/api/games`, puis l'inscription et la connexion. Pour les erreurs :
 
 ```sh
 docker compose --env-file .env.docker logs --tail 100 migrate server web
@@ -71,4 +75,4 @@ Pour arrêter les conteneurs en conservant les données :
 docker compose --env-file .env.docker down
 ```
 
-Références : [ordre de démarrage Compose](https://docs.docker.com/compose/how-tos/startup-order/), [variables Vite à la compilation](https://vite.dev/guide/env-and-mode).
+Références : [HTTPS automatique de Caddy](https://caddyserver.com/docs/automatic-https), [ordre de démarrage Compose](https://docs.docker.com/compose/how-tos/startup-order/), [variables Vite à la compilation](https://vite.dev/guide/env-and-mode).
