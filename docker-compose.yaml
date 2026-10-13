@@ -2,6 +2,8 @@ services:
   database:
     image: postgres:17-alpine
     restart: unless-stopped
+    networks:
+      - private
     environment:
       POSTGRES_DB: extia_gaming
       POSTGRES_USER: postgres
@@ -19,6 +21,8 @@ services:
     build:
       context: .
       target: migrate
+    networks:
+      - private
     environment: &database-env
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD in .env.docker}
     depends_on:
@@ -30,6 +34,8 @@ services:
     build:
       context: .
       target: server
+    networks:
+      - private
     restart: unless-stopped
     init: true
     environment:
@@ -69,6 +75,9 @@ services:
     build:
       context: .
       target: web
+    networks:
+      - private
+      - public
     restart: unless-stopped
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:?Configure SITE_ADDRESS in .env.docker}
@@ -86,6 +95,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 6
+
+networks:
+  private:
+    driver: bridge
+    internal: true
+  public:
+    driver: bridge
 
 volumes:
   postgresql_data:

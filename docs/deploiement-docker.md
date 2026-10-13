@@ -2,6 +2,14 @@
 
 La stack contient PostgreSQL 17, une tâche de migration, l'API Node.js et Caddy pour l'interface React et HTTPS. Seul Caddy publie des ports. Les chemins `/api/*`, `/auth/*` et `/uploads/*` sont transmis à l'API sans réécriture. Le client utilise la même origine que le site.
 
+## Réseau privé
+
+Le réseau `private`, déclaré avec `internal: true` dans `docker-compose.yaml`, relie les trois services permanents `web`, `server` et `database`. La tâche temporaire `migrate` y est également raccordée pour préparer la base avant le démarrage de l'API. Les services se joignent par leur nom Docker : Caddy utilise `server:3000` et l'API utilise `database:5432`.
+
+L'API et PostgreSQL ne publient aucun port et n'ont pas d'accès sortant à Internet. Les envois d'e-mails SMTP, les webhooks Discord et les notifications push vers des fournisseurs externes sont donc bloqués, même si leurs paramètres sont renseignés. Seul Caddy est aussi raccordé au réseau `public`, pour recevoir les visiteurs sur les ports publiés et obtenir ou renouveler les certificats HTTPS.
+
+Ces réseaux sont propres au projet Compose et ne sont pas partagés avec les autres stacks. Cette isolation ne protège pas contre un administrateur de l'hôte ou une personne ayant accès au moteur Docker, qui peut raccorder d'autres conteneurs au réseau.
+
 ## Configuration
 
 Utiliser Docker Engine et Docker Compose v2. Depuis la racine du projet, copier `.env.docker.example` vers `.env.docker` si ce dernier n'existe pas encore. Ne pas écraser un fichier déjà configuré.
@@ -20,7 +28,7 @@ HTTPS_PORT=443
 
 Faire pointer le DNS du domaine vers le serveur et rendre les ports TCP 80 et 443 accessibles. Caddy obtient et renouvelle automatiquement le certificat. `PUBLIC_SITE_URL` doit être l'origine exacte, sans chemin ni barre oblique finale. Les cookies d'authentification sont sécurisés en production : utiliser HTTPS pour l'exploitation. La configuration suppose que Caddy reçoit directement le trafic public ; l'ajout d'un CDN ou d'un autre proxy nécessite de configurer explicitement les proxies de confiance.
 
-Les notifications restent désactivées tant que leurs paramètres optionnels ne sont pas fournis. Copier les variables `SMTP_*`, `VAPID_*` et `DISCORD_WEBHOOK_URL` nécessaires depuis `.env.example` dans `.env.docker`.
+Les variables optionnelles `SMTP_*`, `VAPID_*` et `DISCORD_WEBHOOK_URL` ne suffisent pas à activer les notifications externes avec cette configuration isolée : leur utilisation nécessiterait aussi d'autoriser explicitement une sortie réseau pour l'API.
 
 ## Construire et démarrer
 
