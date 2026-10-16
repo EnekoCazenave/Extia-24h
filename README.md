@@ -46,3 +46,7 @@ Les commandes de build et de test préparent les dépendances partagées dans le
 - [Vérification des notes de réunion du 4 septembre 2026](docs/verification-reunion-24h.md)
 
 La migration `20261005000000_scoring_rules` ajoute les nouveaux barèmes, les scores décimaux, la trace du calcul et une contrainte contre les doubles crédits. Elle conserve les anciennes déclarations et les anciens barèmes. Si des doublons historiques existent pour un même couple partie/joueur, la création de la contrainte échoue explicitement : ils doivent être examinés avant le déploiement, sans suppression automatique de scores.
+
+## Administrateur initial
+
+Configurer `ADMIN_EMAIL`, `ADMIN_LOGIN` et `ADMIN_PASSWORD` (16 à 72 caractères) dans le fichier d’environnement du serveur, ou `.env.docker` pour Docker. Avant d’accepter les connexions, le serveur initialise les rôles et crée ce compte uniquement si aucun administrateur n’existe. Les redémarrages ne changent aucun compte ni mot de passe. Sans administrateur existant, une configuration absente ou une adresse déjà utilisée par un compte non administrateur bloque le démarrage. Le seed utilise la même initialisation ; il reste réservé aux données de démonstration.

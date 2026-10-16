@@ -1,6 +1,7 @@
 import {Outlet, Link} from 'react-router-dom'
 import {useAuth} from '../hooks/useAuth.ts'
 import styles from './AppLayout.module.css'
+import { MediaPreferences } from './ExternalMedia.tsx'
 import EventAttendancePrompt from './programme/EventAttendancePrompt.tsx'
 import NavigationBar from "./Navigationbar.tsx";
 
@@ -26,7 +27,10 @@ export default function AppLayout() {
                 <p>
                     Extia Gaming 24h &mdash;{' '}
                     <Link to="/politique-de-confidentialite">Politique de confidentialité</Link>
+                    {' · '}<Link to="/reglement">Règlement</Link>
+                    {' · '}<Link to="/mentions-legales">Mentions légales</Link>
                 </p>
+                <MediaPreferences />
             </footer>
         </>
     )

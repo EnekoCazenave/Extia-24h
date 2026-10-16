@@ -18,16 +18,12 @@ export type PersonalSessionPage = z.infer<typeof PersonalSessionPageSchema>
 export const LeaderboardEntrySchema = z.object({
   userId: z.number(),
   login: z.string(),
-  firstname: z.string(),
-  lastname: z.string(),
   totalScore: z.number(),
 })
 
 export const GameLeaderboardEntrySchema = z.object({
   userId: z.number(),
   login: z.string(),
-  firstname: z.string(),
-  lastname: z.string(),
   gameScore: z.number(),
 })
 

@@ -8,7 +8,11 @@ import type { UserPublic } from '@extia-gaming/shared'
 import styles from './ProfilePage.module.css'
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
+  const [statisticsConsent, setStatisticsConsent] = useState(user?.statisticsConsent ?? false)
+  const [statisticsBusy, setStatisticsBusy] = useState(false)
+  const [statisticsError, setStatisticsError] = useState(false)
+  const [statisticsSaved, setStatisticsSaved] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -29,7 +33,8 @@ export default function ProfilePage() {
 
     setIsSubmitting(true)
     try {
-      await api.put<{ user: UserPublic }>('/api/users/me', payload)
+      const response = await api.put<{ user: UserPublic }>('/api/users/me', payload)
+      updateUser(response.data.user)
       setSuccess(true)
     } catch {
       setError('Une erreur est survenue. Veuillez réessayer.')
@@ -38,10 +43,34 @@ export default function ProfilePage() {
     }
   }
 
+  async function changeStatisticsConsent() {
+    setStatisticsBusy(true)
+    setStatisticsError(false)
+    setStatisticsSaved(false)
+    try {
+      const response = await api.put<{ user: UserPublic }>('/api/users/me', { statisticsConsent: !statisticsConsent })
+      setStatisticsConsent(response.data.user.statisticsConsent ?? false)
+      updateUser(response.data.user)
+      setStatisticsSaved(true)
+    } catch {
+      setStatisticsError(true)
+    } finally {
+      setStatisticsBusy(false)
+    }
+  }
+
   return (
     <div className={styles.page}>
       <SEOHead title="Mon profil" description="Modifiez vos informations personnelles." canonicalPath="/profil" />
       <h1 className={styles.title}>Mon profil</h1>
+      <section className={styles.card} aria-labelledby="statistics-title">
+        <h2 id="statistics-title">Statistiques de l’événement</h2>
+        <p>J’accepte que ma provenance et ma participation soient utilisées pour établir les statistiques de l’événement.</p>
+        <p>Ce choix facultatif ne change pas votre participation. Votre consentement est actuellement {statisticsConsent ? 'accordé' : 'non accordé'}.</p>
+        <button className={styles.saveBtn} type="button" disabled={statisticsBusy} onClick={changeStatisticsConsent}>{statisticsBusy ? 'Mise à jour…' : statisticsConsent ? 'Retirer mon consentement' : 'Autoriser les statistiques'}</button>
+        {statisticsSaved && <p role="status">Votre choix a été enregistré.</p>}
+        {statisticsError && <p role="alert">Votre choix n’a pas pu être enregistré. Veuillez réessayer.</p>}
+      </section>
       <PlayerExtras userId={user.id} />
       <NotificationControls userId={user.id} />
       <p className={styles.subtitle}>Modifiez vos informations de participant.</p>

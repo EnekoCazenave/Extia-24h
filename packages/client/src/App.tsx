@@ -13,6 +13,8 @@ import ModerationPage from './pages/ModerationPage.tsx'
 import LeaderboardPage from './pages/LeaderboardPage.tsx'
 import PersonalLeaderboardPage from './pages/PersonalLeaderboardPage.tsx'
 import PrivacyPage from './pages/PrivacyPage.tsx'
+import LegalPage from './pages/LegalPage.tsx'
+import RulesPage from './pages/RulesPage.tsx'
 import AssociationsPage from './pages/AssociationsPage.tsx'
 import NotFoundPage from './pages/NotFoundPage.tsx'
 import ProgrammePage from "./pages/ProgrammePage.tsx";
@@ -36,6 +38,8 @@ export default function App() {
                 <Route path="/programme/:id" element={<EventDetailPage/>}/>
                 <Route path="/associations" element={<AssociationsPage/>}/>
                 <Route path="/politique-de-confidentialite" element={<PrivacyPage/>}/>
+                <Route path="/mentions-legales" element={<LegalPage/>}/>
+                <Route path="/reglement" element={<RulesPage/>}/>
 
                 {/* Protected routes — any authenticated user */}
                 <Route element={<ProtectedRoute/>}>

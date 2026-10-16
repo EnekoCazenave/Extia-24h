@@ -1,5 +1,5 @@
 import { describe,it,expect,vi,beforeEach } from 'vitest'
-import { screen,waitFor } from '@testing-library/react'
+import { screen,waitFor,within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '../test-utils.tsx'
 import {PlayerExtras,GroupSelect} from '../components/CommunityContent.tsx'
@@ -47,5 +47,16 @@ describe('Parcours événementiels',()=>{
   })
   it('propose un rapport Excel complet',()=>{
     renderWithProviders(<ExportsPanel/>);expect(screen.getByRole('button',{name:/Télécharger le rapport complet/})).toBeInTheDocument()
+  })
+  it('affiche tous les inscrits dans le bilan général et seulement les consentants dans les KPI',()=>{
+    fixtures.data['/api/settings']={settings:{participantCount:100,gamePoints:120,eventPoints:50,bonusPoints:20,groupBonusPoints:10,totalPoints:200}}
+    fixtures.data['/api/admin/kpis']={kpis:{participants:60,activePlayers:40,totalPoints:130,approved:20,pending:0,rejected:0,registrations:30,present:25},participants:[],groups:[]}
+    renderWithProviders(<ExportsPanel/>)
+    const general=screen.getByRole('region',{name:'Bilan général de l’événement'})
+    expect(within(general).getByText('100')).toBeInTheDocument()
+    expect(within(general).getByText('200')).toBeInTheDocument()
+    const consentingCount=screen.getByRole('heading',{name:'Participants consentants'}).closest('article')!
+    expect(within(consentingCount).getByText('60')).toBeInTheDocument()
+    expect(within(general).queryByText('60')).not.toBeInTheDocument()
   })
 })

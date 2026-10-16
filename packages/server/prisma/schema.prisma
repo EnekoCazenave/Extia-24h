@@ -8,6 +8,12 @@ datasource db {
 }
 
 model User {
+  termsAcceptedAt DateTime?
+  adultConfirmedAt DateTime?
+  termsVersion String?
+  statisticsConsent Boolean @default(false)
+  statisticsConsentUpdatedAt DateTime?
+  statisticsConsentVersion String?
   groupId Int?
   group OrganizationGroup? @relation(fields: [groupId], references: [id])
   eventAwards EventAward[]

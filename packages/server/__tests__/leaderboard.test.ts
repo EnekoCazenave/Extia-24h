@@ -72,7 +72,7 @@ describe('GET /api/leaderboard/me', () => {
         cookies: {access_token: token}})
       expect(res.statusCode).toBe(200)
       expect(res.json()).toMatchObject({ranking: {
-        rank: 150, userId: 7, login: 'alice', firstname: 'Alice', lastname: 'Doe', totalScore: score,
+        rank: 150, userId: 7, login: 'alice', totalScore: score,
       }})
       const query = db.$queryRaw.mock.calls[0][0]
       expect(query.values.at(-1)).toBe(7)

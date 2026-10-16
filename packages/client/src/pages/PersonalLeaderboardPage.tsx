@@ -28,7 +28,7 @@ export default function PersonalLeaderboardPage() {
     </div>}
     {ranking.data && !ranking.isError && <section className={styles.personalCard} aria-label="Votre classement personnel">
       <h2 className={styles.playerName}>{ranking.data.login}</h2>
-      <p className={styles.playerSub}>{ranking.data.firstname} {ranking.data.lastname}</p>
+      <p className={styles.playerSub}>{user?.firstname} {user?.lastname}</p>
       <dl className={styles.personalStats}>
         <div><dt>Position au classement général</dt><dd>{ranking.data.rank.toLocaleString('fr-FR')}{ranking.data.rank === 1 ? 'er' : 'e'}</dd></div>
         <div><dt>Score total</dt><dd>{ranking.data.totalScore.toLocaleString('fr-FR')} pts</dd></div>

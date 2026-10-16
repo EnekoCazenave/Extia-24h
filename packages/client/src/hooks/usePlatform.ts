@@ -17,7 +17,7 @@ export function usePlatformAction() {
   }
   return {run,error,busy}
 }
-export interface PublicSettings extends SiteSettings {totalPoints:number}
+export interface PublicSettings extends SiteSettings {participantCount:number;gamePoints:number;eventPoints:number;bonusPoints:number;groupBonusPoints:number;totalPoints:number}
 export interface PlayerSummary {
   user:{id:number;login:string;group:{id:number;name:string}|null};rank:number;totalPoints:number;gamePoints:number;bonusPoints:number;eventPoints:number
   games:Array<{id:number;score:number;playedAt:string;gameType:{name:string;videoGame:{nom:string}}}>

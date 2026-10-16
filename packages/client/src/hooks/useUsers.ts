@@ -4,9 +4,6 @@ import { api } from '../services/api.ts'
 export interface UserSummary {
   id: number
   login: string
-  firstname: string
-  lastname: string
-  email: string
 }
 
 export function useUsers() {

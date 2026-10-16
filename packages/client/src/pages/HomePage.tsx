@@ -1,4 +1,5 @@
 import SEOHead from '../components/SEOHead.tsx'
+import { ExternalMedia } from '../components/ExternalMedia.tsx'
 import TopGamesTable from '../components/TopGamesTable.tsx'
 import PlayerLeaderboard from '../components/PlayerLeaderboard.tsx'
 import PrizePoolBanner from '../components/PrizePoolBanner.tsx'
@@ -59,14 +60,14 @@ export default function HomePage() {
             Voir la chaîne ↗
           </a>
        </div>
-          <div className={styles.videoEmbed}>
+          <ExternalMedia provider="YouTube"><div className={styles.videoEmbed}>
               <iframe src="https://www.youtube.com/embed/b-qNl-lpJMI"
                       title="24h Solidaires 2025 (Part 3/3)" frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       referrerPolicy="strict-origin-when-cross-origin"
                       allowFullScreen
                       className={styles.videoIframe}></iframe>
-          </div>
+          </div></ExternalMedia>
       </section>
 
         <div className={styles.content}>
@@ -97,14 +98,14 @@ export default function HomePage() {
             Ouvrir sur Twitch ↗
           </a>
         </div>
-        <div className={styles.videoEmbed}>
+        <ExternalMedia provider="Twitch"><div className={styles.videoEmbed}>
           <iframe
             src={`https://player.twitch.tv/?channel=extiagaming&parent=${window.location.hostname}`}
             title="Extia Gaming Live Twitch"
             allowFullScreen
             className={styles.videoIframe}
           />
-        </div>
+        </div></ExternalMedia>
       </section>
       <div className={styles.content}>
         <section aria-labelledby="top-games-title" className={styles.section}>

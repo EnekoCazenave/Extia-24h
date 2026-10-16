@@ -26,12 +26,25 @@ const mockUser = {
 
 describe('ProfilePage', () => {
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({ user: mockUser, isLoading: false })
+    mockUseAuth.mockReturnValue({ user: mockUser, isLoading: false, updateUser: vi.fn() })
   })
 
   it('renders profile heading', () => {
     renderWithProviders(<ProfilePage />)
     expect(screen.getByRole('heading', { name: /mon profil/i })).toBeInTheDocument()
+  })
+
+  it('retire le consentement aux statistiques en une action', async () => {
+    const { api } = await import('../services/api.ts')
+    const updateUser = vi.fn()
+    mockUseAuth.mockReturnValue({ user: { ...mockUser, statisticsConsent: true }, updateUser })
+    vi.mocked(api.put).mockResolvedValue({ data: { user: { ...mockUser, statisticsConsent: false } } })
+    renderWithProviders(<ProfilePage />)
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Retirer mon consentement' }))
+    await waitFor(() => expect(api.put).toHaveBeenCalledWith('/api/users/me', { statisticsConsent: false }))
+    expect(await screen.findByText('Votre choix a été enregistré.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Autoriser les statistiques' })).toBeInTheDocument()
+    expect(updateUser).toHaveBeenCalledWith(expect.objectContaining({ statisticsConsent: false }))
   })
 
   it('pre-fills form with current user data', () => {

@@ -1,12 +1,14 @@
 import 'dotenv/config'
 import { buildApp } from './app.js'
 import { env } from './env.js'
-
-const app = await buildApp()
+import { ensureInitialAdmin } from './services/bootstrap.service.js'
 
 try {
+  const adminStatus = await ensureInitialAdmin()
+  const app = await buildApp()
+  app.log.info({ adminStatus }, 'Administrator initialization complete')
   await app.listen({ port: env.PORT, host: '0.0.0.0' })
 } catch (err) {
-  app.log.error(err)
+  console.error(err)
   process.exit(1)
 }

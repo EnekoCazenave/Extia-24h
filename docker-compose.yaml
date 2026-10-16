@@ -45,6 +45,9 @@ services:
       TRUST_PROXY_HOPS: "1"
       JWT_SECRET: ${JWT_SECRET:?Configure JWT_SECRET in .env.docker}
       REFRESH_SECRET: ${REFRESH_SECRET:?Configure REFRESH_SECRET in .env.docker}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
       ALLOWED_ORIGINS: ${PUBLIC_SITE_URL:?Configure PUBLIC_SITE_URL in .env.docker}
       PUBLIC_SITE_URL: ${PUBLIC_SITE_URL}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}

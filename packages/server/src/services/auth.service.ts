@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import crypto from 'node:crypto'
 import type { LoginInput, RegisterInput } from '@extia-gaming/shared'
 
-type RegisterData = Omit<RegisterInput, 'consentAccepted'>
+type RegisterData = Omit<RegisterInput, 'termsAccepted' | 'adultConfirmed'>
 
 export async function registerUser(input: RegisterData) {
   const existing = await prisma.user.findUnique({ where: { email: input.email } })
@@ -21,6 +21,12 @@ export async function registerUser(input: RegisterData) {
       lastname: input.lastname,
       intern: input.intern,
       roleId: 1,
+      termsAcceptedAt: new Date(),
+      adultConfirmedAt: new Date(),
+      termsVersion: '2026-10-16',
+      statisticsConsent: input.statisticsConsent,
+      statisticsConsentUpdatedAt: new Date(),
+      statisticsConsentVersion: '2026-10-16',
       groupId: input.groupId ?? null,
     },
     include: { role: true },

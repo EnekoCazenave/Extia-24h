@@ -29,7 +29,7 @@ describe('RegisterPage', () => {
     expect(screen.getByLabelText(/^nom/i, { selector: 'input[type="text"]' })).toBeInTheDocument()
     expect(screen.getByLabelText(/adresse email/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/mot de passe/i)).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: /politique de confidentialité/i })).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /règlement de l’événement/i })).toBeInTheDocument()
   })
 
   it('disables submit when consent not checked', () => {
@@ -40,7 +40,8 @@ describe('RegisterPage', () => {
   it('enables submit when consent checked', async () => {
     const user = userEvent.setup()
     renderWithProviders(<RegisterPage />)
-    await user.click(screen.getByRole('checkbox', { name: /politique de confidentialité/i }))
+    await user.click(screen.getByRole('checkbox', { name: /règlement de l’événement/i }))
+    await user.click(screen.getByRole('checkbox', { name: /18 ans/i }))
     expect(screen.getByRole('button', { name: /créer mon compte/i })).not.toBeDisabled()
   })
 
@@ -54,7 +55,8 @@ describe('RegisterPage', () => {
     await user.type(screen.getByLabelText(/^nom/i, { selector: 'input[type="text"]' }), 'Dupont')
     await user.type(screen.getByLabelText(/adresse email/i), 'alice@test.com')
     await user.type(screen.getByLabelText(/mot de passe/i), 'Password1!')
-    await user.click(screen.getByRole('checkbox', { name: /politique de confidentialité/i }))
+    await user.click(screen.getByRole('checkbox', { name: /règlement de l’événement/i }))
+    await user.click(screen.getByRole('checkbox', { name: /18 ans/i }))
     await user.click(screen.getByRole('button', { name: /créer mon compte/i }))
 
     await waitFor(() =>
@@ -65,7 +67,9 @@ describe('RegisterPage', () => {
           lastname: 'Dupont',
           email: 'alice@test.com',
           password: 'Password1!',
-          consentAccepted: true,
+          termsAccepted: true,
+          adultConfirmed: true,
+          statisticsConsent: false,
         })
       )
     )
@@ -81,7 +85,8 @@ describe('RegisterPage', () => {
     await user.type(screen.getByLabelText(/^nom/i, { selector: 'input[type="text"]' }), 'Dupont')
     await user.type(screen.getByLabelText(/adresse email/i), 'alice@test.com')
     await user.type(screen.getByLabelText(/mot de passe/i), 'Password1!')
-    await user.click(screen.getByRole('checkbox', { name: /politique de confidentialité/i }))
+    await user.click(screen.getByRole('checkbox', { name: /règlement de l’événement/i }))
+    await user.click(screen.getByRole('checkbox', { name: /18 ans/i }))
     await user.click(screen.getByRole('button', { name: /créer mon compte/i }))
 
     await waitFor(() =>

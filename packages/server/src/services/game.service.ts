@@ -51,7 +51,7 @@ export async function getGameDetail(id: number) {
   const userIds = userScores.map((s) => s.userId)
   const users = await prisma.user.findMany({
     where: { id: { in: userIds } },
-    select: { id: true, login: true, firstname: true, lastname: true },
+    select: { id: true, login: true },
   })
   const userMap = new Map(users.map((u) => [u.id, u]))
 
@@ -59,8 +59,6 @@ export async function getGameDetail(id: number) {
     rank: index + 1,
     userId: s.userId,
     login: userMap.get(s.userId)?.login ?? '',
-    firstname: userMap.get(s.userId)?.firstname ?? '',
-    lastname: userMap.get(s.userId)?.lastname ?? '',
     gameScore: s._sum.score ?? 0,
   }))
 

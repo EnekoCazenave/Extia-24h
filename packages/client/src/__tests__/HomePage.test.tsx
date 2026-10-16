@@ -63,6 +63,7 @@ describe('HomePage', () => {
     })
     renderWithProviders(<HomePage />)
     expect(screen.getByText('alice42')).toBeInTheDocument()
+    expect(screen.queryByText('Alice Doe')).not.toBeInTheDocument()
     expect(screen.getByText('300')).toBeInTheDocument()
   })
 })

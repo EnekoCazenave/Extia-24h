@@ -44,7 +44,7 @@ export async function communityRoutes(f:FastifyInstance) {
     if(groupId && !await prisma.organizationGroup.findFirst({where:{id:groupId,active:true}})) throw new EventError('Groupe indisponible',400)
     await prisma.user.update({where:{id:r.user.sub},data:{groupId}});return {ok:true}
   })
-  f.get('/api/admin/kpis',admin,async()=>{const {kpis,participants,groups}=await reportingData();return {kpis,participants,groups}})
+  f.get('/api/admin/kpis',admin,async(_r,reply)=>{reply.header('Cache-Control','no-store');const {kpis,participants,groups}=await reportingData();return {kpis,participants,groups}})
   f.get('/api/admin/report.xlsx',admin,async(_r,reply)=>reply.header('Cache-Control','no-store').header('Content-Disposition','attachment; filename="24h-rapport.xlsx"').type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').send(await exportWorkbook()))
   f.get<{Params:{kind:string}}>('/api/admin/exports/:kind',admin,async(r,reply)=>{
     const csv=await exportData(r.params.kind)

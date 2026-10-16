@@ -1,9 +1,10 @@
-import { PrismaClient } from '@prisma/client'
+import 'dotenv/config'
+import { prisma } from '../src/lib/prisma.js'
+import { ensureInitialAdmin } from '../src/services/bootstrap.service.js'
 import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient()
-
 async function main() {
+  await ensureInitialAdmin()
   // Roles
   const userRole = await prisma.role.upsert({
     where: { id: 1 },
@@ -78,22 +79,6 @@ async function main() {
       updatedAt: new Date(),
       videoGameId: 1
     }
-  })
-
-  // Admin user
-  const hashedPassword = await bcrypt.hash('Admin1234!', 12)
-  await prisma.user.upsert({
-    where: { email: 'admin@extia.fr' },
-    update: {},
-    create: {
-      login: 'admin',
-      email: 'admin@extia.fr',
-      password: hashedPassword,
-      firstname: 'Super',
-      lastname: 'Admin',
-      intern: true,
-      roleId: adminRole.id,
-    },
   })
 
   // Moderator user

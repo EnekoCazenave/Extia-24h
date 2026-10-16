@@ -15,7 +15,7 @@ describe('Accueil, paliers, notifications et rapport',()=>{
   beforeAll(async()=>{
     groupId=(await prisma.organizationGroup.create({data:{name:prefix,kind:'AGENCY'}})).id
     for(let i=0;i<2;i++){
-      const u=await prisma.user.create({data:{email:`${prefix}-${i}@example.invalid`,login:i?'Second':'=1+2',firstname:'Test',lastname:'Export',password:'not-exportable',roleId:1,groupId}})
+      const u=await prisma.user.create({data:{email:`${prefix}-${i}@example.invalid`,login:i?'Second':'=1+2',firstname:'Test',lastname:'Export',password:'not-exportable',roleId:1,groupId,statisticsConsent:true}})
       if(i)otherId=u.id;else userId=u.id
     }
     gameId=(await prisma.videoGame.create({data:{nom:prefix}})).id

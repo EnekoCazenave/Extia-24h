@@ -61,9 +61,7 @@ export default function PlayGamePage() {
           if (teamMemberIds.includes(u.id)) return false
           const q = teamSearch.toLowerCase()
           return (
-            u.login.toLowerCase().includes(q) ||
-            u.firstname.toLowerCase().includes(q) ||
-            u.lastname.toLowerCase().includes(q)
+            u.login.toLowerCase().includes(q)
           )
         })
         .slice(0, 8)
@@ -334,12 +332,12 @@ export default function PlayGamePage() {
                   <div className={styles.teamSelected}>
                     {selectedMembers.map((u) => (
                       <span key={u.id} className={styles.teamChip}>
-                        {u.firstname} {u.lastname}
+                        {u.login}
                         <button
                           type="button"
                           className={styles.teamChipRemove}
                           onClick={() => removeTeamMember(u.id)}
-                          aria-label={`Retirer ${u.firstname} ${u.lastname}`}
+                          aria-label={`Retirer ${u.login}`}
                         >×</button>
                       </span>
                     ))}
@@ -369,8 +367,7 @@ export default function PlayGamePage() {
                             className={styles.acItem}
                             onMouseDown={(e) => { e.preventDefault(); addTeamMember(u.id) }}
                           >
-                            <span className={styles.acName}>{u.firstname} {u.lastname}</span>
-                            <span className={styles.acLogin}>{u.login}</span>
+                            <span className={styles.acName}>{u.login}</span>
                           </button>
                         </li>
                       ))}

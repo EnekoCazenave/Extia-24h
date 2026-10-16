@@ -4,8 +4,6 @@ import {prisma} from '../lib/prisma.js'
 const leaderboardScores = Prisma.sql`
     SELECT u.id                                                  AS "userId",
            u.login,
-           u.firstname,
-           u.lastname,
            COALESCE(ug_agg.total, 0) + COALESCE(pb_agg.total, 0) + COALESCE((SELECT SUM(points) FROM "EventAward" WHERE "userId"=u.id),0) AS "totalScore"
     FROM "User" u
              LEFT JOIN (SELECT "userId", SUM(score) AS total
@@ -20,8 +18,6 @@ export async function getGlobalLeaderboard(limit = 20) {
         Array<{
             userId: number
             login: string
-            firstname: string
-            lastname: string
             totalScore: bigint
         }>
     >(
@@ -37,8 +33,6 @@ export async function getGlobalLeaderboard(limit = 20) {
         rank: index + 1,
         userId: r.userId,
         login: r.login,
-        firstname: r.firstname,
-        lastname: r.lastname,
         totalScore: Number(r.totalScore),
     }))
 }
@@ -73,8 +67,6 @@ export async function retrieveLeaderBoardById(userId: number) {
         rank: bigint
         userId: number
         login: string
-        firstname: string
-        lastname: string
         totalScore: bigint
     }>>(Prisma.sql`
         SELECT *
@@ -99,8 +91,6 @@ export async function getFilteredLeaderboard(opts: {
         Array<{
             userId: number
             login: string
-            firstname: string
-            lastname: string
             totalScore: bigint
             gameCount: bigint
         }>
@@ -108,8 +98,6 @@ export async function getFilteredLeaderboard(opts: {
         Prisma.sql`
             SELECT u.id                       AS "userId",
                    u.login,
-                   u.firstname,
-                   u.lastname,
                    COALESCE(SUM(ug.score), 0) AS "totalScore",
                    COUNT(ug.id)               AS "gameCount"
             FROM "User" u
@@ -120,7 +108,7 @@ export async function getFilteredLeaderboard(opts: {
                      ) ug ON ug."userId"=u.id
             WHERE 1 = 1
                 ${gameId !== undefined ? Prisma.sql`AND ug."videoGameId" = ${gameId}` : Prisma.sql``} ${gameTypeId !== undefined ? Prisma.sql`AND ug."gameTypeId" = ${gameTypeId}` : Prisma.sql``} ${team !== undefined ? Prisma.sql`AND ug.team = ${team}` : Prisma.sql``}
-            GROUP BY u.id, u.login, u.firstname, u.lastname
+            GROUP BY u.id, u.login
             ORDER BY "totalScore" DESC
                 LIMIT ${limit}
         `,
@@ -130,8 +118,6 @@ export async function getFilteredLeaderboard(opts: {
         rank: i + 1,
         userId: r.userId,
         login: r.login,
-        firstname: r.firstname,
-        lastname: r.lastname,
         totalScore: Number(r.totalScore),
         gameCount: Number(r.gameCount),
     }))

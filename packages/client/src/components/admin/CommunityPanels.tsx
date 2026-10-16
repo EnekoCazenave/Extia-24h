@@ -44,22 +44,30 @@ export function GroupsPanel() {
 }
 interface ReportView {
   kpis:{participants:number;activePlayers:number;groups:number;approved:number;pending:number;rejected:number;totalPoints:number;registrations:number;present:number}
-  participants:Array<{id:number;login:string;firstname:string;lastname:string;groupId:number|null;group?:{name:string};totalPoints:number;approved:number;pending:number;rejected:number}>
+  participants:Array<{id:number;login:string;groupId:number|null;group?:{name:string};totalPoints:number;approved:number;pending:number;rejected:number}>
   groups:Array<{id:number;name:string;members:number;activePlayers:number;playerPoints:number;manualPoints:number;totalPoints:number}>
 }
 export function ExportsPanel() {
   const query=usePlatform<ReportView>('/api/admin/kpis'),action=usePlatformAction(),[search,setSearch]=useState(''),[group,setGroup]=useState('')
+  const generalQuery=usePlatform<{settings:PublicSettings}>('/api/settings'),general=generalQuery.data?.settings
   const data=query.data
-  const rows=data?.participants.filter(u=>(!group||(group==='none'?u.groupId===null:String(u.groupId)===group)) && (u.login+' '+u.firstname+' '+u.lastname).toLocaleLowerCase('fr').includes(search.toLocaleLowerCase('fr')))??[]
+  const rows=data?.participants.filter(u=>(!group||(group==='none'?u.groupId===null:String(u.groupId)===group)) && u.login.toLocaleLowerCase('fr').includes(search.toLocaleLowerCase('fr')))??[]
   async function download() {await action.run(async()=>{const {data}=await api.get('/api/admin/report.xlsx',{responseType:'blob'});const url=URL.createObjectURL(data),a=document.createElement('a');a.href=url;a.download='24h-rapport.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)})}
-  return <section className={s.section}><h2>Pilotage et export Excel</h2>
-    <p>Un seul classeur avec synthèse, participants, groupes, parties, points, événements, inscriptions, jeux, types de partie et paliers. Toutes les feuilles sont filtrables. L’export couvre tout l’historique et contient les coordonnées des participants ; aucun mot de passe ni jeton.</p>
+  return <section className={s.section}>
+    <section aria-labelledby="general-event-totals-title">
+      <h2 id="general-event-totals-title">Bilan général de l’événement</h2>
+      <p>Tous les inscrits sont comptés dans les effectifs et les totaux de points nécessaires au suivi de l’événement, y compris sans consentement aux statistiques facultatives. Le nombre d’inscrits correspond aux comptes créés sur le site.</p>
+      {generalQuery.isError&&<p role="alert">Impossible de charger le bilan général.</p>}
+      {general&&<div className={s.grid}>{[['Participants inscrits',general.participantCount],['Points des parties',general.gamePoints],['Points des événements',general.eventPoints],['Bonus individuels',general.bonusPoints],['Bonus collectifs',general.groupBonusPoints],['Total des points',general.totalPoints]].map(([label,value])=><article className={s.card} key={label}><h3>{label}</h3><strong>{points(Number(value))}</strong></article>)}</div>}
+    </section>
+    <h2>Statistiques avec consentement et export Excel</h2>
+    <p>Un seul classeur avec synthèse, participants, groupes, parties, points, événements, inscriptions, jeux, types de partie et paliers. Toutes les feuilles sont filtrables. Les indicateurs et les exports incluent uniquement les participants ayant consenti aux statistiques. Ils ne contiennent ni nom, ni prénom, ni email, ni preuve de résultat. Les classements de compétition restent indépendants de ce choix.</p>
     <button className={s.button} disabled={action.busy} onClick={download}>{action.busy?'Préparation…':'Télécharger le rapport complet (.xlsx)'}</button>
     {action.error&&<p role="alert">{action.error}</p>}{query.isError&&<p role="alert">Impossible de charger les indicateurs.</p>}
-    {data&&<><div className={s.grid}>{[['Participants',data.kpis.participants],['Joueurs actifs',data.kpis.activePlayers],['Points validés',data.kpis.totalPoints],['Parties validées',data.kpis.approved],['En attente',data.kpis.pending],['Refusées',data.kpis.rejected],['Inscriptions',data.kpis.registrations],['Présences confirmées',data.kpis.present]].map(([label,value])=><article className={s.card} key={label}><h3>{label}</h3><strong>{Number(value).toLocaleString('fr-FR',{maximumFractionDigits:0})}</strong></article>)}</div>
-    <h3>Participants</h3><div className={s.actions}><label className={s.field}>Rechercher une personne<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nom ou pseudo"/></label><label className={s.field}>Appartenance<select value={group} onChange={e=>setGroup(e.target.value)}><option value="">Tous les groupes</option><option value="none">Sans groupe</option>{data.groups.map(g=><option value={g.id} key={g.id}>{g.name}</option>)}</select></label></div>
+    {data&&<><div className={s.grid}>{[['Participants consentants',data.kpis.participants],['Joueurs actifs',data.kpis.activePlayers],['Points validés',data.kpis.totalPoints],['Parties validées',data.kpis.approved],['En attente',data.kpis.pending],['Refusées',data.kpis.rejected],['Inscriptions',data.kpis.registrations],['Présences confirmées',data.kpis.present]].map(([label,value])=><article className={s.card} key={label}><h3>{label}</h3><strong>{Number(value).toLocaleString('fr-FR',{maximumFractionDigits:0})}</strong></article>)}</div>
+    <h3>Participants</h3><div className={s.actions}><label className={s.field}>Rechercher un pseudo<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Pseudo"/></label><label className={s.field}>Appartenance<select value={group} onChange={e=>setGroup(e.target.value)}><option value="">Tous les groupes</option><option value="none">Sans groupe</option>{data.groups.map(g=><option value={g.id} key={g.id}>{g.name}</option>)}</select></label></div>
     <p>{rows.length} personne(s) · {points(rows.reduce((sum,u)=>sum+u.totalPoints,0))} points dans la sélection. Ces filtres ne réduisent pas le classeur complet.</p>
-    <div style={{overflowX:'auto'}}><table className={s.reportTable}><thead><tr><th>Personne</th><th>Pseudo</th><th>Groupe</th><th>Points</th><th>Parties validées</th><th>En attente</th><th>Refusées</th></tr></thead><tbody>{rows.map(u=><tr key={u.id}><td>{u.firstname} {u.lastname}</td><td>{u.login}</td><td>{u.group?.name??'Sans groupe'}</td><td>{points(u.totalPoints)}</td><td>{u.approved}</td><td>{u.pending}</td><td>{u.rejected}</td></tr>)}</tbody></table></div>
+    <div style={{overflowX:'auto'}}><table className={s.reportTable}><thead><tr><th>Pseudo</th><th>Groupe</th><th>Points</th><th>Parties validées</th><th>En attente</th><th>Refusées</th></tr></thead><tbody>{rows.map(u=><tr key={u.id}><td>{u.login}</td><td>{u.group?.name??'Sans groupe'}</td><td>{points(u.totalPoints)}</td><td>{u.approved}</td><td>{u.pending}</td><td>{u.rejected}</td></tr>)}</tbody></table></div>
     <h3>Groupes</h3><div style={{overflowX:'auto'}}><table className={s.reportTable}><thead><tr><th>Groupe</th><th>Membres</th><th>Joueurs actifs</th><th>Points des membres</th><th>Bonus du groupe</th><th>Total points</th></tr></thead><tbody>{data.groups.map(g=><tr key={g.id}><td>{g.name}</td><td>{g.members}</td><td>{g.activePlayers}</td><td>{points(g.playerPoints)}</td><td>{points(g.manualPoints)}</td><td>{points(g.totalPoints)}</td></tr>)}</tbody></table></div></>}
   </section>
 }

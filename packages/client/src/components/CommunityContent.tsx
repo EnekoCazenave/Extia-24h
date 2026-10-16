@@ -5,7 +5,7 @@ import {api} from '../services/api.ts'
 import s from './Platform.module.css'
 export function GroupSelect({value,onChange}:{value:string;onChange:(v:string)=>void}) {
   const query=usePlatform<{groups:GroupView[]}>('/api/groups')
-  return <label className={s.field}>Agence, alumni ou partenaire<select name="groupId" value={value} onChange={e=>onChange(e.target.value)}><option value="">Sans groupe</option>{query.data?.groups.filter(g=>g.active).map(g=><option key={g.id} value={g.id}>{g.name} ({g.kind==='AGENCY'?'Agence':g.kind==='ALUMNI'?'Alumni':'Partenaire'})</option>)}</select></label>
+  return <label className={s.field}>Provenance : agence, alumni ou partenaire (facultatif)<select name="groupId" value={value} onChange={e=>onChange(e.target.value)}><option value="">Non renseignée</option>{query.data?.groups.filter(g=>g.active).map(g=><option key={g.id} value={g.id}>{g.name} ({g.kind==='AGENCY'?'Agence':g.kind==='ALUMNI'?'Alumni':'Partenaire'})</option>)}</select></label>
 }
 export function GroupsLeaderboard() {
   const query=usePlatform<{groups:GroupView[]}>('/api/groups')

@@ -177,7 +177,6 @@ export default function LeaderboardPage() {
                   </td>
                   <td>
                     <div className={styles.playerName}>{entry.login}</div>
-                    <div className={styles.playerSub}>{entry.firstname} {entry.lastname}</div>
                   </td>
                   <td>
                     <span className={styles.score}>{entry.totalScore.toLocaleString('fr-FR', { maximumFractionDigits: 6 })} pts</span>

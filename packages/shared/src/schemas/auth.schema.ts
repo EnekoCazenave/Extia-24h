@@ -8,8 +8,12 @@ export const RegisterSchema = z.object({
   lastname: z.string().min(1).max(100),
   groupId: z.number().int().positive().nullable().optional(),
   intern: z.boolean().default(false),
-  consentAccepted: z.literal(true, {
-    errorMap: () => ({ message: 'Vous devez accepter la politique de confidentialité' }),
+  termsAccepted: z.literal(true, {
+    errorMap: () => ({ message: "Vous devez accepter le règlement de l’événement" }),
+  }),
+  statisticsConsent: z.boolean().default(false),
+  adultConfirmed: z.literal(true, {
+    errorMap: () => ({ message: 'La participation est réservée aux personnes de 18 ans et plus' }),
   }),
 })
 

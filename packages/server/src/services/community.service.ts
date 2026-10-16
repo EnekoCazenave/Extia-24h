@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma.js'
 import { Prisma } from '@prisma/client'
 import { roundScore } from '@extia-gaming/shared'
+import { reportingData } from './reporting.service.js'
 
 export async function playerSummary(userId:number, privateView=false) {
   const user=await prisma.user.findUnique({where:{id:userId},select:{id:true,login:true,group:{select:{id:true,name:true}}}})
@@ -29,9 +30,11 @@ export async function listGroups() {
 }
 export async function publicSettings() {
   const settings=await prisma.siteSettings.findUnique({where:{id:1}}) ?? {eventStart:null,eventEnd:null}
-  const [game,event,bonus,group]=await Promise.all([prisma.userGame.aggregate({_sum:{score:true}}),prisma.eventAward.aggregate({_sum:{points:true}}),prisma.pointBonus.aggregate({_sum:{points:true}}),prisma.groupPoint.aggregate({_sum:{points:true}})])
+  // Operational totals include every participant, independently of optional statistics consent.
+  const [participantCount,game,event,bonus,group]=await Promise.all([prisma.user.count(),prisma.userGame.aggregate({_sum:{score:true}}),prisma.eventAward.aggregate({_sum:{points:true}}),prisma.pointBonus.aggregate({_sum:{points:true}}),prisma.groupPoint.aggregate({_sum:{points:true}})])
+  const gamePoints=roundScore(game._sum.score??0),eventPoints=roundScore(event._sum.points??0),bonusPoints=roundScore(bonus._sum.points??0),groupBonusPoints=roundScore(group._sum.points??0)
   const totalPoints=roundScore((game._sum.score??0)+(event._sum.points??0)+(bonus._sum.points??0)+(group._sum.points??0))
-  return {...settings,totalPoints}
+  return {...settings,participantCount,gamePoints,eventPoints,bonusPoints,groupBonusPoints,totalPoints}
 }
 
 export function csvCell(value:unknown):string {
@@ -43,28 +46,9 @@ export function toCsv(rows:Record<string,unknown>[],columns:string[]):string {
   return '\uFEFF'+[columns.map(csvCell).join(';'),...rows.map(row=>columns.map(c=>csvCell(row[c])).join(';'))].join('\r\n')
 }
 export async function exportData(kind:string) {
-  switch(kind) {
-    case 'participants': {
-      const rows=await prisma.user.findMany({select:{id:true,login:true,firstname:true,lastname:true,email:true,intern:true,group:{select:{name:true,kind:true}}},orderBy:{id:'asc'}})
-      return toCsv(rows.map(({group,...r})=>({...r,group:group?.name,groupKind:group?.kind})),['id','login','firstname','lastname','email','intern','group','groupKind'])
-    }
-    case 'presences': {
-      const rows=await prisma.userEvent.findMany({include:{user:{select:{login:true}},event:{select:{name:true}}},orderBy:[{eventId:'asc'},{userId:'asc'}]})
-      return toCsv(rows.map(r=>({eventId:r.eventId,event:r.event.name,userId:r.userId,login:r.user.login,registeredAt:r.registeredAt,isPresent:r.isPresent})),['eventId','event','userId','login','registeredAt','isPresent'])
-    }
-    case 'parties': {
-      const rows=await prisma.gameSession.findMany({include:{gameType:{select:{name:true}},teamMembers:{select:{userId:true}}},orderBy:{id:'asc'}})
-      return toCsv(rows.map(r=>({id:r.id,submitterId:r.submitterId,participants:[r.submitterId,...r.teamMembers.map(m=>m.userId)].join(','),mode:r.gameType.name,calculatedPoints:r.score,status:r.status,createdAt:r.createdAt,reviewedAt:r.reviewedAt})),['id','submitterId','participants','mode','calculatedPoints','status','createdAt','reviewedAt'])
-    }
-    case 'points': {
-      const [games,events,bonuses,groups]=await Promise.all([prisma.userGame.findMany(),prisma.eventAward.findMany(),prisma.pointBonus.findMany(),prisma.groupPoint.findMany()])
-      return toCsv([...games.map(r=>({source:'partie',id:r.id,userId:r.userId,groupId:null,reference:r.gameSessionId,points:r.score,date:r.playedAt})),...events.map(r=>({source:'evenement',id:r.id,userId:r.userId,groupId:null,reference:r.eventId,points:r.points,date:r.createdAt})),...bonuses.map(r=>({source:'bonus',id:r.id,userId:r.userId,groupId:null,reference:null,points:r.points,date:r.createdAt})),...groups.map(r=>({source:'groupe',id:r.id,userId:null,groupId:r.groupId,reference:null,points:r.points,date:r.createdAt}))],['source','id','userId','groupId','reference','points','date'])
-    }
-    case 'groupes': return toCsv(await listGroups(),['id','name','kind','active','members','manualPoints','playerPoints','totalPoints'])
-    case 'evenements': {
-      const rows=await prisma.event.findMany({include:{_count:{select:{userEvents:true,awards:true}}},orderBy:{id:'asc'}})
-      return toCsv(rows.map(r=>({...r,registrations:r._count.userEvents,awards:r._count.awards})),['id','name','description','startsAt','endsAt','maxPlaces','videoGameId','twitchUrl','pointsEarned','winnerShare','winnerId','settledAt','registrations','awards'])
-    }
-    default: return null
-  }
+  const sheetNames: Record<string,string> = { participants:'Participants', presences:'Inscriptions', parties:'Parties', points:'Points', groupes:'Groupes', evenements:'Événements' }
+  if (!Object.hasOwn(sheetNames,kind)) return null
+  const data = await reportingData()
+  const sheet = data.sheets.find(sheet => sheet.name === sheetNames[kind])!
+  return toCsv(sheet.rows.map(row => Object.fromEntries(sheet.columns.map((column,index) => [column,row[index]]))),sheet.columns)
 }

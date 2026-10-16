@@ -11,11 +11,13 @@ export default function RegisterPage() {
   const [groupId,setGroupId] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [consentChecked, setConsentChecked] = useState(false)
+  const [termsChecked, setTermsChecked] = useState(false)
+  const [statisticsConsent, setStatisticsConsent] = useState(false)
+  const [adultConfirmed, setAdultConfirmed] = useState(false)
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!consentChecked) return
+    if (!termsChecked || !adultConfirmed || !e.currentTarget.reportValidity()) return
 
     setError(null)
     const data = new FormData(e.currentTarget)
@@ -30,7 +32,9 @@ export default function RegisterPage() {
         password: data.get('password') as string,
         intern: false,
         ...(groupId ? { groupId: Number(groupId) } : {}),
-        consentAccepted: true,
+        termsAccepted: true,
+        statisticsConsent,
+        adultConfirmed: true,
       })
       navigate('/')
     } catch (err: unknown) {
@@ -60,10 +64,10 @@ export default function RegisterPage() {
         <form
           className={styles.form}
           onSubmit={handleSubmit}
-          noValidate
           aria-labelledby="register-title"
         >
           <GroupSelect value={groupId} onChange={setGroupId} />
+          <p>Les champs marqués d’un astérisque sont obligatoires pour créer votre compte. La provenance et le consentement aux statistiques sont facultatifs.</p>
           <div className={styles.field}>
             <label className={`${styles.label} ${styles.required}`} htmlFor="login">
               Pseudo
@@ -78,7 +82,9 @@ export default function RegisterPage() {
               minLength={3}
               maxLength={50}
               placeholder="Votre pseudo en jeu"
+              aria-describedby="pseudo-hint"
             />
+            <p id="pseudo-hint">Votre pseudo et vos scores sont publics. Choisissez un pseudo qui ne révèle pas votre identité réelle.</p>
           </div>
 
           <div className={styles.row}>
@@ -140,24 +146,29 @@ export default function RegisterPage() {
           </div>
 
           <div className={styles.consentBox}>
+            <input className={styles.consentCheckbox} id="adult" name="adult" type="checkbox" checked={adultConfirmed} onChange={e => setAdultConfirmed(e.target.checked)} required />
+            <label className={styles.consentLabel} htmlFor="adult">Je confirme avoir 18 ans ou plus (obligatoire).</label>
+          </div>
+          <div className={styles.consentBox}>
             <input
               className={styles.consentCheckbox}
-              id="consent"
-              name="consent"
+              id="terms"
+              name="terms"
               type="checkbox"
-              checked={consentChecked}
-              onChange={(e) => setConsentChecked(e.target.checked)}
-              aria-required="true"
-              aria-describedby="consent-desc"
+              checked={termsChecked}
+              onChange={(e) => setTermsChecked(e.target.checked)}
+              required
             />
-            <label className={styles.consentLabel} htmlFor="consent" id="consent-desc">
-              J'ai lu et j'accepte la{' '}
-              <Link to="/politique-de-confidentialite" target="_blank" rel="noopener">
-                politique de confidentialité
-              </Link>
-              . Je consens au traitement de mes données personnelles (nom, prénom, email) dans le cadre de l'événement Extia Gaming 24h.
+            <label className={styles.consentLabel} htmlFor="terms">
+              J’accepte le <Link to="/reglement" target="_blank" rel="noopener">règlement de l’événement</Link> (obligatoire).
             </label>
           </div>
+          <p>Vos données sont traitées conformément à notre <Link to="/politique-de-confidentialite" target="_blank" rel="noopener">Politique de Confidentialité</Link>.</p>
+          <div className={styles.consentBox}>
+            <input className={styles.consentCheckbox} id="statistics" name="statistics" type="checkbox" checked={statisticsConsent} onChange={e => setStatisticsConsent(e.target.checked)} aria-describedby="statistics-hint" />
+            <label className={styles.consentLabel} htmlFor="statistics">J’accepte que ma provenance et ma participation soient utilisées pour établir les statistiques de l’événement (facultatif).</label>
+          </div>
+          <p id="statistics-hint">Le refus ne change pas votre participation. Vous pouvez retirer ce consentement à tout moment depuis votre profil.</p>
 
           {error && (
             <p className={styles.error} role="alert" aria-live="assertive">
@@ -168,7 +179,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             className={styles.submitBtn}
-            disabled={isSubmitting || !consentChecked}
+            disabled={isSubmitting || !termsChecked || !adultConfirmed}
           >
             {isSubmitting ? 'Création…' : 'Créer mon compte'}
           </button>

@@ -8,6 +8,7 @@ export const UserSchema = z.object({
   firstname: z.string(),
   lastname: z.string(),
   intern: z.boolean(),
+  statisticsConsent: z.boolean().optional(),
   roleId: z.number(),
 })
 
@@ -16,6 +17,7 @@ export const UserPublicSchema = UserSchema.omit({ roleId: true }).extend({
 })
 
 export const UpdateProfileSchema = z.object({
+  statisticsConsent: z.boolean().optional(),
   login: z.string().min(3).max(50).optional(),
   firstname: z.string().min(1).max(100).optional(),
   lastname: z.string().min(1).max(100).optional(),

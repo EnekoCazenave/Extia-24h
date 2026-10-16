@@ -42,7 +42,7 @@ docker compose --env-file .env.docker up -d --build --wait --wait-timeout 180
 docker compose --env-file .env.docker ps -a
 ```
 
-La tâche `migrate` attend PostgreSQL, applique les migrations versionnées, puis initialise uniquement les rôles requis par l'application. Elle se termine avec le code 0 avant le lancement de l'API. Aucun compte administrateur par défaut ni jeu de données de démonstration n'est créé. Le seed de développement ne doit pas être exécuté automatiquement en production.
+La tâche `migrate` attend PostgreSQL, applique les migrations versionnées, puis initialise uniquement les rôles requis par l'application. Elle se termine avec le code 0 avant le lancement de l'API. Au démarrage, l’API crée un administrateur à partir de ADMIN_EMAIL, ADMIN_LOGIN et ADMIN_PASSWORD si aucun administrateur n’existe. Le mot de passe (16 à 72 caractères) est haché ; un compte existant n’est jamais modifié. Une adresse déjà utilisée par un non-administrateur bloque la création. Aucun jeu de données de démonstration n’est créé. Le seed de développement ne doit pas être exécuté automatiquement en production.
 
 L'API fonctionne avec un utilisateur non root et les seules dépendances de production. Les journaux de production sont au format JSON. Caddy transmet les adresses des visiteurs à l'API, qui ne fait confiance qu'au proxy directement adjacent et n'est pas publiée sur l'hôte.
 
