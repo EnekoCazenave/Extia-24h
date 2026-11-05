@@ -20,7 +20,7 @@ export default function NavigationBar({logout, user, isAdmin, isModerator}: Navi
     }, [location]);
 
     useEffect(() => {
-        const desktop = window.matchMedia('(min-width: 1280px)');
+        const desktop = window.matchMedia('(min-width: 900px)');
         const closeMenu = () => setIsMenuOpen(false);
         desktop.addEventListener('change', closeMenu);
         return () => desktop.removeEventListener('change', closeMenu);
@@ -36,7 +36,7 @@ export default function NavigationBar({logout, user, isAdmin, isModerator}: Navi
 
     return (
         <header className={styles.header}>
-            <nav className={styles.nav} aria-label="Navigation principale"
+            <nav className={`${styles.nav} ${isModerator ? styles.staffNav : ''}`} aria-label="Navigation principale"
                  onKeyDown={(event) => {
                      if (event.key === 'Escape' && isMenuOpen) {
                          setIsMenuOpen(false);
@@ -44,7 +44,7 @@ export default function NavigationBar({logout, user, isAdmin, isModerator}: Navi
                      }
                  }}>
                 <Link to="/" className={styles.logo} onClick={() => setIsMenuOpen(false)}>
-                    Extia <span>Gaming</span> 24h
+                    <img src="/branding/logo-vertical.webp" alt="Extia Gaming 24h — accueil" width="63" height="80" />
                 </Link>
 
                 <button

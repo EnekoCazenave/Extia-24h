@@ -84,6 +84,6 @@ export function useGrantBonus() {
       const res = await api.post('/api/admin/bonuses', data)
       return res.data.bonus
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['leaderboard'] }),
+    onSuccess: () => qc.invalidateQueries(),
   })
 }

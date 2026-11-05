@@ -36,7 +36,7 @@
 
 .btnPrimary {
   background: var(--color-accent);
-  color: var(--extia-ink, #111);
+  color: var(--text-on-accent);
   border: 0;
   padding: 10px 16px;
   border-radius: var(--radius-md);

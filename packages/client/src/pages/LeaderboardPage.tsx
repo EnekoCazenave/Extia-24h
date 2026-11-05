@@ -1,4 +1,4 @@
-import {GroupsLeaderboard} from '../components/CommunityContent.tsx'
+import {GroupFilter, GroupsLeaderboard} from '../components/CommunityContent.tsx'
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.ts'
@@ -15,6 +15,8 @@ export default function LeaderboardPage() {
   const games = useGames()
   const [selectedGameId, setSelectedGameId] = useState<number | undefined>()
   const [selectedGameTypeId, setSelectedGameTypeId] = useState<number | undefined>()
+  const [view, setView] = useState<'players' | 'groups'>('players')
+  const [groupId, setGroupId] = useState<number | undefined>()
   const [teamFilter, setTeamFilter] = useState<TeamFilter>('all')
 
   const selectedGame: VideoGame | undefined = useMemo(
@@ -38,9 +40,11 @@ export default function LeaderboardPage() {
     gameId: selectedGameId,
     gameTypeId: selectedGameTypeId,
     team: teamParam,
+    groupId,
   })
 
-  const isGlobal = selectedGameId === undefined && selectedGameTypeId === undefined && teamFilter === 'all'
+  const hasScoreFilter = selectedGameId !== undefined || selectedGameTypeId !== undefined || teamFilter !== 'all'
+  const isGlobal = selectedGameId === undefined && selectedGameTypeId === undefined && teamFilter === 'all' && groupId === undefined
 
   function handleGameChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const val = e.target.value ? parseInt(e.target.value, 10) : undefined
@@ -57,13 +61,13 @@ export default function LeaderboardPage() {
     setSelectedGameId(undefined)
     setSelectedGameTypeId(undefined)
     setTeamFilter('all')
+    setGroupId(undefined)
   }
 
   const hasActiveFilter = !isGlobal
 
   return (
     <div className={styles.page}>
-      <GroupsLeaderboard />
       <SEOHead
         title="Classement — Extia Gaming 24h"
         description="Classement des joueurs de l'Extia Gaming 24h."
@@ -71,16 +75,22 @@ export default function LeaderboardPage() {
       />
 
       <div className={styles.header}>
-        <h1 className={styles.title}>Classement des joueurs</h1>
+        <h1 className={styles.title}>Classements</h1>
         <p className={styles.subtitle}>
-          {isGlobal
+          {!hasScoreFilter
             ? 'Score global tous jeux confondus (parties + bonus).'
             : 'Score filtré sur les parties validées.'}
         </p>
-        {user && <Link className={styles.personalButton} to="/classement/me">Voir mon classement</Link>}
+        {user && <Link className={styles.personalButton} to="/classement/me">Mon classement et mes parties</Link>}
       </div>
 
+      <div className={`${styles.segmented} ${styles.viewTabs}`} role="group" aria-label="Classement affiché">
+        <button type="button" className={`${styles.segBtn} ${view === 'players' ? styles.segBtnActive : ''}`} aria-pressed={view === 'players'} onClick={() => setView('players')}>Joueurs</button>
+        <button type="button" className={`${styles.segBtn} ${view === 'groups' ? styles.segBtnActive : ''}`} aria-pressed={view === 'groups'} onClick={() => setView('groups')}>Agences et groupes</button>
+      </div>
+      {view === 'groups' ? <GroupsLeaderboard /> : <>
       <div className={styles.filtersBar}>
+        <GroupFilter value={groupId} onChange={setGroupId} />
         <div className={styles.filterGroup}>
           <label className={styles.filterLabel} htmlFor="lb-game">Jeu</label>
           <select
@@ -161,7 +171,7 @@ export default function LeaderboardPage() {
                 <th className={styles.rankCol} scope="col">#</th>
                 <th scope="col">Joueur</th>
                 <th scope="col">Score</th>
-                {!isGlobal && <th scope="col">Parties</th>}
+                {hasScoreFilter && <th scope="col">Parties</th>}
               </tr>
             </thead>
             <tbody>
@@ -181,7 +191,7 @@ export default function LeaderboardPage() {
                   <td>
                     <span className={styles.score}>{entry.totalScore.toLocaleString('fr-FR', { maximumFractionDigits: 6 })} pts</span>
                   </td>
-                  {!isGlobal && (
+                  {hasScoreFilter && (
                     <td className={styles.gameCount}>
                       {'gameCount' in entry ? entry.gameCount : '—'}
                     </td>
@@ -192,6 +202,7 @@ export default function LeaderboardPage() {
           </table>
         </div>
       )}
+      </>}
     </div>
   )
 }

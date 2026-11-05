@@ -58,8 +58,10 @@ function individualScore(config: RulesConfig, values: RuleValues, mode?: string)
       const start = requireValue(values, 'start', true), end = requireValue(values, 'end', true)
       if (end <= start || end > config.items.length) throw new ScoringError('Les paliers de progression sont invalides')
       const resumed = flag(values, 'resumed')
+      const completed = values.completed !== undefined && flag(values, 'completed')
+      if (completed && end !== config.items.length) throw new ScoringError('La fin de l’histoire nécessite d’atteindre le dernier palier configuré')
       const base = config.items.slice(start, end).reduce((sum, item) => sum + item.points, 0)
-      return base * (resumed ? config.resumedMultiplier : 1) + (!resumed && start === 0 && end === config.items.length ? config.completionBonus : 0)
+      return base * (resumed ? config.resumedMultiplier : 1) + (completed && !resumed && start === 0 ? config.completionBonus : 0)
     }
     case 'BATTLE_ROYALE': {
       const rank = requireValue(values, 'rank', true), total = requireValue(values, 'total', true)
@@ -78,10 +80,11 @@ function individualScore(config: RulesConfig, values: RuleValues, mode?: string)
 }
 
 /** Split a pot in millionths so the sum of awards exactly matches the rounded pot. */
-function splitPot(pot: number, weights: number[]): number[] {
+function splitPot(pot: number, weights: number[], raw = false): number[] {
   if (!Number.isFinite(pot) || pot < 0 || pot > 1e9) throw new ScoringError('Pot hors limites')
   const units = Math.round(pot * 1e6), total = weights.reduce((a, b) => a + b, 0)
   if (!total) return weights.map(() => 0)
+  if (raw) return weights.map(weight => pot * weight / total)
   const exact = weights.map(w => units * w / total), awards = exact.map(Math.floor)
   const order = exact.map((v, i) => ({ i, fraction: v - awards[i] })).sort((a, b) => b.fraction - a.fraction)
   const remainder = units - awards.reduce((a, b) => a + b, 0)
@@ -89,9 +92,9 @@ function splitPot(pot: number, weights: number[]): number[] {
   return awards.map(v => v / 1e6)
 }
 
-export function computeAwards(config: CalculConfig, input: PlayInput, userIds: number[]): Array<{ userId: number; score: number }> {
+export function computeAwards(config: CalculConfig, input: PlayInput, userIds: number[], raw = false): Array<{ userId: number; score: number }> {
   if (!userIds.length || new Set(userIds).size !== userIds.length) throw new ScoringError('Participants dupliqués ou absents')
-  if (config.type !== 'RULES' || input.calculType !== 'RULES') return userIds.map(userId => ({ userId, score: computeScore(config, input) }))
+  if (config.type !== 'RULES' || input.calculType !== 'RULES') return userIds.map(userId => ({ userId, score: computeScore(config, input, raw) }))
   if (new Set(config.items.map(i => i.key)).size !== config.items.length || new Set(config.modes.map(i => i.key)).size !== config.modes.length || new Set(config.participantCoefficients.map(i => i.participants)).size !== config.participantCoefficients.length)
     throw new ScoringError('Clés de barème dupliquées')
   const coefficient = multiplier(config, userIds.length, input.mode)
@@ -102,8 +105,8 @@ export function computeAwards(config: CalculConfig, input: PlayInput, userIds: n
     const winner = requireValue(input.values, 'winnerId', true)
     if (!userIds.includes(winner)) throw new ScoringError('Le vainqueur doit être un participant')
     const pot = config.attendancePoints * userIds.length * coefficient
-    const bonus = roundScore(pot * config.winnerShare)
-    scores = splitPot(roundScore(pot) - bonus, userIds.map(() => 1))
+    const bonus = raw ? pot * config.winnerShare : roundScore(pot * config.winnerShare)
+    scores = splitPot((raw ? pot : roundScore(pot)) - bonus, userIds.map(() => 1), raw)
     scores[userIds.indexOf(winner)] += bonus
   } else {
     if (['MINECRAFT', 'SIMRACING', 'SCORE', 'TFT'].includes(config.method) && userIds.length > 1 && !input.results)
@@ -111,21 +114,21 @@ export function computeAwards(config: CalculConfig, input: PlayInput, userIds: n
     scores = userIds.map(userId => individualScore(config, input.results?.find(r => r.userId === userId)?.values ?? input.values, input.mode) * coefficient)
     if (config.method === 'MINECRAFT' && flag(input.values, 'communityCompleted')) {
       const weights = scores.map(score => score >= config.eligibilityScore ? (config.communitySplit === 'EQUAL' ? 1 : score) : 0)
-      const bonuses = splitPot(config.communityPool, weights)
+      const bonuses = splitPot(config.communityPool, weights, raw)
       scores = scores.map((score, i) => score + bonuses[i])
     }
   }
   if (scores.some(v => !Number.isFinite(v) || v < 0 || v > 1e9)) throw new ScoringError('Score hors limites')
-  return userIds.map((userId, i) => ({ userId, score: roundScore(scores[i]) }))
+  return userIds.map((userId, i) => ({ userId, score: raw ? scores[i] : roundScore(scores[i]) }))
 }
 
-export function computeScore(config: CalculConfig, input: PlayInput): number {
-  if (config.type === 'RULES' && input.calculType === 'RULES') return computeAwards(config, input, [1])[0].score
+export function computeScore(config: CalculConfig, input: PlayInput, raw = false): number {
+  if (config.type === 'RULES' && input.calculType === 'RULES') return computeAwards(config, input, [1], raw)[0].score
   if (config.type === 'BOOLEAN' && input.calculType === 'BOOLEAN') {
     return input.value ? config.trueValue : config.falseValue
   }
   if (config.type === 'NUMBER' && input.calculType === 'NUMBER') {
-    return Math.round(input.value * config.multiplier)
+    return raw ? input.value * config.multiplier : Math.round(input.value * config.multiplier)
   }
   if (config.type === 'TIME' && input.calculType === 'TIME') {
     const sorted = [...config.tiers].sort((a, b) => a.timeSeconds - b.timeSeconds)
@@ -133,4 +136,47 @@ export function computeScore(config: CalculConfig, input: PlayInput): number {
     return tier ? tier.points : 0
   }
   throw new Error('CALCUL_TYPE_MISMATCH')
+}
+
+/** Version 2 rounds positive final gains once, after multipliers. Negative corrections keep precision. */
+export function finalGain(value: number, version?: number): number {
+  if (version !== 2 || value <= 0) return roundScore(value)
+  // Ignore floating-point noise around positive integers, without discarding tiny positive gains.
+  const nearest = Math.round(value)
+  return nearest > 0 && Math.abs(value - nearest) <= Number.EPSILON * Math.abs(value) * 4 ? nearest : Math.ceil(value)
+}
+
+export interface CreditLimit { scope: 'game' | 'type'; maximum: number; previous: number }
+export function creditScore(calculated: number, limits: CreditLimit[], version?: number) {
+  const requested = finalGain(calculated, version)
+  const caps = limits.map(limit => ({ ...limit, remaining: Math.max(0, roundScore(limit.maximum - limit.previous)) }))
+  const score = roundScore(Math.min(requested, ...caps.map(cap => version === 2 ? Math.floor(cap.remaining) : cap.remaining)))
+  return { calculated, requested, score, limits: caps.filter(cap => cap.remaining < requested) }
+}
+
+/** Stable import code: existing nonempty codes are deliberately retained when labels change. */
+export function objectiveKey(label: string, used: string[]): string {
+  const base = label.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 54) || 'objectif'
+  let key = base, suffix = 2
+  while (used.includes(key)) key = `${base}_${suffix++}`
+  return key
+}
+
+export interface SavedScoring {
+  version?: number
+  awards?: Array<{ userId: number; score: number }>
+  happyHourMultiplier?: number
+  credits?: Array<{ userId: number; calculated: number; requested: number; score: number; limits: Array<CreditLimit & { remaining: number }> }>
+}
+
+/** Read-only reconciliation of saved awards against actual ledger credits; never recomputes old rules. */
+export function previewCredits(snapshot: SavedScoring | null | undefined, credited: Array<{ userId: number; score: number }>) {
+  const ids = new Set([...(snapshot?.awards ?? []).map(award => award.userId), ...credited.map(award => award.userId)])
+  return [...ids].map(userId => {
+    const audit = snapshot?.credits?.find(credit => credit.userId === userId)
+    const saved = snapshot?.awards?.find(award => award.userId === userId)
+    const calculated = audit?.requested ?? (saved ? finalGain(saved.score * (snapshot?.happyHourMultiplier ?? 1), snapshot?.version) : null)
+    const score = roundScore(credited.filter(credit => credit.userId === userId).reduce((sum, credit) => sum + credit.score, 0))
+    return { userId, calculated, score, difference: calculated === null ? null : roundScore(calculated - score), limits: audit?.limits ?? [] }
+  })
 }

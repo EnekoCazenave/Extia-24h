@@ -75,9 +75,9 @@
 }
 .ctaPrimary {
   background: var(--color-accent);
-  color: var(--extia-ink, #111);
+  color: var(--text-on-accent);
 }
-.ctaPrimary:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.ctaPrimary:hover { color: var(--text-on-accent); transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .ctaSecondary {
   background: transparent;
   border: 1px solid var(--color-accent);
@@ -123,13 +123,13 @@
   padding: 14px 28px;
   border-radius: var(--radius-md);
   background: linear-gradient(135deg, var(--color-accent), var(--color-secondary));
-  color: var(--extia-ink, #111);
+  color: var(--text-on-accent);
   font-weight: 800;
   text-decoration: none;
   box-shadow: var(--shadow-md);
   transition: transform var(--transition);
 }
-.donationLink:hover { transform: translateY(-2px); }
+.donationLink:hover { color: var(--text-on-accent); transform: translateY(-2px); }
 
 .quote {
   margin: 0;

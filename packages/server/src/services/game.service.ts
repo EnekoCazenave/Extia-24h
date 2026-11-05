@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js'
 export async function listGamesWithScores() {
   const games = await prisma.videoGame.findMany({
     include: { gameTypes: true },
-    orderBy: { id: 'asc' },
+    orderBy: [{sortOrder:'asc'}, { id: 'asc' }],
   })
 
   const scoreSums = await prisma.userGame.groupBy({

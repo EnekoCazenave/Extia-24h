@@ -26,7 +26,7 @@ export default function SEOHead({
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={canonicalUrl} />
-      <meta name="theme-color" content="#1a1a2e" />
+      <meta name="theme-color" content="#070606" />
 
       <meta property="og:type" content="website" />
       <meta property="og:title" content={fullTitle} />

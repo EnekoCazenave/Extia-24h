@@ -40,14 +40,14 @@ describe('Attribution des points en base', () => {
 
 
   it('plafonne les points par type après happy hour, même en validation concurrente', async () => {
-    await prisma.gameType.update({where:{id:modeId},data:{maxPointsPerUser:25.5}})
+    await prisma.gameType.update({where:{id:modeId},data:{maxPointsPerUser:26}})
     await prisma.videoGame.update({where:{id:gameId},data:{happyHourStart:new Date(Date.now()-60000),happyHourEnd:new Date(Date.now()+60000)}})
     await Promise.all([submit(),submit()])
-    expect(await total()).toBe(25.5)
-    await expect(submit()).rejects.toThrow('limite de 25.5 points')
+    expect(await total()).toBe(26)
+    await expect(submit()).rejects.toThrow('limite de 26 points')
     await prisma.gameType.update({where:{id:modeId},data:{maxPointsPerUser:null}})
     await submit()
-    expect(await total()).toBe(45.5)
+    expect(await total()).toBe(46)
   })
   it('plafonne séparément les coéquipiers et prend en compte les anciens crédits', async () => {
     await prisma.gameType.update({where:{id:modeId},data:{maxPointsPerUser:15}})
@@ -72,8 +72,8 @@ describe('Attribution des points en base', () => {
     const {CreateGameTypeSchema}=await import('@extia-gaming/shared')
     const input={name:'Limité',win:'Victoire',team:true,calculConfig:RulesConfigSchema.parse({type:'RULES',method:'MATCH',winPoints:10})}
     await updateGameType(modeId,{...input,maxPlaysPerUser:2})
-    const points=await updateGameType(modeId,{...input,maxPointsPerUser:12.5})
-    expect(points.maxPlaysPerUser).toBeNull();expect(points.maxPointsPerUser).toBe(12.5)
+    const points=await updateGameType(modeId,{...input,maxPointsPerUser:12})
+    expect(points.maxPlaysPerUser).toBeNull();expect(points.maxPointsPerUser).toBe(12)
     const plays=await updateGameType(modeId,{...input,maxPlaysPerUser:3})
     expect(plays.maxPointsPerUser).toBeNull()
     expect(CreateGameTypeSchema.safeParse({...input,maxPointsPerUser:5,maxPlaysPerUser:2}).success).toBe(false)
@@ -148,16 +148,30 @@ describe('Attribution des points en base', () => {
     await Promise.all([submit(), submit()])
     expect(await total()).toBe(15)
   })
-  it('conserve les fractions du Battle Royale en base', async () => {
+  it('arrondit les nouveaux gains BR mais conserve les fractions des anciennes déclarations', async () => {
     await configure('BATTLE_ROYALE')
     const session = await submitPlay(userIds[0], PlayInputSchema.parse({ gameTypeId: modeId, calculType: 'RULES', values: { rank: 99, total: 100 } }))
-    expect(await total()).toBe(0.006)
+    expect(await total()).toBe(1)
+    const input = PlayInputSchema.parse({ gameTypeId: modeId, calculType: 'RULES', values: { rank: 99, total: 100 } })
+    const config = RulesConfigSchema.parse({ type: 'RULES', method: 'BATTLE_ROYALE' })
+    const legacy = await prisma.gameSession.create({ data: { submitterId: userIds[0], gameTypeId: modeId, score: 0.006, scoringData: { config, input, happyHourMultiplier: 1 } } })
+    await approveSession(legacy.id)
+    const credit = await prisma.userGame.findFirstOrThrow({ where: { gameSessionId: legacy.id } })
+    expect(credit.score).toBe(0.006)
   })
-  it('partage le pot entre participants sans multiplier son montant', async () => {
+  it('partage le pot puis arrondit chaque gain individuel au supérieur', async () => {
     await configure('MINIGAME', { attendancePoints: 10 })
     const session = await submitPlay(userIds[0], PlayInputSchema.parse({ gameTypeId: modeId, calculType: 'RULES', teamMemberIds: [userIds[1]], values: { winnerId: userIds[1] } }))
     const rows = await prisma.userGame.findMany({ where: { gameTypeId: modeId }, orderBy: { userId: 'asc' } })
-    expect(rows.map(r => r.score)).toEqual([9.5,10.5]); expect(await total()).toBe(20)
+    expect(rows.map(r => r.score)).toEqual([10,11]); expect(await total()).toBe(21)
+  })
+  it('arrondit le mode Nombre une seule fois après happy hour', async () => {
+    await prisma.gameType.update({ where: { id: modeId }, data: { calculType: 'NUMBER', calculConfig: { type: 'NUMBER', multiplier: 1.1 } } })
+    try {
+      await prisma.videoGame.update({ where: { id: gameId }, data: { happyHourStart: new Date(Date.now()-60000), happyHourEnd: new Date(Date.now()+60000) } })
+      await submitPlay(userIds[0], PlayInputSchema.parse({ gameTypeId: modeId, calculType: 'NUMBER', value: 1 }))
+      expect(await total()).toBe(3)
+    } finally { await prisma.gameType.update({ where: { id: modeId }, data: { calculType: 'RULES' } }) }
   })
   it('fige le happy hour à la déclaration, pas à la modération', async () => {
     await prisma.videoGame.update({ where: { id: gameId }, data: { happyHourStart: new Date(Date.now()-60000), happyHourEnd: new Date(Date.now()+60000) } })
@@ -186,7 +200,7 @@ describe('Attribution des points en base', () => {
   it('accorde le pactole après une progression continue déclarée en plusieurs étapes', async () => {
     await configure('PROGRESSION', { items: [{key:'a',label:'A',points:10},{key:'b',label:'B',points:20}], completionBonus:100 })
     async function interval(start: number, end: number) {
-      return submitPlay(userIds[0], PlayInputSchema.parse({ gameTypeId: modeId, calculType:'RULES', values:{start,end,resumed:0} }))
+      return submitPlay(userIds[0], PlayInputSchema.parse({ gameTypeId: modeId, calculType:'RULES', values:{start,end,resumed:0,completed:Number(end === 2)} }))
     }
     await interval(0,1)
     await interval(1,2)

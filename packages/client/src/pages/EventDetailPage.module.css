@@ -33,7 +33,7 @@
 .gameImage { width: 220px; min-height: 180px; border-radius: var(--radius-md); object-fit: cover; }
 .badges { display: flex; gap: 8px; min-height: 28px; }
 .badges span { padding: 5px 11px; border-radius: 99px; font-size: var(--text-xs); font-weight: 900; }
-.endedBadge { color: var(--text-muted); background: var(--extia-mist); }
+.endedBadge { color: var(--text-muted); background: var(--bg-surface); }
 .ongoingBadge { color: var(--color-accent-hover); background: rgba(var(--accent-rgb), .12); }
 .registeredBadge { color: var(--color-success); background: rgba(var(--success-rgb), .1); }
 
@@ -63,8 +63,8 @@
     cursor: pointer;
     font-weight: 800;
 }
-.primaryButton { color: white; background: var(--color-accent); }
-.secondaryButton { color: var(--text-primary); background: white; border-color: var(--border-strong); }
+.primaryButton { color: var(--text-on-accent); background: var(--color-accent); }
+.secondaryButton { color: var(--text-primary); background: var(--bg-surface); border-color: var(--border-strong); }
 .primaryButton:disabled, .secondaryButton:disabled { opacity: .55; cursor: not-allowed; }
 .notice, .error, .state { margin: 22px 0; padding: 14px 18px; border-radius: var(--radius-md); }
 .notice { color: var(--color-success); background: rgba(var(--success-rgb), .1); }

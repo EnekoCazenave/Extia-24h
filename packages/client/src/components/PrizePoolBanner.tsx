@@ -45,11 +45,6 @@ export default function PrizePoolBanner() {
   return (
     <section className={styles.banner} aria-labelledby="prize-pool-title">
       <div className={styles.inner}>
-        <div className={styles.ribbon} aria-hidden="true">
-          <span className={styles.ribbonDot} />
-          Événement caritatif
-        </div>
-
         <div className={styles.grid}>
           <div className={styles.intro}>
             <h2 id="prize-pool-title" className={styles.title}>
@@ -75,7 +70,6 @@ export default function PrizePoolBanner() {
           </div>
         </div>
 
-        <div className={styles.glow} aria-hidden="true" />
       </div>
     </section>
   )

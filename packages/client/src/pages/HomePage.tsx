@@ -36,12 +36,13 @@ export default function HomePage() {
       />
       <section className={styles.hero} aria-labelledby="home-title">
         <h1 className={styles.heroTitle} id="home-title">
-          Extia <span className={styles.heroAccent}>Gaming</span> 24h
+          <img src="/branding/logo-horizontal.webp" alt="24H Solidaires d’Extia Gaming — 3ème édition" width="1919" height="444" />
         </h1>
         <p className={styles.heroSubtitle}>
-          24 heures de compétition, de jeux et de fair-play. Que le meilleur gagne !
+          {settings?.homeSubtitle ?? '24 heures de compétition, de jeux et de fair-play. Que le meilleur gagne !'}
         </p>
         <div className={styles.heroActions}>
+          <Link className={styles.primaryAction} to="/declarer">Déclarer une partie</Link>
           <Link className={styles.primaryAction} to={user ? '/programme' : '/register'}>{user ? 'Participer aux événements' : 'S’inscrire aux 24 heures'}</Link>
           {settings?.discordUrl && <a className={styles.discordAction} href={settings.discordUrl} target="_blank" rel="noopener noreferrer">Rejoindre le Discord ↗</a>}
         </div>
@@ -77,7 +78,6 @@ export default function HomePage() {
             >
                 <header className={styles.programmeHeader}>
                     <div>
-                    <p className={styles.programmeEyebrow}>Les 24 heures</p>
                       <h2 className={styles.sectionTitle} id="programme-title">Programme</h2>
                   </div>
                   <p>Suivez l’ensemble des temps forts du défi, heure par heure.</p>

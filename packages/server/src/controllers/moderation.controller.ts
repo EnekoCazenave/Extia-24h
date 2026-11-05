@@ -1,6 +1,11 @@
 import { ScoringError } from '@extia-gaming/shared'
 import type { FastifyRequest, FastifyReply } from 'fastify'
-import { getSessions, approveSession, rejectSession } from '../services/moderation.service.js'
+import { getSessions, approveSession, rejectSession, deleteAllSessions } from '../services/moderation.service.js'
+
+export async function deleteAll(_request: FastifyRequest, reply: FastifyReply) {
+  const deletedCount = await deleteAllSessions()
+  return reply.send({ deletedCount })
+}
 
 export async function listSessions(
   request: FastifyRequest<{ Querystring: { gameId?: string; status?: string } }>,

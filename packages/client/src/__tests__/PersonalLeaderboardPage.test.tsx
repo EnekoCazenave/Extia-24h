@@ -1,4 +1,4 @@
-vi.mock('../components/CommunityContent.tsx',()=>({PlayerExtras:()=>null,GroupsLeaderboard:()=>null}))
+vi.mock('../components/CommunityContent.tsx',()=>({PlayerExtras:()=>null,GroupsLeaderboard:()=>null,GroupFilter:()=>null}))
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {fireEvent, screen} from '@testing-library/react'
 import {Route, Routes} from 'react-router-dom'
@@ -33,19 +33,19 @@ describe('Personal leaderboard', () => {
 
   it('opens personal details from the leaderboard button', async () => {
     renderPages()
-    fireEvent.click(screen.getByRole('link', {name: 'Voir mon classement'}))
+    fireEvent.click(screen.getByRole('link', {name: 'Mon classement et mes parties'}))
     expect(await screen.findByText('alice')).toBeInTheDocument()
     expect(screen.getByText('150e')).toBeInTheDocument()
     expect(screen.getByText('0 pts')).toBeInTheDocument()
     expect(api.get).toHaveBeenCalledWith('/api/leaderboard/me?page=1')
     fireEvent.click(screen.getByRole('link', {name: /Retour au classement/}))
-    expect(screen.getByRole('heading', {name: 'Classement des joueurs'})).toBeInTheDocument()
+    expect(screen.getByRole('heading', {name: 'Classements'})).toBeInTheDocument()
   })
 
   it('hides the button for anonymous visitors', () => {
     auth.user = null
     renderPages()
-    expect(screen.queryByRole('link', {name: 'Voir mon classement'})).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', {name: 'Mon classement et mes parties'})).not.toBeInTheDocument()
   })
 
   it('protects direct access for anonymous visitors', () => {

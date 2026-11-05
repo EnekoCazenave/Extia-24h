@@ -2,6 +2,8 @@ import { prisma } from '../lib/prisma.js'
 import bcrypt from 'bcryptjs'
 import crypto from 'node:crypto'
 import type { LoginInput, RegisterInput } from '@extia-gaming/shared'
+import { eventTransaction } from './event-scoring.service.js'
+import { claimBeforeParticipants, lockBeforeParticipants } from './before.service.js'
 
 type RegisterData = Omit<RegisterInput, 'termsAccepted' | 'adultConfirmed'>
 
@@ -12,7 +14,10 @@ export async function registerUser(input: RegisterData) {
   if(input.groupId && !await prisma.organizationGroup.findFirst({where:{id:input.groupId,active:true}})) throw new Error('GROUP_NOT_FOUND')
   const hashedPassword = await bcrypt.hash(input.password, 12)
 
-  const user = await prisma.user.create({
+  const user = await eventTransaction(async tx => {
+    await lockBeforeParticipants(tx)
+    if (await tx.user.findUnique({where:{email:input.email}})) throw new Error('EMAIL_TAKEN')
+    const created = await tx.user.create({
     data: {
       login: input.login,
       email: input.email,
@@ -30,6 +35,9 @@ export async function registerUser(input: RegisterData) {
       groupId: input.groupId ?? null,
     },
     include: { role: true },
+    })
+    await claimBeforeParticipants(tx,created)
+    return created
   })
 
   const { password: _, ...userPublic } = user

@@ -45,8 +45,8 @@
 }
 .sectionTitle::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
 .gameTypeCard {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  background: var(--bg-tint);
+  border: 1px solid var(--badge-border);
   border-radius: var(--radius-md);
   padding: 18px;
   margin-bottom: 12px;
@@ -57,7 +57,7 @@
   box-shadow: var(--shadow-sm);
 }
 .gameTypeCard:last-child { margin-bottom: 0; }
-.gameTypeName { font-weight: 800; font-size: var(--text-base); margin-bottom: 8px; color: var(--text-primary); }
+.gameTypeName { font-weight: 800; font-size: var(--text-base); margin-bottom: 8px; color: var(--badge-text); }
 .gameTypeMeta { font-size: var(--text-xs); color: var(--text-muted); line-height: 1.7; }
 .teamBadge {
   display: inline-block;
@@ -66,8 +66,9 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 3px 8px;
-  background: rgba(var(--secondary-rgb), 0.14);
-  color: var(--color-secondary);
+  background: var(--bg-tint);
+  color: var(--badge-text);
+  border: 1px solid var(--badge-border);
   border-radius: 99px;
   margin-left: 6px;
 }
@@ -89,6 +90,7 @@
 }
 .playBtn:hover {
   background: var(--color-accent-hover);
+  color: var(--text-on-accent);
   box-shadow: 0 6px 16px rgba(var(--accent-strong-rgb), 0.4);
   transform: translateY(-1px);
 }

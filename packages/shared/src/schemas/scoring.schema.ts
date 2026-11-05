@@ -65,6 +65,7 @@ export function scoreFields(config: RulesConfig): ScoreField[] {
   if (['BATTLE_ROYALE', 'TFT'].includes(method)) fields.push({ key: 'rank', label: 'Classement atteint (1 = premier)' })
   if (method === 'BATTLE_ROYALE') fields.push({ key: 'total', label: 'Nombre total de joueurs ou équipes (même unité que le classement)' })
   if (method === 'PROGRESSION') fields.push({ key: 'start', label: 'Palier initial', kind: 'stage' }, { key: 'end', label: 'Palier final', kind: 'stage' }, { key: 'resumed', label: 'Sauvegarde reprise / Nouvelle partie +', kind: 'boolean' })
+  if (method === 'PROGRESSION' && config.completionBonus > 0) fields.push({ key: 'completed', label: 'Histoire terminée (boss de fin vaincu)', kind: 'boolean' })
   if (method === 'COUNTER') fields.push({ key: 'completed', label: 'Objectif final réussi (ex. Ligue Pokémon)', kind: 'boolean' })
   if (method === 'MINECRAFT') fields.push({ key: 'communityCompleted', label: 'Objectif commun atteint', kind: 'boolean' })
   if (method === 'MINIGAME') fields.push({ key: 'winnerId', label: 'Vainqueur' })

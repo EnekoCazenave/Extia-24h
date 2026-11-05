@@ -32,9 +32,17 @@ describe('Barèmes du PDF', () => {
   })
   it('Clair Obscur : différence de paliers, reprise et pactole', () => {
     const cfg = { items: Array.from({length: 22}, (_,i) => ({ key: `boss${i}`, label: `Boss ${i}`, points: 10 })), completionBonus: 100, resumedMultiplier: 0.5 }
-    expect(calculate('PROGRESSION', { start: 5, end: 8, resumed: 1 }, cfg)[0].score).toBe(15)
-    expect(calculate('PROGRESSION', { start: 0, end: 22, resumed: 0 }, cfg)[0].score).toBe(320)
-    expect(calculate('PROGRESSION', { start: 20, end: 22, resumed: 0 }, cfg)[0].score).toBe(20)
+    expect(calculate('PROGRESSION', { start: 5, end: 8, resumed: 1, completed: 0 }, cfg)[0].score).toBe(15)
+    expect(calculate('PROGRESSION', { start: 0, end: 22, resumed: 0, completed: 1 }, cfg)[0].score).toBe(320)
+    expect(calculate('PROGRESSION', { start: 20, end: 22, resumed: 0, completed: 1 }, cfg)[0].score).toBe(20)
+  })
+  it('Clair Obscur : atteindre le dernier palier ne suffit pas sans fin d’histoire déclarée', () => {
+    const cfg = { items: [{ key: 'a', label: 'A', points: 10 }, { key: 'b', label: 'B', points: 20 }], completionBonus: 100 }
+    expect(calculate('PROGRESSION', { start: 0, end: 2, resumed: 0, completed: 0 }, cfg)[0].score).toBe(30)
+    expect(calculate('PROGRESSION', { start: 0, end: 2, resumed: 0, completed: 1 }, cfg)[0].score).toBe(130)
+    expect(() => calculate('PROGRESSION', { start: 0, end: 1, resumed: 0, completed: 1 }, cfg)).toThrow()
+    expect(() => calculate('PROGRESSION', { start: 0, end: 2, resumed: 0 }, cfg)).toThrow()
+    expect(calculate('PROGRESSION', { start: 0, end: 2, resumed: 1, completed: 1 }, { ...cfg, resumedMultiplier: 0.5 })[0].score).toBe(15)
   })
   it('TFT Double Up utilise son barème', () => {
     expect(calculate('TFT', { rank: 2 }, { modes: [{ key: 'double-up', label: 'Double Up', coefficient: 2, ranks: [20,10,5,0] }] }, { mode: 'double-up' })[0].score).toBe(20)

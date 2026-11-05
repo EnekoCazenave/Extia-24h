@@ -51,7 +51,9 @@ export const CreateGameTypeSchema = z.object({
   win: z.string().min(1),
   team: z.boolean().default(false),
   maxPlaysPerUser: z.number().int().min(1).max(2147483647).nullable().optional(),
-  maxPointsPerUser: z.number().finite().min(0.000001).max(1e9).multipleOf(0.000001).nullable().optional(),
+  maxPointsPerUser: z.number().int().min(1).max(1e9).nullable().optional(),
+}).refine(data => data.calculConfig.type !== 'RULES' || data.calculConfig.maxPoints === null || Number.isInteger(data.calculConfig.maxPoints), {
+  message: 'Le plafond par jeu doit être un entier.', path: ['calculConfig', 'maxPoints'],
 }).refine(data => data.maxPlaysPerUser == null || data.maxPointsPerUser == null, {
   message: 'Choisissez une limite de parties ou de points, pas les deux.', path: ['maxPointsPerUser'],
 })
@@ -83,3 +85,6 @@ export type BooleanCalculConfig = z.infer<typeof BooleanCalculConfigSchema>
 export type NumberCalculConfig = z.infer<typeof NumberCalculConfigSchema>
 export type TimeCalculConfig = z.infer<typeof TimeCalculConfigSchema>
 export type TimeTier = z.infer<typeof TimeTierSchema>
+
+export const ReorderGamesSchema = z.object({gameIds: z.array(z.number().int().positive()).max(1000).refine(ids=>new Set(ids).size===ids.length, 'Chaque jeu doit apparaître une seule fois')})
+export type ReorderGamesInput = z.infer<typeof ReorderGamesSchema>

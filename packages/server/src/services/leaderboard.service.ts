@@ -1,3 +1,4 @@
+import { canEditSession } from './play.service.js'
 import {Prisma} from '@prisma/client'
 import {prisma} from '../lib/prisma.js'
 
@@ -13,7 +14,7 @@ const leaderboardScores = Prisma.sql`
                        ON pb_agg."userId" = u.id
 `
 
-export async function getGlobalLeaderboard(limit = 20) {
+export async function getGlobalLeaderboard(limit = 20, groupId?: number) {
     const rows = await prisma.$queryRaw<
         Array<{
             userId: number
@@ -24,6 +25,7 @@ export async function getGlobalLeaderboard(limit = 20) {
         Prisma.sql`
             SELECT *
             FROM (${leaderboardScores}) scores
+            ${groupId !== undefined ? Prisma.sql`WHERE "userId" IN (SELECT id FROM "User" WHERE "groupId"=${groupId})` : Prisma.sql``}
             ORDER BY "totalScore" DESC, "userId" ASC
                 LIMIT ${limit}
         `,
@@ -45,8 +47,8 @@ export async function getPersonalSessions(userId: number, page: number) {
         skip: (page - 1) * pageSize,
         take: pageSize + 1,
         select: {
-            id: true, createdAt: true, status: true, score: true,
-            gameType: {select: {name: true, videoGame: {select: {nom: true}}}},
+            id: true, createdAt: true, status: true, score: true, submitterId: true, scoringData: true,
+            gameType: {select: {name: true, videoGameId: true, videoGame: {select: {nom: true}}}},
             userGames: {where: {userId}, select: {score: true}},
         },
     })
@@ -55,6 +57,7 @@ export async function getPersonalSessions(userId: number, page: number) {
         hasNextPage: rows.length > pageSize,
         sessions: rows.slice(0, pageSize).map((row) => ({
             id: row.id, createdAt: row.createdAt.toISOString(), status: row.status,
+            gameId: row.gameType.videoGameId, submitterId: row.submitterId, canEdit: row.submitterId === userId && canEditSession(row),
             gameName: row.gameType.videoGame.nom, gameTypeName: row.gameType.name,
             submittedScore: row.score,
             creditedPoints: row.userGames.reduce((total, game) => total + game.score, 0),
@@ -80,12 +83,14 @@ export async function retrieveLeaderBoardById(userId: number) {
 }
 
 export async function getFilteredLeaderboard(opts: {
+    groupId?: number
     gameId?: number
     gameTypeId?: number
     team?: boolean
     limit?: number
 }) {
-    const {gameId, gameTypeId, team, limit = 100} = opts
+    const {gameId, gameTypeId, team, groupId, limit = 100} = opts
+    if (gameId === undefined && gameTypeId === undefined && team === undefined) return getGlobalLeaderboard(limit, groupId)
 
     const rows = await prisma.$queryRaw<
         Array<{
@@ -107,9 +112,10 @@ export async function getFilteredLeaderboard(opts: {
                        SELECT a."userId",a.points,a.id,e."videoGameId",NULL::integer,TRUE FROM "EventAward" a JOIN "Event" e ON e.id=a."eventId"
                      ) ug ON ug."userId"=u.id
             WHERE 1 = 1
+                ${groupId !== undefined ? Prisma.sql`AND u."groupId" = ${groupId}` : Prisma.sql``}
                 ${gameId !== undefined ? Prisma.sql`AND ug."videoGameId" = ${gameId}` : Prisma.sql``} ${gameTypeId !== undefined ? Prisma.sql`AND ug."gameTypeId" = ${gameTypeId}` : Prisma.sql``} ${team !== undefined ? Prisma.sql`AND ug.team = ${team}` : Prisma.sql``}
             GROUP BY u.id, u.login
-            ORDER BY "totalScore" DESC
+            ORDER BY "totalScore" DESC, "userId" ASC
                 LIMIT ${limit}
         `,
     )
@@ -141,7 +147,7 @@ export async function getTopGamesByScore(limit = 5) {
                      LEFT JOIN "GameType" gt ON gt."videoGameId" = vg.id
                      LEFT JOIN "UserGame" ug ON ug."gameTypeId" = gt.id
             GROUP BY vg.id, vg.nom, vg."imageUrl"
-            ORDER BY "totalScore" DESC
+            ORDER BY "totalScore" DESC, vg.id ASC
                 LIMIT ${limit}
         `,
     )

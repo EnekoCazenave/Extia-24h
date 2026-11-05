@@ -14,6 +14,11 @@ const eventService = vi.hoisted(() => ({
 }))
 
 vi.mock('../src/services/event.service.js', () => eventService)
+vi.mock('../src/lib/prisma.js', () => ({prisma: {
+    user: {findUnique: vi.fn(async ({where}: {where: {id: number}}) => ({
+        id: where.id, email: `${where.id}@test.invalid`, roleId: where.id === 1 ? 2 : 1,
+    }))},
+}}))
 
 describe('Event controller', () => {
     let app: FastifyInstance

@@ -1,3 +1,4 @@
+import { isImageContent } from '../services/proof.service.js'
 import type { FastifyInstance } from 'fastify'
 import multipart from '@fastify/multipart'
 import { authenticate } from '../hooks/authenticate.js'
@@ -26,7 +27,9 @@ export async function uploadRoutes(fastify: FastifyInstance) {
 
     const filename = `${crypto.randomUUID()}${ext}`
     const dest = path.join(UPLOADS_DIR, filename)
-    await fs.writeFile(dest, await data.toBuffer())
+    const bytes = await data.toBuffer()
+    if (!isImageContent(bytes)) return reply.code(400).send({error:'Le fichier doit être une image valide'})
+    await fs.writeFile(dest, bytes)
 
     return reply.send({ url: `/uploads/${filename}` })
   })

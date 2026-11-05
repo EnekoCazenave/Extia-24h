@@ -12,14 +12,17 @@ vi.mock('../services/api.ts',()=>({api:{post:vi.fn().mockResolvedValue({}),put:v
 const event={id:1,name:'Quiz caritatif',description:'Un quiz ensemble',startsAt:new Date(Date.now()-60000).toISOString(),endsAt:new Date(Date.now()+60000).toISOString(),capacity:10,_count:{userEvents:2},videoGame:null,twitchUrl:null,attendancePoints:10,winnerShare:0.05,cancelledAt:null,settledAt:null}
 describe('Parcours événementiels',()=>{
   beforeEach(()=>{vi.clearAllMocks();fixtures.data={'/api/events':{events:[event]},'/api/events/mine':{registrations:[]},'/api/settings':{settings:{eventStart:null,eventEnd:null}},'/api/groups':{groups:[]}}})
-  it('enregistre les paliers et le lien Discord dans les paramètres',async()=>{
+  it('enregistre le texte d’accueil, la preuve obligatoire, les paliers et le lien Discord',async()=>{
     renderWithProviders(<SettingsPanel/>);
+    await userEvent.clear(screen.getByLabelText('Texte sous le logo de l’accueil'))
+    await userEvent.type(screen.getByLabelText('Texte sous le logo de l’accueil'),'Jouons ensemble pour les associations.')
+    await userEvent.click(screen.getByRole('checkbox',{name:/Exiger une capture/}))
     await userEvent.type(screen.getByLabelText('Lien Discord de l’événement'),'https://discord.gg/extia')
     await userEvent.click(screen.getByRole('button',{name:'Ajouter un palier'}))
     await userEvent.type(screen.getByLabelText('Nom du palier 1'),'Expert')
     await userEvent.type(screen.getByLabelText('Seuil de points 1'),'500')
     await userEvent.click(screen.getByRole('button',{name:'Enregistrer'}))
-    await waitFor(()=>expect(api.put).toHaveBeenCalledWith('/api/admin/settings',{notifyStartDiscord:false,notifyEndDiscord:false,startReminderMinutes:0,endReminderMinutes:0,eventStart:null,eventEnd:null,discordUrl:'https://discord.gg/extia',honorTiers:[{name:'Expert',points:500}]}))
+    await waitFor(()=>expect(api.put).toHaveBeenCalledWith('/api/admin/settings',{homeSubtitle:'Jouons ensemble pour les associations.',proofRequired:true,notifyStartDiscord:false,notifyEndDiscord:false,startReminderMinutes:0,endReminderMinutes:0,eventStart:null,eventEnd:null,discordUrl:'https://discord.gg/extia',honorTiers:[{name:'Expert',points:500}]}))
   })
   it('enregistre les annonces Discord et leurs délais indépendants',async()=>{
     renderWithProviders(<SettingsPanel/>);

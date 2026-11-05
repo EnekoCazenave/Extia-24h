@@ -1,5 +1,7 @@
 import {SettingsPanel,GroupsPanel,ExportsPanel} from '../components/admin/CommunityPanels.tsx'
 import { useState, type FormEvent } from 'react'
+import BeforeImportPanel from '../components/admin/BeforeImportPanel.tsx'
+import AccessPanel from '../components/admin/AccessPanel.tsx'
 import SEOHead from '../components/SEOHead.tsx'
 import { useGrantBonus } from '../hooks/useAdmin.ts'
 import AssociationsPanel from '../components/admin/AssociationsPanel.tsx'
@@ -7,12 +9,14 @@ import GamesPanel from '../components/admin/GamesPanel.tsx'
 import GameTypesPanel from '../components/admin/GameTypesPanel.tsx'
 import styles from './AdminPage.module.css'
 
-type Tab = 'settings' | 'groups' | 'exports' | 'games' | 'game-types' | 'bonus' | 'associations'
+type Tab = 'before' | 'access' | 'settings' | 'groups' | 'exports' | 'games' | 'game-types' | 'bonus' | 'associations'
 
 const TABS: { id: Tab; label: string }[] = [
+  {id:'access',label:'Utilisateurs et accès'},
   {id:'settings',label:'Accueil et paliers'}, {id:'groups',label:'Agences et groupes'}, {id:'exports',label:'Exports KPI'},
   { id: 'games', label: 'Jeux' },
   { id: 'game-types', label: 'Type de partie' },
+  { id: 'before', label: 'Import Before' },
   { id: 'bonus', label: 'Bonus de points' },
   { id: 'associations', label: 'Associations' },
 ]
@@ -98,11 +102,13 @@ export default function AdminPage() {
         ))}
       </div>
       <div id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
+        {activeTab === 'access' && <AccessPanel />}
         {activeTab === 'settings' && <SettingsPanel />}
         {activeTab === 'groups' && <GroupsPanel />}
         {activeTab === 'exports' && <ExportsPanel />}
         {activeTab === 'games' && <GamesPanel />}
         {activeTab === 'game-types' && <GameTypesPanel />}
+        {activeTab === 'before' && <BeforeImportPanel />}
         {activeTab === 'bonus' && <GrantBonusPanel />}
         {activeTab === 'associations' && <AssociationsPanel />}
       </div>

@@ -13,7 +13,7 @@
     margin-bottom: 32px;
     border: 1px solid rgba(var(--accent-rgb), .2);
     border-radius: var(--radius-lg);
-    background: linear-gradient(125deg, var(--bg-tint), #fff 65%);
+    background: linear-gradient(125deg, var(--bg-tint), var(--bg-card) 65%);
 }
 
 .hero h1 {
@@ -62,7 +62,7 @@
     top: 31px;
     width: 12px;
     height: 12px;
-    border: 3px solid white;
+    border: 3px solid var(--bg-card);
     border-radius: 50%;
     background: var(--color-accent);
     box-shadow: 0 0 0 2px var(--color-accent);
@@ -87,11 +87,9 @@
 }
 
 .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    box-shadow: var(--shadow-sm);
+    background: var(--bg-surface);
+    border-radius: 12px;
+    padding: 20px 24px;
     transition: transform var(--transition), box-shadow var(--transition);
 }
 
@@ -122,9 +120,9 @@
 }
 
 .date {
-    color: var(--color-accent);
-    font-weight: 800;
-    font-size: var(--text-sm);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: var(--text-xs);
     text-transform: capitalize;
 }
 
@@ -137,7 +135,8 @@
     display: flex;
     flex-wrap: wrap;
     gap: 18px;
-    color: var(--extia-ink-soft);
+    margin: 8px 0 14px;
+    color: var(--text-muted);
     font-size: var(--text-sm);
     font-weight: 700;
 }
@@ -166,25 +165,26 @@
 
 .primaryButton {
     background: var(--color-accent);
-    color: white;
+    color: var(--text-on-accent);
     box-shadow: 0 5px 14px rgba(var(--accent-rgb), .22);
 }
 
-.primaryButton:hover {
+.primaryButton:hover:not(:disabled) {
     background: var(--color-accent-hover);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 .primaryButton:disabled {
-    background: var(--extia-mist);
+    background: var(--bg-surface);
+    color: var(--text-muted);
     box-shadow: none;
     cursor: not-allowed;
 }
 
 .secondaryButton {
-    background: white;
-    color: var(--text-primary);
-    border-color: var(--border-strong);
+    background: var(--bg-tint);
+    color: var(--badge-text);
+    border-color: var(--badge-border);
 }
 
 .secondaryButton:hover {
@@ -199,7 +199,7 @@
 
 .dangerButton:hover {
     background: var(--color-error);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 .registeredBadge {
@@ -218,7 +218,7 @@
     align-items: center;
     margin: 0 0 24px 108px;
     padding: 12px 16px;
-    color: #315a20;
+    color: var(--color-success);
     background: rgba(var(--success-rgb), .13);
     border-radius: var(--radius-md);
     font-weight: 700;
@@ -374,7 +374,7 @@
     content: '';
     width: 5px;
     height: 9px;
-    border: solid white;
+    border: solid var(--text-on-accent);
     border-width: 0 2px 2px 0;
     transform: translateY(-1px) rotate(45deg);
 }
@@ -530,7 +530,7 @@
 .endedBadge {
     flex-shrink: 0;
     color: var(--text-muted);
-    background: var(--extia-mist);
+    background: var(--bg-surface);
     border-radius: 99px;
     padding: 5px 11px;
     font-size: var(--text-xs);
@@ -546,3 +546,8 @@
     font-size: var(--text-xs);
     font-weight: 900;
 }
+
+.card h3 { font-size: 18px; margin: 4px 0 10px; }
+.card h3 a { color: var(--text-primary); }
+.cardTop > span:not([class]) { color: var(--badge-text); background: var(--bg-tint); padding: 4px 10px; border-radius: 99px; font-size: var(--text-xs); font-weight: 700; }
+@media (max-width: 768px) { .card { padding: 18px; } }

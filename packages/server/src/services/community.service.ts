@@ -2,6 +2,31 @@ import { prisma } from '../lib/prisma.js'
 import { Prisma } from '@prisma/client'
 import { roundScore } from '@extia-gaming/shared'
 import { reportingData } from './reporting.service.js'
+import { eventTransaction, EventError } from './event-scoring.service.js'
+
+export async function deleteEmptyGroup(groupId:number) {
+  return eventTransaction(async tx=>{
+    const group=await tx.organizationGroup.findUnique({where:{id:groupId},select:{id:true,_count:{select:{users:true,points:true}}}})
+    if(!group) throw new EventError('Groupe introuvable',404)
+    if(group._count.users || group._count.points) throw new EventError('Ce groupe a des membres ou un historique de crédits. Archivez-le pour conserver son historique.',409)
+    await tx.organizationGroup.delete({where:{id:groupId}})
+  })
+}
+
+export async function groupHistory(groupId:number) {
+  const entries=await prisma.groupPoint.findMany({where:{groupId},orderBy:[{createdAt:'desc'},{id:'desc'}]})
+  const authors=await prisma.user.findMany({where:{id:{in:[...new Set(entries.map(e=>e.grantedById))]}},select:{id:true,login:true}})
+  return entries.map(entry=>({...entry,author:authors.find(a=>a.id===entry.grantedById)??null}))
+}
+
+export async function groupMemberPoints(groupId:number) {
+  return prisma.$queryRaw<Array<{id:number;login:string;gamePoints:number;eventPoints:number;bonusPoints:number}>>(Prisma.sql`
+    SELECT u.id,u.login,
+    COALESCE((SELECT SUM(score) FROM "UserGame" WHERE "userId"=u.id),0) AS "gamePoints",
+    COALESCE((SELECT SUM(points) FROM "EventAward" WHERE "userId"=u.id),0) AS "eventPoints",
+    COALESCE((SELECT SUM(points) FROM "PointBonus" WHERE "userId"=u.id),0) AS "bonusPoints"
+    FROM "User" u WHERE u."groupId"=${groupId} ORDER BY u.login,u.id`)
+}
 
 export async function playerSummary(userId:number, privateView=false) {
   const user=await prisma.user.findUnique({where:{id:userId},select:{id:true,login:true,group:{select:{id:true,name:true}}}})
@@ -38,8 +63,8 @@ export async function publicSettings() {
 }
 
 export function csvCell(value:unknown):string {
-  let s=value instanceof Date?value.toISOString():value==null?'':String(value)
-  if(/^[\s]*[=+\-@]/.test(s)) s="'"+s
+  let s=value instanceof Date?value.toISOString():value==null?'':typeof value==='number'?String(value).replace('.',','):String(value)
+  if(typeof value==='string' && /^[\s]*[=+\-@]/.test(s)) s="'"+s
   return '"'+s.replace(/"/g,'""')+'"'
 }
 export function toCsv(rows:Record<string,unknown>[],columns:string[]):string {

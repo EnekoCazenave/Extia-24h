@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import userEvent from '@testing-library/user-event'
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../test-utils.tsx'
 import GamesPage from '../pages/GamesPage.tsx'
 
 const mockUseGames = vi.fn()
+const account = {id:1}
+vi.mock('../hooks/useAuth.ts',()=>({useAuth:()=>({user:account})}))
 
 vi.mock('../hooks/useGames.ts', () => ({
   useGames: () => mockUseGames(),
@@ -11,6 +14,8 @@ vi.mock('../hooks/useGames.ts', () => ({
 
 describe('GamesPage', () => {
   beforeEach(() => {
+    localStorage.clear()
+    account.id=1
     mockUseGames.mockReturnValue({ data: undefined, isLoading: true, isError: false })
   })
 
@@ -51,5 +56,24 @@ describe('GamesPage', () => {
     })
     renderWithProviders(<GamesPage />)
     expect(screen.getByText(/happy hour/i)).toBeInTheDocument()
+  })
+})
+
+describe('Favoris personnels',()=>{
+  const games=[{id:1,nom:'Échecs',imageUrl:null,gameTypes:[],totalScore:0,happyHourStart:null,happyHourEnd:null},{id:2,nom:'Tetris',imageUrl:null,gameTypes:[],totalScore:0,happyHourStart:null,happyHourEnd:null}]
+  it('épingle, persiste et isole les favoris par compte, avec recherche sans accents',async()=>{
+    localStorage.clear();account.id=1
+    mockUseGames.mockReturnValue({data:games,isLoading:false,isError:false})
+    const user=userEvent.setup(),view=renderWithProviders(<GamesPage />)
+    await user.click(screen.getByRole('button',{name:'Ajouter Tetris aux favoris'}))
+    expect(screen.getAllByRole('link')[0]).toHaveAccessibleName('Voir le détail du jeu Tetris')
+    expect(screen.getByRole('button',{name:'Retirer Tetris des favoris'}).closest('a')).toBeNull()
+    expect(JSON.parse(localStorage.getItem('extia:favorite-games:1')!)).toEqual([2])
+    await user.type(screen.getByRole('searchbox'),'echecs')
+    expect(screen.queryByText('Tetris')).not.toBeInTheDocument()
+    expect(screen.getByText('Échecs')).toBeInTheDocument()
+    account.id=2; view.unmount();renderWithProviders(<GamesPage />)
+    expect(screen.getByRole('button',{name:'Ajouter Tetris aux favoris'})).toHaveAttribute('aria-pressed','false')
+    account.id=1
   })
 })

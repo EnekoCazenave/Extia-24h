@@ -63,10 +63,11 @@ describe('Plateforme événementielle',()=>{
     const e=await event();for(const user of users)await registerEvent(e.id,user)
     await confirmAttendance(e.id,users[0],users[0]);await confirmAttendance(e.id,users[1],users[2]);await ended(e.id)
     const result=await Promise.allSettled([settleEvent(e.id,users[1]),settleEvent(e.id,users[1])]);expect(result.filter(r=>r.status==='fulfilled')).toHaveLength(1)
-    const awards=await prisma.eventAward.findMany({where:{eventId:e.id},orderBy:{userId:'asc'}});expect(awards.map(a=>a.points)).toEqual([9.5,10.5])
-    expect((await playerSummary(users[0],true))?.eventPoints).toBe(9.5)
-    expect((await getGlobalLeaderboard(1000)).find(r=>r.userId===users[1])?.totalScore).toBe(10.5)
-    expect((await getFilteredLeaderboard({team:true})).find(r=>r.userId===users[0])?.totalScore).toBe(9.5)
+    // Le partage est calculé avant l'arrondi individuel déjà appliqué aux gains.
+    const awards=await prisma.eventAward.findMany({where:{eventId:e.id},orderBy:{userId:'asc'}});expect(awards.map(a=>a.points)).toEqual([10,11])
+    expect((await playerSummary(users[0],true))?.eventPoints).toBe(10)
+    expect((await getGlobalLeaderboard(1000)).find(r=>r.userId===users[1])?.totalScore).toBe(11)
+    expect((await getFilteredLeaderboard({team:true})).find(r=>r.userId===users[0])?.totalScore).toBe(10)
     await expect(removeRegistration(e.id,users[0])).rejects.toThrow('récompensé')
   })
   it('refuse un vainqueur absent et les événements annulés',async()=>{

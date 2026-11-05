@@ -23,7 +23,7 @@
 }
 
 .dayPicker .activeDay {
-    color: white;
+    color: var(--text-on-accent);
     background: var(--color-accent);
     border-color: var(--color-accent);
 }
@@ -73,9 +73,9 @@
     overflow: hidden;
     padding: 7px 10px;
     color: var(--text-primary);
-    background: var(--bg-tint);
+    background: var(--bg-surface);
     border: 1px solid rgba(var(--accent-rgb), .45);
-    border-left: 4px solid var(--color-accent);
+    border-left: 1px solid var(--color-accent);
     border-radius: 7px;
     box-shadow: var(--shadow-sm);
     text-decoration: none;
@@ -150,7 +150,7 @@
     top: -9px;
     right: 6px;
     padding: 1px 5px;
-    color: white;
+    color: var(--text-on-accent);
     background: var(--color-error);
     border-radius: 4px;
     font-size: 10px;

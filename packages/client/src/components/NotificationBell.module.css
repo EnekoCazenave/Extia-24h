@@ -31,7 +31,7 @@
     width: 42px;
     height: 42px;
     place-items: center;
-    color: white;
+    color: var(--text-on-accent);
     background: var(--color-accent);
     border-radius: 50%;
     box-shadow: 0 5px 14px rgba(var(--accent-rgb), .28);

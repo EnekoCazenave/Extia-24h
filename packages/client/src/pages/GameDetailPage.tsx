@@ -1,3 +1,4 @@
+import GameBanner from '../components/GameBanner.tsx'
 import { Link, useParams } from 'react-router-dom'
 import SEOHead from '../components/SEOHead.tsx'
 import PlayerLeaderboard from '../components/PlayerLeaderboard.tsx'
@@ -50,6 +51,7 @@ export default function GameDetailPage() {
         canonicalPath={`/jeux/${game.id}`}
       />
       <Link to="/jeux" className={styles.back}>← Retour aux jeux</Link>
+      <GameBanner name={game.nom} imageUrl={game.imageUrl} />
       <header className={styles.header}>
         <div>
           <h1 className={styles.gameName}>{game.nom}</h1>

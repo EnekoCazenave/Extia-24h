@@ -1,4 +1,5 @@
 import { communityRoutes } from './community.js'
+import { beforeRoutes } from './before.js'
 import type { FastifyInstance } from 'fastify'
 import { authRoutes } from './auth.js'
 import { gameRoutes } from './games.js'
@@ -14,6 +15,7 @@ import { notificationRoutes} from "./notification.js";
 
 export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(communityRoutes)
+  await fastify.register(beforeRoutes)
   await fastify.register(authRoutes)
   await fastify.register(gameRoutes)
   await fastify.register(leaderboardRoutes)

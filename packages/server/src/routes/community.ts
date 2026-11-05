@@ -1,16 +1,18 @@
-import { reportingData, exportWorkbook } from '../services/reporting.service.js'
+import { reportingData, exportWorkbook, organizerParticipants, organizerSheet, workbookFromSheets } from '../services/reporting.service.js'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
-import { GroupInputSchema, SettingsSchema, TaskInputSchema } from '@extia-gaming/shared'
+import { GroupInputSchema, SettingsSchema, TaskInputSchema, RoleChangeSchema, GROUP_KINDS } from '@extia-gaming/shared'
 import { prisma } from '../lib/prisma.js'
 import { authenticate } from '../hooks/authenticate.js'
 import { requireAdmin } from '../hooks/requireAdmin.js'
 import { settleEvent, EventError } from '../services/event-scoring.service.js'
 import { unregisterToEvent } from '../services/event.service.js'
-import { playerSummary,listGroups,publicSettings,exportData } from '../services/community.service.js'
+import { playerSummary,listGroups,publicSettings,exportData,deleteEmptyGroup,groupHistory,groupMemberPoints,toCsv } from '../services/community.service.js'
+import { accessUsers,changeRole,roleHistory } from '../services/access.service.js'
 
 const id=z.coerce.number().int().positive().max(2147483647)
+const organizerFilters=z.object({search:z.string().trim().max(100).optional(),groupId:z.union([z.literal('none'),id]).optional(),kind:z.enum(GROUP_KINDS).optional()})
 export async function communityRoutes(f:FastifyInstance) {
   const auth={preHandler:[authenticate]},admin={preHandler:[requireAdmin]}
   f.setErrorHandler((error,request,reply)=>{
@@ -35,9 +37,20 @@ export async function communityRoutes(f:FastifyInstance) {
   f.put<{Params:{id:string}}>('/api/admin/groups/:id',admin,async r=>({group:await prisma.organizationGroup.update({where:{id:id.parse(r.params.id)},data:GroupInputSchema.parse(r.body)})}))
   f.post<{Params:{id:string}}>('/api/admin/groups/:id/points',admin,async r=>{
     const body=z.object({points:z.number().finite().min(-1e9).max(1e9).refine(v=>v!==0),reason:z.string().trim().min(1).max(500)}).parse(r.body)
-    return {entry:await prisma.groupPoint.create({data:{...body,groupId:id.parse(r.params.id),grantedById:r.user.sub}})}
+    return {entry:await prisma.groupPoint.create({data:{...body,points:body.points>0?Math.ceil(body.points):body.points,groupId:id.parse(r.params.id),grantedById:r.user.sub}})}
   })
-  f.get<{Params:{id:string}}>('/api/admin/groups/:id/points',admin,async r=>({entries:await prisma.groupPoint.findMany({where:{groupId:id.parse(r.params.id)},orderBy:{createdAt:'desc'}})}))
+  f.delete<{Params:{id:string}}>('/api/admin/groups/:id',admin,async r=>{await deleteEmptyGroup(id.parse(r.params.id));return {ok:true}})
+  f.get<{Params:{id:string}}>('/api/admin/groups/:id/points',admin,async r=>({entries:await groupHistory(id.parse(r.params.id))}))
+  f.get<{Params:{id:string}}>('/api/admin/groups/:id/members',admin,async r=>({members:await groupMemberPoints(id.parse(r.params.id))}))
+  f.get('/api/admin/access/users',admin,async(r,reply)=>{
+    reply.header('Cache-Control','no-store')
+    return {users:await accessUsers(z.object({search:z.string().trim().max(100).default('')}).parse(r.query).search)}
+  })
+  f.put<{Params:{id:string}}>('/api/admin/access/users/:id/role',admin,async r=>{
+    const body=RoleChangeSchema.parse(r.body)
+    return changeRole(r.user.sub,id.parse(r.params.id),body.roleId,body.reason)
+  })
+  f.get<{Params:{id:string}}>('/api/admin/access/users/:id/history',admin,async(r,reply)=>{reply.header('Cache-Control','no-store');return {entries:await roleHistory(id.parse(r.params.id))}})
   f.get('/api/users/me/dashboard',auth,async r=>({summary:await playerSummary(r.user.sub,true)}))
   f.put('/api/users/me/group',auth,async r=>{
     const {groupId}=z.object({groupId:z.number().int().positive().nullable()}).parse(r.body)
@@ -46,6 +59,14 @@ export async function communityRoutes(f:FastifyInstance) {
   })
   f.get('/api/admin/kpis',admin,async(_r,reply)=>{reply.header('Cache-Control','no-store');const {kpis,participants,groups}=await reportingData();return {kpis,participants,groups}})
   f.get('/api/admin/report.xlsx',admin,async(_r,reply)=>reply.header('Cache-Control','no-store').header('Content-Disposition','attachment; filename="24h-rapport.xlsx"').type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').send(await exportWorkbook()))
+  f.get('/api/admin/organizer-participants',admin,async(r,reply)=>{reply.header('Cache-Control','no-store');return {participants:await organizerParticipants(organizerFilters.parse(r.query))}})
+  f.get<{Params:{format:string}}>('/api/admin/organizer-participants/export/:format',admin,async(r,reply)=>{
+    const format=z.enum(['xlsx','csv']).parse(r.params.format),sheet=await organizerSheet(organizerFilters.parse(r.query))
+    reply.header('Cache-Control','no-store').header('Content-Disposition',`attachment; filename="24h-liste-organisateurs.${format}"`)
+    if(format==='xlsx') return reply.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').send(await workbookFromSheets([sheet]))
+    const rows=sheet.rows.map(row=>Object.fromEntries(sheet.columns.map((column,i)=>[column,row[i]])))
+    return reply.type('text/csv; charset=utf-8').send(toCsv(rows,sheet.columns))
+  })
   f.get<{Params:{kind:string}}>('/api/admin/exports/:kind',admin,async(r,reply)=>{
     const csv=await exportData(r.params.kind)
     if(csv===null) return reply.code(404).send({error:'Export inconnu'})

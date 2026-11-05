@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client'
-import { computeAwards, PlayInputSchema, RulesConfigSchema } from '@extia-gaming/shared'
+import { computeAwards, finalGain, PlayInputSchema, RulesConfigSchema } from '@extia-gaming/shared'
 import { prisma } from '../lib/prisma.js'
 
 export class EventError extends Error { constructor(message: string, public statusCode = 409) { super(message) } }
@@ -13,12 +13,13 @@ export async function settleEvent(eventId:number,winnerId:number|null) {
   return eventTransaction(async tx => {
     const event = await tx.event.findUnique({where:{id:eventId},include:{userEvents:{where:{isPresent:true},orderBy:{userId:'asc'}}}})
     if(!event) throw new EventError('Événement introuvable',404)
+    if(event.awardsPoints === false || event.registrationRequired === false) throw new EventError('Cet événement ne distribue pas de points')
     if(event.settledAt || !event.endsAt || event.endsAt > new Date()) throw new EventError('La distribution se fait une seule fois après la fin')
     const ids=event.userEvents.map(r=>r.userId)
     if(!ids.length) throw new EventError('Aucune présence confirmée')
     if(event.winnerShare>0 && (!winnerId || !ids.includes(winnerId))) throw new EventError('Choisissez un vainqueur parmi les présents')
     if(winnerId && !ids.includes(winnerId)) throw new EventError('Le vainqueur doit être présent')
-    const awards=computeAwards(RulesConfigSchema.parse({type:'RULES',method:'MINIGAME',attendancePoints:event.pointsEarned,winnerShare:event.winnerShare}),PlayInputSchema.parse({calculType:'RULES',gameTypeId:1,values:{winnerId:winnerId??ids[0]}}),ids)
+    const awards=computeAwards(RulesConfigSchema.parse({type:'RULES',method:'MINIGAME',attendancePoints:event.pointsEarned,winnerShare:event.winnerShare}),PlayInputSchema.parse({calculType:'RULES',gameTypeId:1,values:{winnerId:winnerId??ids[0]}}),ids,true).map(award => ({ ...award, score: finalGain(award.score, 2) }))
     await tx.eventAward.createMany({data:awards.map(a=>({eventId,userId:a.userId,points:a.score}))})
     await tx.event.update({where:{id:eventId},data:{settledAt:new Date(),winnerId}})
     return awards

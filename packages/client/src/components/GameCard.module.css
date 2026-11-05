@@ -56,9 +56,14 @@
 .typeTag {
   font-size: var(--text-xs);
   padding: 3px 10px;
-  background: rgba(var(--secondary-rgb), 0.12);
-  color: var(--color-secondary);
+  background: var(--bg-tint);
+  color: var(--badge-text);
   border-radius: 99px;
-  border: 1px solid rgba(var(--secondary-rgb), 0.22);
+  border: 1px solid var(--badge-border);
   font-weight: 600;
 }
+
+.container { position: relative; height: 100%; }
+.container .card { height: 100%; }
+.favorite { position: absolute; z-index: 1; top: 10px; right: 10px; width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-card); color: var(--color-accent); cursor: pointer; }
+.favorite:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }

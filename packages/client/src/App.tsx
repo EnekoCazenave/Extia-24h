@@ -44,6 +44,8 @@ export default function App() {
                 {/* Protected routes — any authenticated user */}
                 <Route element={<ProtectedRoute/>}>
                     <Route path="/jeux/:id/jouer" element={<PlayGamePage/>}/>
+                    <Route path="/declarer" element={<PlayGamePage/>}/>
+                    <Route path="/declarations/:sessionId/modifier" element={<PlayGamePage/>}/>
                     <Route path="/profil" element={<ProfilePage/>}/>
                     <Route path="/classement/me" element={<PersonalLeaderboardPage/>}/>
                 </Route>

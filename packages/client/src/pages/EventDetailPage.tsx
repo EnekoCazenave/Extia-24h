@@ -33,7 +33,7 @@ export default function EventDetailPage() {
     const registrationPending = register.isPending || unregister.isPending
 
     async function toggleRegistration() {
-        if (!user || !event || hasEnded || (isOngoing && event.isRegistered)) return
+        if (!user || !event || event.registrationRequired===false || hasEnded || (isOngoing && event.isRegistered)) return
         try {
             setActionError('')
             if (event.isRegistered) {
@@ -93,15 +93,15 @@ export default function EventDetailPage() {
                     <div><dt>Début</dt><dd>{formatDateTime(event.startsAt)}</dd></div>
                     <div><dt>Fin</dt><dd>{formatDateTime(event.endsAt)}</dd></div>
                     {event.videoGame && <div><dt>Jeu</dt><dd>🎮 {event.videoGame.nom}</dd></div>}
-                    <div><dt>Participants</dt><dd>{event.participantCount} / {event.maxPlaces}</dd></div>
-                    <div><dt>Places restantes</dt><dd>{event.remainingPlaces}</dd></div>
-                    <div><dt>Points de participation</dt><dd>{event.pointsEarned}</dd></div>
+                    {event.registrationRequired!==false&&<><div><dt>Participants</dt><dd>{event.participantCount} / {event.maxPlaces}</dd></div>
+                    <div><dt>Places restantes</dt><dd>{event.remainingPlaces}</dd></div></>}
+                    <div><dt>Points de participation</dt><dd>{event.awardsPoints===false?'Sans attribution de points':event.pointsEarned}</dd></div>
                 </dl>
             </section>
 
             <aside className={styles.registration} aria-labelledby="event-registration-title">
-                <h2 id="event-registration-title">Inscription</h2>
-                {hasEnded ? <><strong>Évènement terminé</strong><p>Les inscriptions sont closes.</p></> :
+                <h2 id="event-registration-title">{event.registrationRequired===false?"Accès libre":"Inscription"}</h2>
+                {event.registrationRequired===false?<p>Ce rendez-vous est accessible sans inscription.</p>:hasEnded ? <><strong>Évènement terminé</strong><p>Les inscriptions sont closes.</p></> :
                     isOngoing && event.isRegistered ? <><strong>Vous êtes inscrit</strong><p>L’évènement est en cours.</p></> :
                     !user ? <><p>Connectez-vous pour réserver votre place.</p>
                         <Link className={styles.primaryButton} to="/login" state={{from: `/programme/${event.id}`}}>
@@ -116,9 +116,9 @@ export default function EventDetailPage() {
                     </>}
             </aside>
         </div>
-        {user?.role?.name === 'admin' && event.participants &&
+        {user?.role?.name === 'admin' && event.registrationRequired!==false && event.participants &&
             <section className={`${styles.details} ${styles.participants}`} aria-labelledby="event-participants-title">
-                {event.settledAt?<p>Points distribués.</p>:hasEnded&&<div><label>Gagnant<select value={winner} onChange={e=>setWinner(e.target.value)}><option value="">Choisir un participant présent</option>{event.participants.filter(p=>p.isPresent).map(p=><option key={p.id} value={p.id}>{p.firstname} {p.lastname}</option>)}</select></label><button type="button" disabled={action.busy||((event.winnerShare??0.05)>0&&!winner)} onClick={()=>action.run(()=>api.post(`/api/admin/events/${eventId}/settle`,{winnerId:winner?Number(winner):null}))}>Distribuer les points</button></div>}
+                {event.awardsPoints!==false&&(event.settledAt?<p>Points distribués.</p>:hasEnded&&<div><label>Gagnant<select value={winner} onChange={e=>setWinner(e.target.value)}><option value="">Choisir un participant présent</option>{event.participants.filter(p=>p.isPresent).map(p=><option key={p.id} value={p.id}>{p.firstname} {p.lastname}</option>)}</select></label><button type="button" disabled={action.busy||((event.winnerShare??0.05)>0&&!winner)} onClick={()=>action.run(()=>api.post(`/api/admin/events/${eventId}/settle`,{winnerId:winner?Number(winner):null}))}>Distribuer les points</button></div>)}
                 <h2 id="event-participants-title">Participants inscrits ({event.participants.length})</h2>
                 {event.participants.length === 0 ? <p>Aucun participant inscrit pour le moment.</p> :
                     <ul className={styles.participantList}>

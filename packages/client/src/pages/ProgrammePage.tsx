@@ -69,7 +69,7 @@ export default function ProgrammePage() {
     }
 
     async function toggleRegistration(event: ProgramEvent) {
-        if (!user || new Date(event.endsAt).getTime() <= Date.now() ||
+        if (!user || event.registrationRequired===false || new Date(event.endsAt).getTime() <= Date.now() ||
             (event.isRegistered && new Date(event.startsAt).getTime() <= Date.now())) return
         try {
             setActionError('')
@@ -136,6 +136,7 @@ function EmptyProgramme() {
 function toEventDraft(event: ProgramEvent): EventDraft {
     return {
         name: event.name,
+        registrationRequired: event.registrationRequired??true, awardsPoints:event.awardsPoints??true,
         notifyPush:event.notifyPush??true, notifyEmail:event.notifyEmail??false, notifyDiscord:event.notifyDiscord??false, reminderMinutes:event.reminderMinutes??10,
         description: event.description,
         startsAt: toLocalInputValue(new Date(event.startsAt)),

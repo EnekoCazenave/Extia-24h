@@ -3,11 +3,8 @@
   top: 0;
   z-index: 100;
   height: var(--header-height);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--bg-base);
   border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 1px 0 rgba(var(--ink-rgb), 0.02);
 }
 
 .nav {
@@ -50,20 +47,18 @@
 }
 
 .logo {
-  font-family: var(--font-display), sans-serif;
-  font-size: var(--text-xl);
-  font-weight: 900;
   color: var(--text-primary) !important;
   text-decoration: none !important;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
-.logo span {
-  color: var(--color-accent);
+.logo img {
+  width: 63px;
+  height: 80px;
+  object-fit: contain;
 }
 
 .navLinks {
@@ -89,8 +84,8 @@
 }
 
 .navLinkActive {
-  color: var(--color-accent) !important;
-  background: rgba(var(--accent-rgb), 0.10);
+  color: var(--badge-text) !important;
+  background: var(--bg-tint);
 }
 
 .navActions {
@@ -135,6 +130,7 @@
 
 .main {
   min-height: calc(100vh - var(--header-height) - 56px);
+  padding-bottom: 40px;
 }
 
 .footer {
@@ -143,7 +139,7 @@
   border-top: 1px solid var(--border-color);
   color: var(--text-muted);
   font-size: var(--text-sm);
-  background: var(--bg-surface);
+  background: var(--bg-base);
 }
 
 .adminBadge {
@@ -157,7 +153,7 @@
   letter-spacing: 0.05em;
 }
 
-@media (max-width: 1279px) {
+@media (max-width: 899px) {
   .menuToggle {
     display: inline-flex;
   }
@@ -198,6 +194,13 @@
   .logoutBtn {
     padding: 12px 16px;
   }
+}
+
+@media (min-width: 900px) and (max-width: 1279px) {
+  .staffNav .navLinks { gap: 0; flex-wrap: wrap; }
+  .staffNav .navLink { padding: 6px 8px; font-size: var(--text-xs); }
+  .staffNav .navActions { gap: 6px; }
+  .staffNav .logoutBtn { padding: 7px 10px; font-size: var(--text-xs); }
 }
 
 @media (max-width: 380px) {

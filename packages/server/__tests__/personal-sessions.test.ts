@@ -1,11 +1,15 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {buildApp} from '../src/app.js'
 
-const db = vi.hoisted(() => ({$queryRaw: vi.fn(), gameSession: {findMany: vi.fn()}}))
+const db = vi.hoisted(() => ({$queryRaw: vi.fn(), gameSession: {findMany: vi.fn()}, user: {findUnique: vi.fn()}}))
 vi.mock('../src/lib/prisma.js', () => ({prisma: db}))
 
 describe('Personal sessions', () => {
-  beforeEach(() => { vi.resetAllMocks(); db.$queryRaw.mockResolvedValue([{rank: 1n, userId: 7, totalScore: 0n}]) })
+  beforeEach(() => {
+    vi.resetAllMocks()
+    db.$queryRaw.mockResolvedValue([{rank: 1n, userId: 7, totalScore: 0n}])
+    db.user.findUnique.mockResolvedValue({id: 7, email: 'test@test.fr', roleId: 1})
+  })
 
   it('paginates only the authenticated user submissions and returns credited points', async () => {
     db.gameSession.findMany.mockResolvedValue(Array.from({length: 21}, (_, id) => ({

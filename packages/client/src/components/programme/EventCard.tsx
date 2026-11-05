@@ -49,7 +49,8 @@ export default function EventCard({
                 <p className={styles.description}>{event.description}</p>
                 <div className={styles.meta}>
                     {event.videoGame && <span>🎮 {event.videoGame.nom}</span>}
-                    <span>♟ {event.participantCount} / {event.maxPlaces} places</span>
+                    {event.registrationRequired===false?<span>Accès libre</span>:<span>♟ {event.participantCount} / {event.maxPlaces} places</span>}
+                    {event.awardsPoints===false&&<span>Sans attribution de points</span>}
                 </div>
             </Link>
             <div className={styles.actions}>
@@ -60,7 +61,7 @@ export default function EventCard({
                     <button className={styles.dangerButton} type="button" disabled={deletionPending}
                             onClick={() => onDelete(event)}>Supprimer
                     </button>
-                </> : hasEnded ?
+                </> : event.registrationRequired===false ? <Link className={styles.secondaryButton} to={`/programme/${event.id}`}>Voir les détails</Link> : hasEnded ?
                     <button className={styles.secondaryButton} disabled type="button">Terminé</button> : isOngoing && event.isRegistered ?
                         <button className={styles.secondaryButton} disabled type="button">Inscrit — En cours</button> : isAuthenticated ?
                             <button className={event.isRegistered ? styles.secondaryButton : styles.primaryButton}

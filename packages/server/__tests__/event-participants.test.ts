@@ -24,7 +24,7 @@ describe('Event participants', () => {
         await confirmEventAttendance(7, 3, false)
         expect(db.userEvent.updateMany).toHaveBeenCalledWith({
             where: {userId: 7, eventId: 3, isPresent: null,
-                event: {startsAt: {lte: expect.any(Date)}, endsAt: {gt: expect.any(Date)}}},
+                event: {registrationRequired: true, startsAt: {lte: expect.any(Date)}, endsAt: {gt: expect.any(Date)}}},
             data: {isPresent: false},
         })
     })

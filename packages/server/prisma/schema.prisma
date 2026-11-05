@@ -36,6 +36,9 @@ model User {
   submittedSessions         GameSession[]              @relation("SubmittedSessions")
   sessionMemberships        GameSessionMember[]
   subscriptionNotifications SubscriptionNotification[]
+  roleChangesMade RoleChangeAudit[] @relation("RoleChangeActor")
+  roleChangesReceived RoleChangeAudit[] @relation("RoleChangeSubject")
+  beforeParticipants BeforeParticipant[]
 }
 
 model Role {
@@ -45,6 +48,7 @@ model Role {
 }
 
 model VideoGame {
+  sortOrder      Int        @default(0)
   id             Int        @id @default(autoincrement())
   nom            String
   imageUrl       String?
@@ -144,9 +148,33 @@ model PointBonus {
   userId      Int
   grantedBy   User     @relation("BonusGranter", fields: [grantedById], references: [id])
   grantedById Int
-  points      Int
+  points      Float
   reason      String?
   createdAt   DateTime @default(now())
+  beforeParticipant BeforeParticipant?
+}
+
+model BeforeParticipant {
+  id Int @id @default(autoincrement())
+  sourceKey String
+  sourceName String
+  sourceRow Int
+  rawName String
+  firstname String
+  lastname String
+  firstnameKey String
+  lastnameKey String
+  points Float?
+  importedById Int
+  userId Int?
+  user User? @relation(fields: [userId], references: [id])
+  bonusId Int? @unique
+  bonus PointBonus? @relation(fields: [bonusId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sourceKey, firstnameKey, lastnameKey])
+  @@index([firstnameKey, lastnameKey, userId])
 }
 
 model Achievement {
@@ -166,6 +194,8 @@ model UserAchievement {
 }
 
 model Event {
+  registrationRequired Boolean @default(true)
+  awardsPoints Boolean @default(true)
   notifyPush Boolean @default(true)
   notifyEmail Boolean @default(false)
   notifyDiscord Boolean @default(false)
@@ -308,7 +338,22 @@ model GroupPoint {
   createdAt DateTime @default(now())
 }
 
+model RoleChangeAudit {
+  id Int @id @default(autoincrement())
+  actorId Int
+  actor User @relation("RoleChangeActor", fields:[actorId], references:[id])
+  userId Int
+  user User @relation("RoleChangeSubject", fields:[userId], references:[id])
+  previousRoleId Int
+  roleId Int
+  reason String
+  createdAt DateTime @default(now())
+  @@index([userId, createdAt])
+}
+
 model SiteSettings {
+  proofRequired Boolean @default(false)
+  homeSubtitle String?
   notifyStartDiscord Boolean @default(false)
   notifyEndDiscord Boolean @default(false)
   startReminderMinutes Int @default(0)

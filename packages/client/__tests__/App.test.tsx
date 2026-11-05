@@ -25,6 +25,6 @@ function renderApp() {
 describe('App', () => {
   it('renders without crashing', () => {
     renderApp()
-    expect(screen.getByRole('heading', { name: 'Extia Gaming 24h' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '24H Solidaires d’Extia Gaming — 3ème édition', level: 1 })).toBeInTheDocument()
   })
 })

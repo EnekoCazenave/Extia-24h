@@ -1,3 +1,5 @@
+import { ReorderGamesSchema } from '@extia-gaming/shared'
+import { handleReorderGames } from '../controllers/admin.controller.js'
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod'
 import { CreateGameSchema, UpdateGameSchema, CreateGameTypeSchema, UpdateGameTypeSchema, UpdateHappyHourSchema, GrantBonusSchema } from '@extia-gaming/shared'
@@ -12,6 +14,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
   const adminGuard = { preHandler: [requireAdmin] }
 
   f.post<RouteOf<typeof handleCreateGame>>('/api/admin/games', { ...adminGuard, schema: { body: CreateGameSchema } }, handleCreateGame)
+  f.put<RouteOf<typeof handleReorderGames>>('/api/admin/games/order', {...adminGuard,schema:{body:ReorderGamesSchema}},handleReorderGames)
   f.put<RouteOf<typeof handleUpdateGame>>('/api/admin/games/:id', { ...adminGuard, schema: { body: UpdateGameSchema } }, handleUpdateGame)
   f.delete<RouteOf<typeof handleDeleteGame>>('/api/admin/games/:id', adminGuard, handleDeleteGame)
   f.post<RouteOf<typeof handleAddGameType>>('/api/admin/games/:id/game-types', { ...adminGuard, schema: { body: CreateGameTypeSchema } }, handleAddGameType)

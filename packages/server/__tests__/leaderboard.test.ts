@@ -3,6 +3,7 @@ import { buildApp } from '../src/app.js'
 
 vi.mock('@prisma/client', () => {
   const mockPrisma = {
+    user: {findUnique: vi.fn().mockResolvedValue({id: 7, email: 'alice@test.fr', roleId: 1})},
     $queryRaw: vi.fn(), gameSession: {findMany: vi.fn().mockResolvedValue([])},
   }
   // Prisma.sql is a tagged template literal used in the service — mock it as a passthrough
@@ -81,16 +82,18 @@ describe('GET /api/leaderboard/me', () => {
     } finally { await app.close() }
   })
 
-  it('returns 404 when the authenticated user no longer exists', async () => {
+  it('returns 401 when the authenticated user no longer exists', async () => {
     const { PrismaClient } = await import('@prisma/client')
     const db = new (PrismaClient as any)()
     db.$queryRaw.mockResolvedValue([])
+    db.user.findUnique.mockResolvedValueOnce(null)
     const app = await buildApp({logger: false})
     try {
       await app.ready()
       const token = app.jwt.sign({sub: 7, email: 'alice@test.fr', roleId: 1})
       const res = await app.inject({method: 'GET', url: '/api/leaderboard/me', cookies: {access_token: token}})
-      expect(res.statusCode).toBe(404)
+      expect(res.statusCode).toBe(401)
+      expect(db.$queryRaw).not.toHaveBeenCalled()
     } finally { await app.close() }
   })
 })

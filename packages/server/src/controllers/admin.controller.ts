@@ -1,3 +1,5 @@
+import { reorderGames } from '../services/admin.service.js'
+import type { ReorderGamesInput } from '@extia-gaming/shared'
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import type { CreateGameInput, UpdateGameInput, CreateGameTypeInput, UpdateGameTypeInput, UpdateHappyHourInput, GrantBonusInput } from '@extia-gaming/shared'
 import { createGame, updateGame, deleteGame, addGameType, updateGameType, deleteGameType, updateHappyHour, grantBonus } from '../services/admin.service.js'
@@ -124,5 +126,13 @@ export async function handleGrantBonus(
       return reply.code(404).send({ error: 'User not found', statusCode: 404 })
     }
     throw err
+  }
+}
+
+export async function handleReorderGames(request: FastifyRequest<{Body:ReorderGamesInput}>,reply:FastifyReply) {
+  try { await reorderGames(request.body.gameIds); return reply.send({ok:true}) }
+  catch(error) {
+    if(error instanceof Error && (error.message === 'GAME_ORDER_CONFLICT' || ('code' in error && error.code === 'P2034'))) return reply.code(409).send({error:'La liste des jeux a changé. Rechargez-la avant de réordonner.',statusCode:409})
+    throw error
   }
 }

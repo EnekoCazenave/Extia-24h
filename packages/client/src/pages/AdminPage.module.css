@@ -82,7 +82,7 @@
   background: rgba(var(--success-rgb), 0.12);
   border: 1px solid rgba(var(--success-rgb), 0.3);
   border-radius: var(--radius-md);
-  color: #3F7A27;
+  color: var(--color-success);
   font-size: var(--text-sm);
   font-weight: 700;
 }

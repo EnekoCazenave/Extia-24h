@@ -1,3 +1,5 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { api } from '../../services/api.ts'
 import { useState } from 'react'
 import { useGames } from '../../hooks/useGames.ts'
 import { useCreateGame, useUpdateGame, useDeleteGame } from '../../hooks/useAdmin.ts'
@@ -15,6 +17,14 @@ function happyHourLabel(start: string | null, end: string | null): string | null
 
 export default function GamesPanel() {
   const { data: games } = useGames()
+  const qc = useQueryClient()
+  const [dragged,setDragged] = useState<number|null>(null)
+  const order = useMutation({mutationFn:async(gameIds:number[])=>api.put('/api/admin/games/order',{gameIds}),onSuccess:()=>{void qc.invalidateQueries({queryKey:['games']})}})
+  function move(id:number,target:number) {
+    if (!games || order.isPending || id === target) return
+    const ids=games.map(g=>g.id),from=ids.indexOf(id),to=ids.indexOf(target)
+    ids.splice(from,1); ids.splice(to,0,id); order.mutate(ids)
+  }
   const [mode, setMode] = useState<Mode>({ kind: 'closed' })
   const createGame = useCreateGame()
   const editingGameId = mode.kind === 'edit' ? mode.gameId : 0
@@ -59,14 +69,17 @@ export default function GamesPanel() {
           + Ajouter
         </button>
       </div>
+      <p>Déplacez les jeux pour définir l’ordre commun, ou utilisez Monter / Descendre.</p>
+      {order.isError && <p role="alert">Impossible d’enregistrer l’ordre. Rechargez la liste et réessayez.</p>}
+      {order.isPending && <p role="status">Enregistrement de l’ordre…</p>}
       {!games || games.length === 0 ? (
         <p className={styles.empty}>Aucun jeu pour le moment.</p>
       ) : (
         <div className={styles.list}>
-          {games.map((g) => {
+          {games.map((g,index) => {
             const hh = happyHourLabel(g.happyHourStart, g.happyHourEnd)
             return (
-              <div key={g.id} className={styles.listItem}>
+              <div key={g.id} className={styles.listItem} draggable={!order.isPending} onDragStart={e=>{setDragged(g.id);e.dataTransfer.setData('text/plain',String(g.id))}} onDragEnd={()=>setDragged(null)} onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();if(dragged!==null)move(dragged,g.id);setDragged(null)}}>
                 {g.imageUrl && <img src={g.imageUrl} alt="" className={styles.listThumb} />}
                 <div className={styles.listInfo}>
                   <div className={styles.listTitle}>{g.nom}</div>
@@ -76,6 +89,8 @@ export default function GamesPanel() {
                   </div>
                 </div>
                 <div className={styles.listActions}>
+                  <button type="button" className={styles.editBtn} disabled={index===0||order.isPending} aria-label={`Monter ${g.nom}`} onClick={()=>move(g.id,games[index-1].id)}>Monter</button>
+                  <button type="button" className={styles.editBtn} disabled={index===games.length-1||order.isPending} aria-label={`Descendre ${g.nom}`} onClick={()=>move(g.id,games[index+1].id)}>Descendre</button>
                   <button type="button" className={styles.editBtn} onClick={() => setMode({ kind: 'edit', gameId: g.id })}>
                     Modifier
                   </button>

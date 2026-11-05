@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '../test-utils.tsx'
 import PlayGamePage from '../pages/PlayGamePage.tsx'
 
+vi.mock('../hooks/usePlatform.ts',()=>({usePlatform:()=>({data:{settings:{proofRequired:false}},isPending:false,isError:false})}))
 vi.mock('../hooks/useAuth.ts', () => ({ useAuth: () => ({ user: { id: 1, login: 'Player' } }) }))
 vi.mock('../hooks/useUsers.ts', () => ({ useUsers: () => ({ data: [] }) }))
 

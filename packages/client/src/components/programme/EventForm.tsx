@@ -6,7 +6,7 @@ import styles from '../../pages/ProgrammePage.module.css'
 
 export type EventDraft = Pick<
     CreateEventInput,
-    'name' | 'description' | 'startsAt' | 'endsAt' | 'maxPlaces' | 'videoGameId' | 'pointsEarned' | 'twitchUrl' | 'winnerShare' | 'notifyPush' | 'notifyEmail' | 'notifyDiscord' | 'reminderMinutes'
+    'registrationRequired' | 'awardsPoints' | 'name' | 'description' | 'startsAt' | 'endsAt' | 'maxPlaces' | 'videoGameId' | 'pointsEarned' | 'twitchUrl' | 'winnerShare' | 'notifyPush' | 'notifyEmail' | 'notifyDiscord' | 'reminderMinutes'
 >
 
 export function toLocalInputValue(date: Date) {
@@ -19,6 +19,7 @@ export function createEmptyEventDraft(): EventDraft {
     const end = new Date(start.getTime() + 3_600_000)
     return {
         name: '',
+        registrationRequired: true, awardsPoints: true,
         notifyPush: true, notifyEmail: false, notifyDiscord: false, reminderMinutes: 10,
         description: '',
         startsAt: toLocalInputValue(start),
@@ -71,11 +72,13 @@ export default function EventForm({
             return
         }
 
+        if(draft.awardsPoints !== false && draft.registrationRequired === false){setError('Les points nécessitent une inscription pour identifier les participants.');return}
         setError('')
         await onSubmit({
             ...draft,
             name: draft.name.trim(),
             description: draft.description.trim(),
+            pointsEarned: draft.awardsPoints === false ? 0 : draft.pointsEarned,
         })
     }
 
@@ -121,23 +124,28 @@ export default function EventForm({
             <label>Fin<input required type="datetime-local" value={draft.endsAt.slice(0, 16)}
                 onChange={(event) => setDraft({...draft, endsAt: event.target.value})}/></label>
         </div>
-        <label>Nombre de places<input required min="1" type="number" value={draft.maxPlaces}
-            onChange={(event) => setDraft({...draft, maxPlaces: Number(event.target.value)})}/></label>
-        <label>Nombre de points gagnés<input required min="0.000001" max="100000" step="any" type="number" value={draft.pointsEarned}
-            onChange={(event) => setDraft({...draft, pointsEarned: Number(event.target.value)})}/></label>
+        <fieldset><legend>Participation et points</legend>
+          <label><input type="checkbox" checked={draft.registrationRequired!==false} onChange={e=>setDraft({...draft,registrationRequired:e.target.checked,...(!e.target.checked?{awardsPoints:false,notifyEmail:false,notifyPush:false}:{})})}/> Inscription nécessaire</label>
+          <label><input type="checkbox" checked={draft.awardsPoints!==false} disabled={draft.registrationRequired===false} onChange={e=>setDraft({...draft,awardsPoints:e.target.checked})}/> Attribuer des points</label>
+          <p>{draft.registrationRequired===false?'Accès libre : aucune inscription ni attribution de points.':'Les points peuvent être désactivés pour un rendez-vous sans gain.'}</p>
+        </fieldset>
+        {draft.registrationRequired!==false&&<label>Nombre de places<input required min="1" type="number" value={draft.maxPlaces}
+            onChange={(event) => setDraft({...draft, maxPlaces: Number(event.target.value)})}/></label>}
+        {draft.awardsPoints!==false&&<label>Nombre de points gagnés<input required min="0.000001" max="100000" step="any" type="number" value={draft.pointsEarned}
+            onChange={(event) => setDraft({...draft, pointsEarned: Number(event.target.value)})}/></label>}
         <label>Lien Twitch (facultatif)<input type="url" value={draft.twitchUrl??''} onChange={e=>setDraft({...draft,twitchUrl:e.target.value||null})}/></label>
-        <label>Part du pot réservée au gagnant (%)<input type="number" min="0" max="100" step="any" value={(draft.winnerShare??0.05)*100} onChange={e=>setDraft({...draft,winnerShare:Number(e.target.value)/100})}/></label>
-        <p>Chaque présence confirmée alimente le pot. Par défaut, 95 % sont partagés et 5 % reviennent au gagnant. Les points sont distribués après la fin par l’organisation.</p>
+        {draft.awardsPoints!==false&&<><label>Part du pot réservée au gagnant (%)<input type="number" min="0" max="100" step="any" value={(draft.winnerShare??0.05)*100} onChange={e=>setDraft({...draft,winnerShare:Number(e.target.value)/100})}/></label>
+        <p>Chaque présence confirmée alimente le pot. Par défaut, 95 % sont partagés et 5 % reviennent au gagnant. Les points sont distribués après la fin par l’organisation.</p></>}
         <fieldset className={styles.notificationSettings}><legend>Rappel avant le début</legend>
           <label>Délai du rappel (minutes avant le début)<input required type="number" min="0" max="10080" step="1" value={draft.reminderMinutes??10} onChange={e=>setDraft({...draft,reminderMinutes:Number(e.target.value)})}/></label>
           <p>0 = au début de l’événement. Maximum : 7 jours. Ce délai s’applique aux canaux cochés.</p>
           <div className={styles.notificationOptions}>
             <label className={styles.notificationOption}>
-              <input type="checkbox" checked={draft.notifyPush??true} onChange={e=>setDraft({...draft,notifyPush:e.target.checked})}/>
+              <input type="checkbox" disabled={draft.registrationRequired===false} checked={draft.registrationRequired!==false&&(draft.notifyPush??true)} onChange={e=>setDraft({...draft,notifyPush:e.target.checked})}/>
               <span><strong>Notification push aux inscrits</strong><small>{channels?.publicKey?'Sur les appareils abonnés':'Service à configurer'}</small></span>
             </label>
             <label className={styles.notificationOption}>
-              <input type="checkbox" checked={draft.notifyEmail??false} onChange={e=>setDraft({...draft,notifyEmail:e.target.checked})}/>
+              <input type="checkbox" disabled={draft.registrationRequired===false} checked={draft.registrationRequired!==false&&(draft.notifyEmail??false)} onChange={e=>setDraft({...draft,notifyEmail:e.target.checked})}/>
               <span><strong>Email aux inscrits</strong><small>{channels?.emailReady?'Un email par participant inscrit':'Service à configurer'}</small></span>
             </label>
             <label className={styles.notificationOption}>

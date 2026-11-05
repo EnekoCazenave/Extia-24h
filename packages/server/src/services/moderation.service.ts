@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client'
-import { CalculConfigSchema, PlayInputSchema, computeAwards, roundScore, ScoringError, type PlayInput } from '@extia-gaming/shared'
+import { requireUploadedProof } from './proof.service.js'
+import { CalculConfigSchema, PlayInputSchema, computeAwards, creditScore, roundScore, ScoringError, type PlayInput, type RuleValues, type CreditLimit } from '@extia-gaming/shared'
 import { prisma } from '../lib/prisma.js'
 
 const sessionInclude = {
@@ -39,27 +40,44 @@ export async function approveSession(sessionId: number) {
   return serializable(tx => approveSessionInTransaction(tx, sessionId))
 }
 
+export async function deleteAllSessions() {
+  return serializable(async tx => {
+    await tx.userGame.deleteMany({})
+    await tx.gameSessionMember.deleteMany({})
+    const deleted = await tx.gameSession.deleteMany({})
+    return deleted.count
+  })
+}
+
 export async function approveSessionInTransaction(tx: Prisma.TransactionClient, sessionId: number) {
     const session = await tx.gameSession.findUnique({
       where: { id: sessionId }, include: { gameType: { include: { videoGame: true } }, teamMembers: true },
     })
     if (!session) throw new Error('SESSION_NOT_FOUND')
     if (session.status !== 'PENDING') throw new Error('SESSION_NOT_PENDING')
+    await requireUploadedProof(tx, session.proofUrl)
     const changed = await tx.gameSession.updateMany({ where: { id: sessionId, status: 'PENDING' }, data: { status: 'APPROVED', reviewedAt: new Date() } })
     if (changed.count !== 1) throw new Error('SESSION_NOT_PENDING')
     const userIds = [session.submitterId, ...session.teamMembers.map(m => m.userId)].sort((a,b) => a-b)
-    const snapshot = session.scoringData as { config?: unknown; input?: unknown; happyHourMultiplier?: number } | null
+    const snapshot = session.scoringData as { version?: number; config?: unknown; input?: unknown; happyHourMultiplier?: number } | null
     const config = CalculConfigSchema.parse(snapshot?.config ?? session.gameType.calculConfig)
     const input = snapshot?.input ? PlayInputSchema.parse(snapshot.input) : null
+    // Preserve the implicit completion rule for declarations saved before the explicit field existed.
+    if (config.type === 'RULES' && config.method === 'PROGRESSION' && input?.calculType === 'RULES') {
+      const withCompletion = (values: RuleValues) => ({ ...values, completed: values.completed ?? Number(values.end === config.items.length) })
+      input.values = withCompletion(input.values)
+      if (input.results) input.results = input.results.map(result => ({ ...result, values: withCompletion(result.values) }))
+    }
     // Legacy pending declarations retain their saved points; new ones are recalculated from the frozen barème.
     const { happyHourStart, happyHourEnd } = session.gameType.videoGame
     const factor = snapshot?.happyHourMultiplier ?? (happyHourStart && happyHourEnd && session.createdAt >= happyHourStart && session.createdAt <= happyHourEnd ? 2 : 1)
-    const awards = input ? computeAwards(config, input, userIds) : userIds.map(userId => ({ userId, score: session.score }))
+    const awards = input ? computeAwards(config, input, userIds, snapshot?.version === 2) : userIds.map(userId => ({ userId, score: session.score }))
     if (config.type === 'RULES' && input?.calculType === 'RULES' && config.method === 'MINECRAFT' && input.values.communityCompleted === 1) {
       const previous = await tx.gameSession.findMany({ where: { gameTypeId: session.gameTypeId, status: 'APPROVED', id: { not: sessionId } }, select: { scoringData: true } })
       if (previous.some(row => (row.scoringData as { input?: { values?: { communityCompleted?: number } } } | null)?.input?.values?.communityCompleted === 1))
         throw new ScoringError('Le pot commun de ce mode a déjà été distribué')
     }
+    const credits = []
     for (const award of awards) {
       if (config.type === 'RULES' && input && ['HADES','PROGRESSION','MINECRAFT'].includes(config.method)) {
         const history = await tx.userGame.findMany({ where: { userId: award.userId, gameTypeId: session.gameTypeId }, include: { gameSession: { select: { scoringData: true } } } })
@@ -75,7 +93,7 @@ export async function approveSessionInTransaction(tx: Prisma.TransactionClient, 
           if (config.method === 'PROGRESSION' && previous.resumed === current.resumed && current.start < previous.end) throw new ScoringError('Cette progression recouvre des paliers déjà récompensés')
           if (config.method === 'MINECRAFT' && config.items.some(item => current[`item_${item.key}`] === 1 && previous[`item_${item.key}`] === 1)) throw new ScoringError('Un succès a déjà été récompensé pour ce participant')
         }
-        if (config.method === 'PROGRESSION' && input.calculType === 'RULES' && current.resumed === 0 && current.start > 0 && current.end === config.items.length) {
+        if (config.method === 'PROGRESSION' && input.calculType === 'RULES' && current.completed === 1 && current.resumed === 0 && current.start > 0 && current.end === config.items.length) {
           let reached = 0
           for (const interval of previousIntervals.sort((a,b) => a.start - b.start)) {
             if (interval.start === reached) reached = interval.end
@@ -83,21 +101,28 @@ export async function approveSessionInTransaction(tx: Prisma.TransactionClient, 
           if (reached === current.start) {
             const group = config.participantCoefficients.find(c => c.participants === userIds.length)?.coefficient ?? 1
             const mode = config.modes.find(m => m.key === input.mode)?.coefficient ?? 1
-            award.score = roundScore(award.score + config.completionBonus * group * mode)
+            award.score = snapshot?.version === 2 ? award.score + config.completionBonus * group * mode : roundScore(award.score + config.completionBonus * group * mode)
           }
         }
       }
-      let score = roundScore(award.score * factor)
+      const limits: CreditLimit[] = []
       if (config.type === 'RULES' && config.maxPoints !== null) {
         const previous = await tx.userGame.aggregate({ where: { userId: award.userId, gameType: { videoGameId: session.gameType.videoGameId } }, _sum: { score: true } })
-        score = roundScore(Math.min(score, Math.max(0, config.maxPoints - (previous._sum.score ?? 0))))
+        limits.push({ scope: 'game', maximum: config.maxPoints, previous: previous._sum.score ?? 0 })
       }
       if (session.gameType.maxPointsPerUser != null) {
         const previous = await tx.userGame.aggregate({ where: { userId: award.userId, gameTypeId: session.gameTypeId }, _sum: { score: true } })
-        score = roundScore(Math.min(score, Math.max(0, session.gameType.maxPointsPerUser - roundScore(previous._sum.score ?? 0))))
+        limits.push({ scope: 'type', maximum: session.gameType.maxPointsPerUser, previous: roundScore(previous._sum.score ?? 0) })
       }
+      const credit = creditScore(award.score * factor, limits, snapshot?.version)
+      credits.push({ userId: award.userId, ...credit })
+      const score = credit.score
       await tx.userGame.create({ data: { userId: award.userId, gameTypeId: session.gameTypeId, score, gameSessionId: sessionId, playedAt: session.createdAt } })
     }
+    if (snapshot?.version === 2) await tx.gameSession.update({ where: { id: sessionId }, data: {
+      score: roundScore(credits.reduce((sum, credit) => sum + credit.requested, 0)),
+      scoringData: JSON.parse(JSON.stringify({ ...snapshot, awards, credits })),
+    } })
 }
 
 export async function rejectSession(sessionId: number) {

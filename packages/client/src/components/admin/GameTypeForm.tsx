@@ -84,6 +84,7 @@ export default function GameTypeForm({
     e.preventDefault()
     setError(null)
     const calculConfig = buildCalculConfig()
+    if (calculConfig?.type === 'RULES' && calculConfig.maxPoints !== null && !Number.isInteger(calculConfig.maxPoints)) { setError('Le plafond par jeu doit être un entier.'); return }
     if (!calculConfig) { setError('Configuration de calcul invalide.'); return }
     if (showGameSelect && !selectedGameId) { setError('Sélectionnez un jeu.'); return }
     try {
@@ -92,8 +93,8 @@ export default function GameTypeForm({
       if (maxPlaysPerUser !== null && (!Number.isInteger(maxPlaysPerUser) || maxPlaysPerUser < 1 || maxPlaysPerUser > 2147483647)) {
         setError('Le maximum de parties doit être un entier supérieur ou égal à 1.'); return
       }
-      if (maxPointsPerUser !== null && (!Number.isFinite(maxPointsPerUser) || maxPointsPerUser < 0.000001 || maxPointsPerUser > 1e9 || Math.abs(maxPointsPerUser * 1e6 - Math.round(maxPointsPerUser * 1e6)) > 0.00001)) {
-        setError('Le maximum de points doit être positif, avec au plus six décimales.'); return
+      if (maxPointsPerUser !== null && (!Number.isInteger(maxPointsPerUser) || maxPointsPerUser < 1 || maxPointsPerUser > 1e9)) {
+        setError('Le maximum de points doit être un entier positif.'); return
       }
       await onSubmit({ name, win, team, calculConfig, maxPlaysPerUser, maxPointsPerUser })
     } catch {
@@ -295,12 +296,12 @@ export default function GameTypeForm({
           <option value="points">Nombre de points</option>
         </select>
         <label className={styles.label} htmlFor="gtf-max-plays">{limitType === 'plays' ? 'Maximum de parties par utilisateur' : 'Maximum de points par utilisateur'}</label>
-        <input className={styles.input} id="gtf-max-plays" type="number" min={limitType === 'plays' ? 1 : 0.000001} max={limitType === 'plays' ? 2147483647 : 1e9} step={limitType === 'plays' ? 1 : 0.000001} placeholder="Illimité" value={maxPlays} onChange={e => setMaxPlays(e.target.value)} aria-describedby="gtf-max-plays-help" />
+        <input className={styles.input} id="gtf-max-plays" type="number" min={1} max={limitType === 'plays' ? 2147483647 : 1e9} step={1} placeholder="Illimité" value={maxPlays} onChange={e => setMaxPlays(e.target.value)} aria-describedby="gtf-max-plays-help" />
         <span className={styles.hint} id="gtf-max-plays-help">Laisser vide pour rester illimité. {limitType === 'plays' ? 'Les parties validées et en attente comptent ; les refusées ne comptent pas.' : 'Les points validés sont plafonnés pour ce type de partie. La dernière partie rapporte uniquement le solde disponible.'}</span>
       </div>
 
         {calculType === 'RULES' && <label className={styles.field}>Plafond cumulé individuel par jeu (vide = sans plafond)
-          <input className={styles.input} type="number" min="0" step="any" value={rules.maxPoints ?? ''} onChange={e => setRules({ ...rules, maxPoints: e.target.value === '' ? null : Number(e.target.value) })} />
+          <input className={styles.input} type="number" min="0" step="1" value={rules.maxPoints ?? ''} onChange={e => setRules({ ...rules, maxPoints: e.target.value === '' ? null : Number(e.target.value) })} />
           <span className={styles.hint}>Ce plafond par jeu est distinct de la limite de ce type de partie.</span>
         </label>}
         </div>

@@ -5,6 +5,9 @@ export const PersonalSessionPageSchema = z.object({
   hasNextPage: z.boolean(),
   sessions: z.array(z.object({
     id: z.number().int(),
+    gameId: z.number().int().optional(),
+    submitterId: z.number().int().optional(),
+    canEdit: z.boolean().optional(),
     createdAt: z.string().datetime(),
     gameName: z.string(),
     gameTypeName: z.string(),

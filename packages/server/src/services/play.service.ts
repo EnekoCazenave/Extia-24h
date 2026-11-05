@@ -1,19 +1,44 @@
 import { approveSessionInTransaction } from './moderation.service.js'
+import { requireUploadedProof } from './proof.service.js'
 import { honorProgress } from './honor.service.js'
 import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
-import { computeAwards, roundScore, ScoringError, CalculConfigSchema, type PlayInput } from '@extia-gaming/shared'
+import { computeAwards, finalGain, roundScore, ScoringError, CalculConfigSchema, type PlayInput, PlayInputSchema } from '@extia-gaming/shared'
 
-export async function submitPlay(userId: number, input: PlayInput) {
+export class PlaySessionError extends Error {
+  constructor(message: string, public statusCode: number) { super(message) }
+}
+
+export function canEditSession(session: {status: string; scoringData: unknown}) {
+  const snapshot = session.scoringData as { input?: unknown; config?: unknown } | null
+  if (!PlayInputSchema.safeParse(snapshot?.input).success) return false
+  const config = CalculConfigSchema.safeParse(snapshot?.config)
+  return session.status !== 'APPROVED' || (config.success && !(config.data.type === 'RULES' && ['PROGRESSION','HADES','MINECRAFT'].includes(config.data.method)))
+}
+
+export async function getEditableSession(userId: number, sessionId: number) {
+  const session = await prisma.gameSession.findUnique({where:{id:sessionId},include:{gameType:true}})
+  if (!session || session.submitterId !== userId) throw new PlaySessionError('Déclaration introuvable',404)
+  if (!canEditSession(session)) throw new PlaySessionError('Cette déclaration ne peut pas être modifiée : son barème dépend de la progression déjà créditée.',409)
+  const snapshot = session.scoringData as {input: unknown; config: unknown; happyHourMultiplier?: number}
+  return {id:session.id,status:session.status,gameId:session.gameType.videoGameId,input:PlayInputSchema.parse(snapshot.input),calculConfig:CalculConfigSchema.parse(snapshot.config),happyHourMultiplier:snapshot.happyHourMultiplier ?? 1}
+}
+
+export async function submitPlay(userId: number, input: PlayInput, sessionId?: number) {
   return withSubmissionTransaction(async tx => {
+    const existing = sessionId === undefined ? null : await tx.gameSession.findUnique({where:{id:sessionId}})
+    if (sessionId !== undefined && (!existing || existing.submitterId !== userId)) throw new PlaySessionError('Déclaration introuvable',404)
+    if (existing && (!canEditSession(existing) || existing.gameTypeId !== input.gameTypeId)) throw new PlaySessionError('Le mode de jeu ne peut pas être changé, ou cette déclaration ne peut plus être modifiée.',409)
+    await requireUploadedProof(tx, input.proofUrl)
+    if (existing) await tx.userGame.deleteMany({where:{gameSessionId:existing.id}})
     const gameType = await tx.gameType.findUnique({
       where: { id: input.gameTypeId },
       include: { videoGame: true },
     })
     if (!gameType) throw new Error('GAME_TYPE_NOT_FOUND')
-    if (gameType.calculType !== input.calculType) throw new Error('CALCUL_TYPE_MISMATCH')
-
-    const config = CalculConfigSchema.parse(gameType.calculConfig)
+    const previousSnapshot = existing?.scoringData as { config?: unknown; happyHourMultiplier?: number; requiresReview?: boolean } | null
+    const config = CalculConfigSchema.parse(previousSnapshot?.config ?? gameType.calculConfig)
+    if ((existing ? config.type : gameType.calculType) !== input.calculType) throw new Error('CALCUL_TYPE_MISMATCH')
     const members = input.teamMemberIds ?? []
     const userIds = [userId, ...members]
     if ((!gameType.team && members.length) || new Set(userIds).size !== userIds.length || userIds.length > 1000)
@@ -25,7 +50,7 @@ export async function submitPlay(userId: number, input: PlayInput) {
     if (gameType.maxPlaysPerUser != null) {
       for (const participantId of userIds) {
         const sessions = await tx.gameSession.count({ where: {
-          gameTypeId: gameType.id, status: { in: ['PENDING', 'APPROVED'] },
+          gameTypeId: gameType.id, ...(existing ? {id:{not:existing.id}} : {}), status: { in: ['PENDING', 'APPROVED'] },
           OR: [{ submitterId: participantId }, { teamMembers: { some: { userId: participantId } } }, { userGames: { some: { userId: participantId } } }],
         } })
         const legacyPlays = await tx.userGame.count({ where: { gameTypeId: gameType.id, userId: participantId, gameSessionId: null } })
@@ -48,25 +73,30 @@ export async function submitPlay(userId: number, input: PlayInput) {
         }
       }
     }
-    const awards = computeAwards(config, input, userIds)
-    const now = new Date()
+    const awards = computeAwards(config, input, userIds, true)
+    const now = existing?.createdAt ?? new Date()
     const { happyHourStart, happyHourEnd } = gameType.videoGame
-    const happyHourMultiplier = happyHourStart && happyHourEnd && now >= happyHourStart && now <= happyHourEnd ? 2 : 1
-    const score = roundScore(awards.reduce((sum, award) => sum + award.score * happyHourMultiplier, 0))
+    const happyHourMultiplier = previousSnapshot?.happyHourMultiplier ?? (happyHourStart && happyHourEnd && now >= happyHourStart && now <= happyHourEnd ? 2 : 1)
+    const score = roundScore(awards.reduce((sum, award) => sum + finalGain(award.score * happyHourMultiplier, 2), 0))
 
-    const session = await tx.gameSession.create({
-      data: {
-        submitterId: userId,
-        gameTypeId: input.gameTypeId,
-        score,
-        scoringData: JSON.parse(JSON.stringify({ config, input, awards, happyHourMultiplier })),
-        proofUrl: input.proofUrl ?? null,
-        teamMembers: {
-          create: (input.teamMemberIds ?? []).map((uid) => ({ userId: uid })),
-        },
-      },
-    })
+    const requiresReview = existing?.status === 'REJECTED' || previousSnapshot?.requiresReview === true
+    const sessionData = {
+      submitterId: userId,
+      gameTypeId: input.gameTypeId,
+      score,
+      scoringData: JSON.parse(JSON.stringify({ version: 2, config, input, awards, happyHourMultiplier, requiresReview })),
+      proofUrl: input.proofUrl ?? null,
+      status: 'PENDING' as const,
+      reviewedAt: null,
+      teamMembers: { create: (input.teamMemberIds ?? []).map(userId => ({ userId })) },
+    }
+    if (existing) await tx.gameSessionMember.deleteMany({where:{sessionId:existing.id}})
+    const session = existing
+      ? await tx.gameSession.update({where:{id:existing.id},data:sessionData})
+      : await tx.gameSession.create({data:sessionData})
 
+    // A correction of a rejected declaration requires a fresh moderator review.
+    if (requiresReview && existing?.status !== 'APPROVED') return {id:session.id,status:'PENDING' as const}
     await approveSessionInTransaction(tx, session.id)
     return { id: session.id, status: 'APPROVED' as const, honor: await honorProgress(userId, tx) }
   })

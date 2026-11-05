@@ -24,6 +24,8 @@ const MaxPlacesSchema = z
     .positive('Le nombre de places doit être supérieur à zéro').max(10000)
 
 const EventWriteSchema = z.object({
+    registrationRequired: z.boolean().optional(),
+    awardsPoints: z.boolean().optional(),
     notifyPush: z.boolean().optional(),
     notifyEmail: z.boolean().optional(),
     notifyDiscord: z.boolean().optional(),
@@ -39,7 +41,7 @@ const EventWriteSchema = z.object({
         .nullable()
         .optional(),
     startsAt: EventDateSchema,
-    pointsEarned: z.number().finite().positive().max(100000),
+    pointsEarned: z.number().finite().nonnegative().max(100000),
     endsAt: EventDateSchema,
     maxPlaces: MaxPlacesSchema,
 })
@@ -99,7 +101,7 @@ export const EventSchema = EventWriteSchema.extend({
     isRegistered: z.boolean(),
     myAttendance: z.boolean().nullable(),
     isFull: z.boolean(),
-    pointsEarned: z.number().finite().positive().max(100000),
+    pointsEarned: z.number().finite().nonnegative().max(100000),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
 })

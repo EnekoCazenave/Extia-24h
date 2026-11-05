@@ -1,34 +1,16 @@
 .hero {
-  background:
-    radial-gradient(1200px 500px at 80% 0%, rgba(var(--accent-rgb), 0.18), transparent 60%),
-    radial-gradient(900px 400px at 10% 110%, rgba(var(--secondary-rgb), 0.14), transparent 60%),
-    linear-gradient(180deg, #FFFFFF 0%, var(--bg-surface) 100%);
-  border-bottom: 1px solid var(--border-color);
-  padding: 96px var(--page-padding) 72px;
+  background: var(--bg-base);
+  padding: 58px var(--page-padding) 85px;
   text-align: center;
-  position: relative;
-  overflow: hidden;
 }
 .heroTitle {
-  font-family: var(--font-display), sans-serif;
-  font-size: clamp(var(--text-3xl), 6vw, var(--text-4xl));
-  font-weight: 900;
-  line-height: 1.05;
-  margin-bottom: 20px;
-  letter-spacing: -0.03em;
-  color: var(--text-primary);
-}
-.heroAccent {
-  color: var(--color-accent);
-  background: linear-gradient(135deg, var(--extia-orange), var(--extia-red));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  width: min(800px, 100%);
+  margin: 0 auto 26px;
 }
 .heroSubtitle {
-  font-size: var(--text-lg);
+  font-size: 17px;
   color: var(--text-muted);
-  max-width: 600px;
+  max-width: 650px;
   margin: 0 auto;
   line-height: 1.6;
 }
@@ -91,8 +73,6 @@
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
 }
 .videoIframe {
   position: absolute;
@@ -104,25 +84,22 @@
 .content {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 56px var(--page-padding);
+  padding: 40px var(--page-padding) 0;
   display: grid;
   grid-template-columns: 1fr 1.5fr;
-  gap: 40px;
+  gap: 28px;
   align-items: start;
 }
 @media (max-width: 768px) { .content { grid-template-columns: 1fr; } }
 .section {
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 28px;
-  box-shadow: var(--shadow-sm);
 }
 
 .programmeSection {
   grid-column: 1 / -1;
-  min-height: 640px;
-  padding: 36px;
+  padding: 32px;
   overflow: hidden;
 }
 
@@ -145,14 +122,6 @@
   text-align: right;
 }
 
-.programmeEyebrow {
-  margin-bottom: 6px;
-  color: var(--color-accent);
-  font-size: var(--text-xs);
-  font-weight: 900;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
 
 .agendaViewport {
   min-height: 500px;
@@ -164,7 +133,7 @@
 
 .sectionTitle {
   font-family: var(--font-display), sans-serif;
-  font-size: var(--text-lg);
+  font-size: 20px;
   font-weight: 800;
   margin-bottom: 20px;
   display: flex;
@@ -173,17 +142,12 @@
   color: var(--text-primary);
 }
 .sectionTitle::before {
-  content: '';
-  width: 4px;
-  height: 18px;
-  background: var(--color-accent);
-  border-radius: 2px;
+  display: none;
 }
 .sectionTitle::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
 
 @media (max-width: 768px) {
   .programmeSection {
-    min-height: 520px;
     padding: 20px;
   }
 
@@ -204,6 +168,26 @@
 
 .heroActions { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-top:28px; }
 .primaryAction, .discordAction { display:inline-flex; align-items:center; padding:12px 22px; border-radius:10px; font-weight:700; text-decoration:none; }
-.primaryAction { background:var(--color-accent); color:white; }
-.discordAction { background:#5865f2; color:white; }
+.primaryAction {
+  background: var(--color-accent);
+  color: var(--text-on-accent);
+}
+.discordAction {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+}
 .primaryAction:focus-visible, .discordAction:focus-visible { outline:3px solid var(--text-primary); outline-offset:3px; }
+
+.heroTitle img { width: 100%; height: auto; }
+.primaryAction:hover { background: var(--color-accent-hover); color: var(--text-on-accent); }
+.discordAction:hover { background: var(--border-color); color: var(--text-primary); }
+@media (max-width: 768px) {
+  .hero { padding: 36px 20px 64px; }
+  .heroTitle { margin-bottom: 22px; }
+  .heroSubtitle { font-size: 15px; }
+  .content { gap: 24px; padding-top: 28px; }
+  .section { padding: 20px; }
+  .videoHeader { gap: 8px; }
+  .youtubeOpenBtn, .twitchOpenBtn { flex-shrink: 0; white-space: nowrap; font-size: 12px; padding: 8px 12px; }
+}

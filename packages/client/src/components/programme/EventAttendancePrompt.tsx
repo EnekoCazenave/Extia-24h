@@ -15,7 +15,7 @@ export default function EventAttendancePrompt({userId}: {userId: number}) {
         return () => window.clearInterval(timer)
     }, [])
 
-    const event = events?.find((item) => item.isRegistered && item.myAttendance === null &&
+    const event = events?.find((item) => item.registrationRequired!==false && item.isRegistered && item.myAttendance === null &&
         new Date(item.startsAt).getTime() <= now && new Date(item.endsAt).getTime() > now &&
         (deferred[item.id] ?? 0) <= now)
 

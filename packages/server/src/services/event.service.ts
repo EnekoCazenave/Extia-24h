@@ -95,7 +95,7 @@ export async function confirmEventAttendance(userId: number, eventId: number, is
     const result = await prisma.userEvent.updateMany({
         where: {
             userId, eventId, isPresent: null,
-            event: {startsAt: {lte: now}, endsAt: {gt: now}},
+            event: {registrationRequired: true, startsAt: {lte: now}, endsAt: {gt: now}},
         },
         data: {isPresent},
     })
@@ -124,6 +124,7 @@ export async function registerToEvent(userId: number, eventId: number) {
         ])
 
         if (!event) throw new Error('EVENT_NOT_FOUND')
+        if (event.registrationRequired === false) throw new EventError('Cet événement est en accès libre, sans inscription')
         if (event.settledAt) throw new EventError('Cet événement a déjà été récompensé')
         if (!user) throw new Error('USER_NOT_FOUND')
         if (event.endsAt.getTime() <= Date.now()) throw new Error('EVENT_ENDED')
@@ -169,7 +170,13 @@ export async function unregisterToEvent(userId: number, eventId: number) {
     })
 }
 
+function validateParticipation(event: {registrationRequired?: boolean; awardsPoints?: boolean; pointsEarned: number}) {
+    if (event.awardsPoints !== false && event.registrationRequired === false) throw new EventError('Les points nécessitent une inscription pour identifier les participants',400)
+    if (event.awardsPoints !== false && event.pointsEarned <= 0) throw new EventError('Le nombre de points doit être positif lorsque les récompenses sont activées',400)
+}
+
 export async function createEvent(eventInfos: CreateEventInput) {
+    validateParticipation(eventInfos)
     if (eventInfos.videoGameId) {
         const videoGame = await prisma.videoGame.findUnique({
             where: {id: eventInfos.videoGameId},
@@ -191,6 +198,8 @@ export async function createEvent(eventInfos: CreateEventInput) {
             startsAt: new Date(eventInfos.startsAt),
             endsAt: new Date(eventInfos.endsAt),
             maxPlaces: eventInfos.maxPlaces,
+            registrationRequired: eventInfos.registrationRequired,
+            awardsPoints: eventInfos.awardsPoints,
             pointsEarned: eventInfos.pointsEarned,
             twitchUrl: eventInfos.twitchUrl,
             winnerShare: eventInfos.winnerShare,
@@ -208,6 +217,10 @@ export async function updateEvent(eventId: number, eventInfos: UpdateEventInput)
     })
 
     if (!existingEvent) throw new Error('EVENT_NOT_FOUND')
+    validateParticipation({...existingEvent,...eventInfos})
+    if (eventInfos.registrationRequired === false && existingEvent._count.userEvents > 0) throw new EventError('Impossible de retirer les inscriptions : des participants sont déjà inscrits')
+    if (existingEvent.startsAt <= new Date() && ((eventInfos.registrationRequired !== undefined && eventInfos.registrationRequired !== existingEvent.registrationRequired) || (eventInfos.awardsPoints !== undefined && eventInfos.awardsPoints !== existingEvent.awardsPoints))) throw new EventError('Les modalités de participation sont figées après le début')
+    if (eventInfos.attendance && existingEvent.registrationRequired === false) throw new EventError('Cet événement est sans inscription')
     if(existingEvent.settledAt) throw new EventError('Cet événement a déjà été récompensé')
     if(eventInfos.attendance && (existingEvent.startsAt>new Date() || existingEvent.endsAt<=new Date())) throw new Error('ATTENDANCE_UNAVAILABLE')
     if(existingEvent.startsAt<=new Date() && ((eventInfos.pointsEarned!==undefined && eventInfos.pointsEarned!==existingEvent.pointsEarned) || (eventInfos.winnerShare!==undefined && eventInfos.winnerShare!==existingEvent.winnerShare) || (eventInfos.startsAt!==undefined && new Date(eventInfos.startsAt).getTime()!==existingEvent.startsAt.getTime()) || (eventInfos.endsAt!==undefined && new Date(eventInfos.endsAt).getTime()!==existingEvent.endsAt.getTime()))) throw new EventError('Horaires et barème sont figés après le début')
@@ -258,6 +271,8 @@ export async function updateEvent(eventId: number, eventInfos: UpdateEventInput)
             startsAt: eventInfos.startsAt ? startsAt : undefined,
             endsAt: eventInfos.endsAt ? endsAt : undefined,
             maxPlaces: eventInfos.maxPlaces,
+            registrationRequired: eventInfos.registrationRequired,
+            awardsPoints: eventInfos.awardsPoints,
             pointsEarned: eventInfos.pointsEarned,
             twitchUrl: eventInfos.twitchUrl,
             winnerShare: eventInfos.winnerShare,

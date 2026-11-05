@@ -1,17 +1,17 @@
 /* packages/client/src/styles/global.css
  *
  * DESIGN TOKENS — EXTIA GAMING 24h
- * Palette directly derived from "Chartes graphiques - GROUPE.pdf" (Extia brand).
- * Main accentuation orange (#FB7F34), hover red-orange (#E25523), anthracite (#293D47).
+ * Validated event palette: logo black (#070606), warm grays, orange (#FD6600).
  */
 
 @font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/Montserrat.ttf') format('truetype'); }
 @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 200 1000; font-display: swap; src: url('/fonts/Nunito.ttf') format('truetype'); }
 
 :root {
-  /* Brand palette (Extia charter) */
-  --extia-orange: #FB7F34;
-  --extia-orange-soft: #FC9254;
+  color-scheme: dark;
+  /* Event brand palette */
+  --extia-orange: #FD6600;
+  --extia-orange-soft: #FFB580;
   --extia-red: #E25523;
   --extia-red-soft: #ED6F54;
   --extia-yellow: #FBBF2E;
@@ -21,52 +21,55 @@
   --extia-teal: #43AFBB;
   --extia-teal-soft: #56C3C3;
   --extia-ink: #293D47;
-  --extia-ink-soft: #335363;
+  --extia-ink-soft: #BDB7B5;
   --extia-steel: #5C7E8E;
   --extia-mist: #9CACB4;
 
-  /* Backgrounds (light mode, Extia style) */
-  --bg-base: #FFFFFF;
-  --bg-surface: #F6F8F9;
-  --bg-elevated: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --bg-tint: #FEF3EA;            /* soft orange tint */
+  /* Backgrounds match the dominant black of the event logos. */
+  --bg-base: #070606;
+  --bg-surface: #211F1F;
+  --bg-elevated: #211F1F;
+  --bg-card: #141313;
+  --bg-tint: #332319;
+  --badge-text: var(--extia-orange-soft);
+  --badge-border: #714325;
 
   /* Accent colors */
   --color-accent: var(--extia-orange);
-  --color-accent-hover: var(--extia-red);
-  --color-secondary: var(--extia-teal);
-  --color-secondary-hover: var(--extia-teal-soft);
+  --color-accent-hover: #FF812E;
+  --color-secondary: var(--extia-orange-soft);
+  --color-secondary-hover: #FFC9A3;
 
   /* Text */
-  --text-primary: var(--extia-ink);
-  --text-muted: var(--extia-steel);
-  --text-subtle: var(--extia-mist);
-  --text-on-accent: #FFFFFF;
+  --text-primary: #F5F3F2;
+  --text-muted: #BDB7B5;
+  --text-subtle: #AAA2A0;
+  --text-on-accent: #0E0C0B;
 
   /* State */
   --color-success: var(--extia-green);
-  --color-error: var(--extia-red);
+  --color-error: #FF8B8B;
+  --color-danger: var(--color-error);
   --color-warning: var(--extia-yellow);
 
   /* RGB triples — for alpha compositing (rgba(var(--x-rgb), .12)) */
-  --accent-rgb: 251, 127, 52;
-  --accent-strong-rgb: 226, 85, 35;
-  --secondary-rgb: 67, 175, 187;
+  --accent-rgb: 253, 102, 0;
+  --accent-strong-rgb: 255, 129, 46;
+  --secondary-rgb: 255, 181, 128;
   --success-rgb: 109, 182, 76;
   --warning-rgb: 251, 191, 46;
-  --error-rgb: 226, 85, 35;
-  --ink-rgb: 41, 61, 71;
+  --error-rgb: 255, 139, 139;
+  --ink-rgb: 245, 243, 242;
 
   /* Borders */
-  --border-color: rgba(var(--ink-rgb), 0.10);
-  --border-color-hover: rgba(var(--ink-rgb), 0.22);
-  --border-strong: rgba(var(--ink-rgb), 0.16);
+  --border-color: #332F2E;
+  --border-color-hover: #534B49;
+  --border-strong: #463E3C;
 
   /* Border radius */
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 18px;
+  --radius-lg: 16px;
 
   /* Typography — closest free substitutes for Mont Heavy + Gotham Rounded */
   --font-display: 'Montserrat', 'Mont Heavy', system-ui, sans-serif;
@@ -80,17 +83,16 @@
   --text-3xl: 2.25rem;
   --text-4xl: 3rem;
 
-  /* Shadows — soft, light-mode friendly */
-  --shadow-sm: 0 1px 2px rgba(var(--ink-rgb), 0.06);
-  --shadow-md: 0 6px 20px rgba(var(--ink-rgb), 0.08);
-  --shadow-lg: 0 16px 40px rgba(var(--ink-rgb), 0.12);
-  --shadow-glow: 0 8px 24px rgba(var(--accent-rgb), 0.28);
+  --shadow-sm: none;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.32);
+  --shadow-glow: 0 8px 24px rgba(0, 0, 0, 0.24);
 
   /* Transitions */
   --transition: 180ms ease;
 
   /* Layout */
-  --header-height: 72px;
+  --header-height: 96px;
   --max-width: 1200px;
   --page-padding: 24px;
 }
@@ -105,15 +107,13 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-height) + 14px);
+  scrollbar-color: var(--border-color-hover) var(--bg-base);
 }
 
 body {
   font-family: var(--font-sans), sans-serif;
   background-color: var(--bg-base);
-  background-image:
-    radial-gradient(900px 500px at 100% -10%, rgba(var(--accent-rgb), 0.08), transparent 60%),
-    radial-gradient(700px 400px at -10% 110%, rgba(var(--secondary-rgb), 0.06), transparent 60%);
-  background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
@@ -140,7 +140,10 @@ a:hover {
 
 button, input, select, textarea {
   font-family: inherit;
+  caret-color: var(--color-accent);
 }
+
+::selection { color: var(--text-on-accent); background: var(--extia-orange-soft); }
 
 img {
   max-width: 100%;
@@ -193,4 +196,12 @@ ul, ol {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   box-shadow: 0 4px 12px rgba(var(--warning-rgb), 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

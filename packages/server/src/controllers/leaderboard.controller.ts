@@ -14,12 +14,14 @@ export async function globalLeaderboard(
 }
 
 export async function filteredLeaderboard(
-  request: FastifyRequest<{ Querystring: { gameId?: string; gameTypeId?: string; team?: string; limit?: string } }>,
+  request: FastifyRequest<{ Querystring: { groupId?: string; gameId?: string; gameTypeId?: string; team?: string; limit?: string } }>,
   reply: FastifyReply,
 ) {
-  const { gameId, gameTypeId, team, limit } = request.query
+  const { gameId, gameTypeId, team, groupId, limit } = request.query
+  if (groupId !== undefined && (!/^[1-9]\d*$/.test(groupId) || !Number.isSafeInteger(Number(groupId)) || Number(groupId) > 2147483647)) return reply.code(400).send({error:'Invalid group id',statusCode:400})
   const parsedLimit = Math.min(parseInt(limit ?? '100', 10) || 100, 200)
   const rankings = await getFilteredLeaderboard({
+    groupId: groupId ? Number(groupId) : undefined,
     gameId: gameId ? parseInt(gameId, 10) : undefined,
     gameTypeId: gameTypeId ? parseInt(gameTypeId, 10) : undefined,
     team: team === 'true' ? true : team === 'false' ? false : undefined,

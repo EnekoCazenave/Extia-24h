@@ -20,8 +20,8 @@ export default function HomeProgramme() {
         <div className={styles.time}><strong>{time(event.startsAt)}</strong><span>à {time(event.endsAt)}</span></div>
         <article className={styles.card}>
           <div className={styles.cardTop}><div><p className={styles.date}>{new Date(event.startsAt).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',timeZone:'Europe/Paris'})}</p><h3><Link to={'/programme/'+event.id}>{event.name}</Link></h3></div><span>{Date.parse(event.endsAt)<=now?'Terminé':Date.parse(event.startsAt)<=now?'En cours':'À venir'}</span></div>
-          <div className={styles.meta}>{event.videoGame&&<span>{event.videoGame.nom}</span>}<span>{event.participantCount} / {event.maxPlaces} inscrits</span>{event.isRegistered&&<span>✓ Vous êtes inscrit</span>}</div>
-          <Link className={styles.secondaryButton} to={'/programme/'+event.id}>{Date.parse(event.endsAt)<=now?'Voir le récapitulatif':'Détails et inscription'}</Link>
+          <div className={styles.meta}>{event.videoGame&&<span>{event.videoGame.nom}</span>}{event.registrationRequired===false?<span>Accès libre</span>:<span>{event.participantCount} / {event.maxPlaces} inscrits</span>}{event.isRegistered&&<span>✓ Vous êtes inscrit</span>}</div>
+          <Link className={styles.secondaryButton} to={'/programme/'+event.id}>{Date.parse(event.endsAt)<=now?'Voir le récapitulatif':event.registrationRequired===false?'Voir les détails':'Détails et inscription'}</Link>
         </article>
       </li>)}
     </ol>

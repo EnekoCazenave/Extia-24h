@@ -33,11 +33,12 @@ export function useGlobalLeaderboard(limit = 20) {
 }
 
 export function useFilteredLeaderboard(filters: {
+  groupId?: number
   gameId?: number
   gameTypeId?: number
   team?: boolean
 }) {
-  const isGlobal = filters.gameId === undefined && filters.gameTypeId === undefined && filters.team === undefined
+  const isGlobal = filters.gameId === undefined && filters.gameTypeId === undefined && filters.team === undefined && filters.groupId === undefined
   return useQuery({
     queryKey: ['leaderboard', 'players', filters],
     queryFn: async () => {
@@ -46,6 +47,7 @@ export function useFilteredLeaderboard(filters: {
         return res.data.rankings.map((r) => ({ ...r, gameCount: undefined as number | undefined }))
       }
       const params = new URLSearchParams()
+      if (filters.groupId !== undefined) params.set('groupId', String(filters.groupId))
       if (filters.gameId !== undefined) params.set('gameId', String(filters.gameId))
       if (filters.gameTypeId !== undefined) params.set('gameTypeId', String(filters.gameTypeId))
       if (filters.team !== undefined) params.set('team', String(filters.team))

@@ -56,3 +56,13 @@ export function useRejectSession() {
     onSuccess: () => { qc.invalidateQueries() },
   })
 }
+
+export function useDeleteAllSessions() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      await api.delete('/api/moderation/sessions')
+    },
+    onSuccess: () => { qc.invalidateQueries() },
+  })
+}

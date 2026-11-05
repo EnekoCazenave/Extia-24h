@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import type { CreateGameInput, UpdateGameInput, CreateGameTypeInput, UpdateGameTypeInput, UpdateHappyHourInput, GrantBonusInput } from '@extia-gaming/shared'
 
@@ -100,4 +101,14 @@ export async function grantBonus(grantedById: number, data: GrantBonusInput) {
       reason: data.reason ?? null,
     },
   })
+}
+
+export async function reorderGames(gameIds: number[]) {
+  return prisma.$transaction(async tx => {
+    // Serialize against catalog edits and other reorder requests.
+    await tx.$executeRaw`LOCK TABLE "VideoGame" IN EXCLUSIVE MODE`
+    const games = await tx.videoGame.findMany({select:{id:true}})
+    if (gameIds.length !== games.length || new Set(gameIds).size !== gameIds.length || games.some(game=>!gameIds.includes(game.id))) throw new Error('GAME_ORDER_CONFLICT')
+    for (const [sortOrder,id] of gameIds.entries()) await tx.videoGame.update({where:{id},data:{sortOrder}})
+  }, {isolationLevel:Prisma.TransactionIsolationLevel.Serializable})
 }

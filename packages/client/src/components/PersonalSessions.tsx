@@ -1,3 +1,4 @@
+import {Link} from 'react-router-dom'
 import type {PersonalSessionPage} from '@extia-gaming/shared'
 import styles from '../pages/LeaderboardPage.module.css'
 
@@ -14,13 +15,14 @@ export default function PersonalSessions({data, page, setPage, isFetching}: {
       {data.sessions.length === 0 ? <p className={styles.empty}>Aucune partie sur cette page.</p> :
         <div className={styles.sessionTable}><table className={styles.table}>
           <caption>Détail des parties soumises</caption>
-          <thead><tr>{['Date', 'Jeu / Mode', 'Statut', 'Score soumis', 'Points crédités'].map((title) => <th key={title} scope="col">{title}</th>)}</tr></thead>
+          <thead><tr>{['Date', 'Jeu / Mode', 'Statut', 'Score soumis', 'Points crédités', 'Action'].map((title) => <th key={title} scope="col">{title}</th>)}</tr></thead>
           <tbody>{data.sessions.map((session) => <tr key={session.id}>
             <td>{new Date(session.createdAt).toLocaleString('fr-FR', {dateStyle: 'short', timeStyle: 'short'})}</td>
             <td><strong>{session.gameName}</strong><div>{session.gameTypeName}</div></td>
             <td>{statuses[session.status]}</td>
             <td>{session.submittedScore.toLocaleString('fr-FR')} pts</td>
             <td>{session.creditedPoints.toLocaleString('fr-FR')} pts</td>
+            <td>{session.canEdit && <Link to={`/declarations/${session.id}/modifier`}>Modifier</Link>}</td>
           </tr>)}</tbody>
         </table></div>}
     </>}

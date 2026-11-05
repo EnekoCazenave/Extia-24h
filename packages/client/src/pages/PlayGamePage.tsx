@@ -1,7 +1,10 @@
+import GameBanner from '../components/GameBanner.tsx'
 import Modal from '../components/Modal.tsx'
-import type { HonorProgress } from '@extia-gaming/shared'
+import type { HonorProgress, CalculConfig } from '@extia-gaming/shared'
 import { useState, useRef, useEffect, type FormEvent, type ChangeEvent } from 'react'
 import { isAxiosError } from 'axios'
+import {useQuery, useQueryClient} from '@tanstack/react-query'
+import {usePlatform, type PublicSettings} from '../hooks/usePlatform.ts'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import SEOHead from '../components/SEOHead.tsx'
 import { useGame, useSubmitPlay } from '../hooks/useGames.ts'
@@ -19,9 +22,15 @@ function isHappyHourActive(start: string | null, end: string | null): boolean {
 }
 
 export default function PlayGamePage() {
-  const { id } = useParams<{ id: string }>()
+  const { id, sessionId } = useParams<{ id: string; sessionId: string }>()
+  const editing = Boolean(sessionId)
+  const qc = useQueryClient()
+  const settingsQuery = usePlatform<{settings: PublicSettings}>('/api/settings')
+  const existing = useQuery({queryKey:['play',sessionId],enabled:editing,queryFn:async()=>(await api.get<{session:{id:number;status:string;gameId:number;input:PlayInput;calculConfig?:CalculConfig;happyHourMultiplier?:number}}>(`/api/play/${sessionId}`)).data.session})
+  const gamesQuery = useQuery({queryKey:['games'],enabled:!id&&!editing,queryFn:async()=>(await api.get<{games:Array<{id:number;nom:string}>}>('/api/games')).data.games})
+  const [chosenGameId,setChosenGameId] = useState(0)
   const [searchParams] = useSearchParams()
-  const gameId = parseInt(id ?? '0', 10)
+  const gameId = existing.data?.gameId ?? (id ? parseInt(id,10) : chosenGameId)
   const preselectedGameTypeId = parseInt(searchParams.get('gameTypeId') ?? '0', 10)
 
   const { data: game, isLoading } = useGame(gameId)
@@ -34,6 +43,8 @@ export default function PlayGamePage() {
   const [teamSearch, setTeamSearch] = useState('')
   const [showDropdown, setShowDropdown] = useState(false)
   const teamBoxRef = useRef<HTMLDivElement>(null)
+  const [existingProof,setExistingProof] = useState<string | undefined>()
+  const [savingEdit,setSavingEdit] = useState(false)
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [proofPreview, setProofPreview] = useState<string | null>(null)
   const [honor, setHonor] = useState<HonorProgress | null>(null)
@@ -47,11 +58,12 @@ export default function PlayGamePage() {
   const [numValue, setNumValue] = useState<string>('')
   const [timeSeconds, setTimeSeconds] = useState<string>('')
 
-  const selectedGameType = game?.gameTypes.find(
+  const currentGameType = game?.gameTypes.find(
     (gt) => gt.id === (selectedGameTypeId || game?.gameTypes[0]?.id),
   )
+  const selectedGameType = currentGameType && existing.data?.calculConfig ? {...currentGameType,calculConfig:existing.data.calculConfig,calculType:existing.data.calculConfig.type} : currentGameType
   const isTeamMode = selectedGameType?.team ?? false
-  const happyHour = game ? isHappyHourActive(game.happyHourStart, game.happyHourEnd) : false
+  const happyHour = editing ? (existing.data?.happyHourMultiplier??1)>1 : game ? isHappyHourActive(game.happyHourStart, game.happyHourEnd) : false
 
   const otherUsers = allUsers.filter((u) => u.id !== me?.id)
 
@@ -76,6 +88,20 @@ export default function PlayGamePage() {
     document.addEventListener('mousedown', onClickOutside)
     return () => document.removeEventListener('mousedown', onClickOutside)
   }, [])
+
+  useEffect(() => {
+    if (!existing.data) return
+    const input=existing.data.input
+    setSelectedGameTypeId(input.gameTypeId)
+    setTeamMemberIds(input.teamMemberIds??[])
+    setExistingProof(input.proofUrl)
+    if(input.calculType==='BOOLEAN')setBoolValue(input.value)
+    else if(input.calculType==='NUMBER')setNumValue(String(input.value))
+    else if(input.calculType==='TIME')setTimeSeconds(String(input.timeSeconds))
+    else setRulesDraft({values:input.values,mode:input.mode,results:input.results})
+  },[existing.data])
+
+  useEffect(() => () => {if(proofPreview)URL.revokeObjectURL(proofPreview)},[proofPreview])
 
   function addTeamMember(uid: number) {
     setTeamMemberIds((prev) => (prev.includes(uid) ? prev : [...prev, uid]))
@@ -124,16 +150,19 @@ export default function PlayGamePage() {
     setError(null)
 
     const data = new FormData(e.currentTarget)
-    const gameTypeId = parseInt(data.get('gameTypeId') as string, 10)
+    const gameTypeId = editing ? selectedGameTypeId : parseInt(data.get('gameTypeId') as string, 10)
 
     if (isNaN(gameTypeId) || !selectedGameType) {
       setError('Sélectionnez un mode de jeu.')
       return
     }
 
+    if(settingsQuery.isPending || settingsQuery.isError){setError('Impossible de vérifier les règles de preuve. Réessayez dans un instant.');return}
+    if(settingsQuery.data?.settings.proofRequired && !proofFile && !existingProof){setError('Ajoutez une capture d’écran avant de soumettre votre déclaration.');return}
+
     try {
       if (!buildPlayInput(gameTypeId, undefined)) { setError('Veuillez remplir tous les champs correctement.'); return }
-      let proofUrl: string | undefined
+      let proofUrl: string | undefined = existingProof
       if (proofFile) {
         setUploading(true)
         const form = new FormData()
@@ -151,24 +180,34 @@ export default function PlayGamePage() {
         return
       }
 
-      const result = await submitPlay.mutateAsync(payload)
+      setSavingEdit(editing)
+      const result = editing ? (await api.put<{session:{status:string;honor?:HonorProgress}}>(`/api/play/${sessionId}`,payload)).data.session : await submitPlay.mutateAsync(payload)
+      if(editing)await qc.invalidateQueries()
+      setSavingEdit(false)
       setApproved(result?.status === 'APPROVED')
       setHonor(result?.honor ?? null)
       setHonorOpen(Boolean(result?.honor?.next || result?.honor?.current))
       setSubmitted(true)
     } catch (err) {
       setUploading(false)
+      setSavingEdit(false)
       setError(isAxiosError(err) ? err.response?.data?.error ?? 'Erreur de soumission.' : err instanceof Error ? err.message : 'Erreur de soumission.')
     }
   }
 
-  if (isLoading) {
+  if ((editing&&existing.isPending) || isLoading || (!id&&!editing&&gamesQuery.isPending)) {
     return (
       <div className={styles.page}>
         <p style={{ color: 'var(--text-muted)' }} aria-live="polite">Chargement…</p>
       </div>
     )
   }
+
+  if (editing&&existing.isError) return <div className={styles.page}><h1>Modifier ma déclaration</h1><p role="alert">Impossible de charger cette déclaration.</p><button type="button" onClick={()=>void existing.refetch()}>Réessayer</button><Link to="/classement/me">Retour à mon historique</Link></div>
+
+  const gameSelector = !id&&!editing ? <div className={styles.field}><label className={styles.label} htmlFor="declaration-game">Jeu</label><select id="declaration-game" className={styles.select} value={chosenGameId} onChange={e=>{setChosenGameId(Number(e.target.value));setSelectedGameTypeId(0);setTeamMemberIds([]);setRulesDraft({values:{}});setNumValue('');setTimeSeconds('');setBoolValue(true)}}><option value="0">Choisir un jeu</option>{gamesQuery.data?.map(g=><option key={g.id} value={g.id}>{g.nom}</option>)}</select></div> : null
+
+  if (!gameId && !editing) return <div className={styles.page}><SEOHead title="Déclarer une partie" description="Déclarez votre résultat et joignez votre capture d’écran." canonicalPath="/declarer"/><div className={styles.card}><h1 className={styles.title}>Déclarer une partie</h1><p>Choisissez un jeu et son mode pour déclarer votre résultat.</p>{gamesQuery.isError?<p role="alert">Impossible de charger les jeux. <button type="button" onClick={()=>void gamesQuery.refetch()}>Réessayer</button></p>:gamesQuery.data?.length===0?<p>Aucun jeu disponible pour le moment.</p>:gameSelector}</div></div>
 
   if (!game) {
     return (
@@ -190,23 +229,24 @@ export default function PlayGamePage() {
           {honor.next?<p><strong>{honor.remaining.toLocaleString('fr-FR')} points</strong> avant d’atteindre le palier <strong>{honor.next.name}</strong>.</p>:<p>Vous avez atteint le dernier palier honorifique !</p>}
           <button type="button" onClick={()=>setHonorOpen(false)}>Continuer</button></>}
       </Modal>
+      <GameBanner name={game.nom} imageUrl={game.imageUrl} />
       <SEOHead
-        title={`Soumettre une partie — ${game.nom}`}
+        title={`${editing?"Modifier ma déclaration":"Soumettre une partie"} — ${game.nom}`}
         description={`Entrez votre score pour ${game.nom}.`}
-        canonicalPath={`/jeux/${game.id}/jouer`}
+        canonicalPath={editing?`/declarations/${sessionId}/modifier`:id?`/jeux/${game.id}/jouer`:'/declarer'}
       />
-      <Link to={`/jeux/${game.id}`} className={styles.back}>← Retour au jeu</Link>
+      <Link to={editing?'/classement/me':`/jeux/${game.id}`} className={styles.back}>{editing?'← Retour à mon historique':'← Retour au jeu'}</Link>
       <div className={styles.card}>
-        <h1 className={styles.title}>Soumettre une partie</h1>
+        <h1 className={styles.title}>{editing?"Modifier ma déclaration":"Soumettre une partie"}</h1>
         <p className={styles.gameName}>🎮 {game.nom}</p>
         {happyHour && (
           <div className={styles.happyHour} role="status" aria-live="polite">
-            ⚡ Happy Hour active — votre score sera doublé !
+            {editing?"Happy Hour appliquée à la déclaration initiale — son multiplicateur est conservé.":"⚡ Happy Hour active — votre score sera doublé !"}
           </div>
         )}
         {submitted ? (
           <div className={styles.success} role="status" aria-live="polite">
-            <div>✅ Partie soumise avec succès !</div>
+            <div>{editing?"Déclaration modifiée avec succès !":"✅ Partie soumise avec succès !"}</div>
             <div className={styles.pendingBadge}>
               {approved ? 'Partie validée automatiquement. Vos points sont crédités ; la modération peut encore rejeter la partie.' : '⏳ En attente de validation par un modérateur avant attribution des points.'}
             </div>
@@ -218,12 +258,15 @@ export default function PlayGamePage() {
           </div>
         ) : (
           <form className={styles.form} onSubmit={handleSubmit} noValidate aria-label={`Formulaire de soumission pour ${game.nom}`}>
+            {gameSelector}
+            {editing&&<p>Corrigez votre résultat ou remplacez la preuve. Le jeu et le mode restent ceux de la déclaration initiale.</p>}
             <div className={styles.field}>
               <label className={`${styles.label} ${styles.required}`} htmlFor="gameTypeId">Mode de jeu</label>
               <select
                 className={styles.select}
                 id="gameTypeId"
                 name="gameTypeId"
+                disabled={editing}
                 value={selectedGameTypeId || game.gameTypes[0]?.id}
                 onChange={(e) => {
                   setSelectedGameTypeId(parseInt(e.target.value, 10))
@@ -312,12 +355,14 @@ export default function PlayGamePage() {
             )}
 
             <div className={styles.field}>
-              <label className={styles.label} htmlFor="proof">Preuve (capture d'écran)</label>
+              <label className={styles.label} htmlFor="proof">Preuve (capture d’écran){settingsQuery.data?.settings.proofRequired?' *':''}</label>
+              {existingProof&&<p><a href={existingProof} target="_blank" rel="noreferrer">Voir la preuve actuelle</a>. Choisissez un fichier pour la remplacer.</p>}
               <input
                 className={styles.fileInput}
                 id="proof"
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp"
+                aria-required={Boolean(settingsQuery.data?.settings.proofRequired&&!existingProof)}
                 onChange={handleFileChange}
               />
               {proofPreview && (
@@ -380,13 +425,14 @@ export default function PlayGamePage() {
               </div>
             )}
 
+            {settingsQuery.isError&&<p role="alert">Impossible de charger les règles de preuve. <button type="button" onClick={()=>void settingsQuery.refetch()}>Réessayer</button></p>}
             {error && <p className={styles.error} role="alert" aria-live="assertive">{error}</p>}
             <button
               type="submit"
               className={styles.submitBtn}
-              disabled={submitPlay.isPending || uploading}
+              disabled={submitPlay.isPending || uploading || savingEdit || settingsQuery.isPending || settingsQuery.isError}
             >
-              {uploading ? 'Upload en cours…' : submitPlay.isPending ? 'Envoi…' : '🏅 Soumettre ma partie'}
+              {uploading ? 'Upload en cours…' : submitPlay.isPending || savingEdit ? 'Envoi…' : editing ? 'Enregistrer les modifications' : '🏅 Soumettre ma partie'}
             </button>
           </form>
         )}
