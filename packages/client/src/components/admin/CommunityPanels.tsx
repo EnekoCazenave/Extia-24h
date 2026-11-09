@@ -9,7 +9,7 @@ export function SettingsPanel() {
   const local=(v:string|null)=>v?new Date(Date.parse(v)-new Date(v).getTimezoneOffset()*60000).toISOString().slice(0,16):''
   async function submit(e:FormEvent<HTMLFormElement>) {
     e.preventDefault();setSaved(false);const d=new FormData(e.currentTarget),datetime=(key:string)=>d.get(key)?new Date(String(d.get(key))).toISOString():null
-    const payload={homeSubtitle:String(d.get('homeSubtitle')??'').trim(),proofRequired:d.get('proofRequired')==='on',notifyStartDiscord:d.get('notifyStartDiscord')==='on',notifyEndDiscord:d.get('notifyEndDiscord')==='on',startReminderMinutes:Number(d.get('startReminderMinutes')),endReminderMinutes:Number(d.get('endReminderMinutes')),eventStart:datetime('eventStart'),eventEnd:datetime('eventEnd'),discordUrl:String(d.get('discordUrl')??'').trim()||null,honorTiers:d.getAll('tierName').map((name,i)=>({name:String(name),points:Number(d.getAll('tierPoints')[i])}))}
+    const payload={homeSubtitle:String(d.get('homeSubtitle')??'').trim(),proofRequired:d.get('proofRequired')==='on',notifyStartDiscord:d.get('notifyStartDiscord')==='on',notifyEndDiscord:d.get('notifyEndDiscord')==='on',startReminderMinutes:Number(d.get('startReminderMinutes')),endReminderMinutes:Number(d.get('endReminderMinutes')),eventStart:datetime('eventStart'),eventEnd:datetime('eventEnd'),discordUrl:String(d.get('discordUrl')??'').trim()||null,homeVideoUrl:String(d.get('homeVideoUrl')??'').trim()||null,honorTiers:d.getAll('tierName').map((name,i)=>({name:String(name),points:Number(d.getAll('tierPoints')[i])}))}
     if(await action.run(()=>api.put('/api/admin/settings',payload)))setSaved(true)
   }
   return <section className={s.section}><h2>Accueil et période des 24 heures</h2>{!cfg?<p>Chargement…</p>:<form className={s.form} onSubmit={submit}>
@@ -19,6 +19,8 @@ export function SettingsPanel() {
     <p>Les horaires délimitent le programme principal ; les événements Before restent consultables.</p>
     <label className={s.field}>Début des 24 heures<input name="eventStart" type="datetime-local" defaultValue={local(cfg.eventStart)}/></label><label className={s.field}>Fin des 24 heures<input name="eventEnd" type="datetime-local" defaultValue={local(cfg.eventEnd)}/></label>
     <label className={s.field}>Lien Discord de l’événement<input name="discordUrl" type="url" placeholder="https://discord.gg/…" defaultValue={cfg.discordUrl??''}/></label>
+    <label className={s.field}>Vidéo YouTube de l’accueil<input name="homeVideoUrl" type="url" placeholder="https://www.youtube.com/watch?v=…" defaultValue={cfg.homeVideoUrl??''}/></label>
+    <p>Liens acceptés : youtube.com/watch, youtu.be, /embed ou /shorts. Laissez vide pour afficher la vidéo par défaut.</p>
     <fieldset><legend>Notifications Discord des 24 heures</legend>
       <p>Les annonces utilisent le salon Discord configuré sur le serveur. Sans connexion, les choix sont enregistrés mais aucun message n’est envoyé.</p>
       <label className={s.field}><span><input type="checkbox" name="notifyStartDiscord" defaultChecked={cfg.notifyStartDiscord??false}/> Annoncer le début des 24 heures</span></label>

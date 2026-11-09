@@ -4,6 +4,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../test-utils.tsx'
 import HomePage from '../pages/HomePage.tsx'
+import { setMediaChoice } from '../components/ExternalMedia.tsx'
+
+const platform = vi.hoisted(() => ({ settings: {} as Record<string, unknown> }))
+vi.mock('../hooks/usePlatform.ts', async original => ({ ...await original<typeof import('../hooks/usePlatform.ts')>(), usePlatform: () => ({ data: { settings: platform.settings } }) }))
 
 const mockUseTopGames = vi.fn()
 const mockUseGlobalLeaderboard = vi.fn()
@@ -15,6 +19,8 @@ vi.mock('../hooks/useLeaderboard.ts', () => ({
 
 describe('HomePage', () => {
   beforeEach(() => {
+    platform.settings = {}
+    setMediaChoice('YouTube', 'allowed')
     mockUseTopGames.mockReturnValue({ data: undefined, isLoading: true, isError: false })
     mockUseGlobalLeaderboard.mockReturnValue({ data: undefined, isLoading: true, isError: false })
   })
@@ -24,6 +30,17 @@ describe('HomePage', () => {
     expect(screen.getByRole('link',{name:'S’inscrire aux 24 heures'})).toHaveAttribute('href','/register')
     expect(screen.getByRole('link',{name:/Voir tout le programme/})).toHaveAttribute('href','/programme')
   })
+  it('affiche la vidéo YouTube configurée par l’administration', () => {
+    platform.settings = { homeVideoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+    renderWithProviders(<HomePage />)
+    expect(screen.getByTitle('Explication Challenge')).toHaveAttribute('src', 'https://www.youtube.com/embed/dQw4w9WgXcQ')
+  })
+
+  it('affiche la vidéo par défaut sans réglage', () => {
+    renderWithProviders(<HomePage />)
+    expect(screen.getByTitle('Explication Challenge')).toHaveAttribute('src', 'https://www.youtube.com/embed/b-qNl-lpJMI')
+  })
+
   it('renders main heading', () => {
     renderWithProviders(<HomePage />)
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()

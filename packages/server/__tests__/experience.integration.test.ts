@@ -6,7 +6,7 @@ import {rejectSession} from '../src/services/moderation.service.js'
 import {honorProgress} from '../src/services/honor.service.js'
 import {reportingData,exportWorkbook} from '../src/services/reporting.service.js'
 import {dispatchReminders} from '../src/services/notification-dispatch.service.js'
-import {PlayInputSchema,SettingsSchema} from '@extia-gaming/shared'
+import {PlayInputSchema,SettingsSchema,youtubeEmbedUrl} from '@extia-gaming/shared'
 import {buildApp} from '../src/app.js'
 
 describe('Accueil, paliers, notifications et rapport',()=>{
@@ -85,6 +85,9 @@ describe('Accueil, paliers, notifications et rapport',()=>{
     expect((await app.inject({url:'/api/admin/kpis',headers:{cookie}})).statusCode).toBe(403)
     expect(SettingsSchema.safeParse({eventStart:null,eventEnd:null,honorTiers:[{name:'A',points:10},{name:'B',points:10}]}).success).toBe(false)
     expect(SettingsSchema.safeParse({eventStart:null,eventEnd:null,discordUrl:'javascript:alert(1)'}).success).toBe(false)
+    expect(SettingsSchema.safeParse({eventStart:null,eventEnd:null,homeVideoUrl:'https://vimeo.com/123'}).success).toBe(false)
+    expect(SettingsSchema.safeParse({eventStart:null,eventEnd:null,homeVideoUrl:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'}).success).toBe(true)
+    for(const url of ['https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10','https://youtu.be/dQw4w9WgXcQ','https://www.youtube.com/shorts/dQw4w9WgXcQ','https://www.youtube.com/embed/dQw4w9WgXcQ'])expect(youtubeEmbedUrl(url)).toBe('https://www.youtube.com/embed/dQw4w9WgXcQ')
     await app.close()
   })
 })

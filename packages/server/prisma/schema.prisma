@@ -359,6 +359,7 @@ model SiteSettings {
   startReminderMinutes Int @default(0)
   endReminderMinutes Int @default(0)
   discordUrl String?
+  homeVideoUrl String?
   honorTiers Json @default("[]")
   id Int @id @default(1)
   eventStart DateTime?

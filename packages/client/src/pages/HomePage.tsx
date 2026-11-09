@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.ts'
 import { usePlatform, type PublicSettings } from '../hooks/usePlatform.ts'
 import { useTopGames, useGlobalLeaderboard } from '../hooks/useLeaderboard.ts'
+import { DEFAULT_HOME_VIDEO_URL, youtubeEmbedUrl } from '@extia-gaming/shared'
 import styles from './HomePage.module.css'
 
 const EVENT_JSON_LD = {
@@ -23,6 +24,7 @@ const EVENT_JSON_LD = {
 export default function HomePage() {
   const {user} = useAuth()
   const settings = usePlatform<{settings:PublicSettings}>('/api/settings').data?.settings
+  const videoEmbedUrl = youtubeEmbedUrl(settings?.homeVideoUrl || DEFAULT_HOME_VIDEO_URL)
   const topGames = useTopGames(5)
   const leaderboard = useGlobalLeaderboard(20)
 
@@ -62,8 +64,8 @@ export default function HomePage() {
           </a>
        </div>
           <ExternalMedia provider="YouTube"><div className={styles.videoEmbed}>
-              <iframe src="https://www.youtube.com/embed/b-qNl-lpJMI"
-                      title="24h Solidaires 2025 (Part 3/3)" frameBorder="0"
+              <iframe src={videoEmbedUrl ?? undefined}
+                      title="Explication Challenge" frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       referrerPolicy="strict-origin-when-cross-origin"
                       allowFullScreen

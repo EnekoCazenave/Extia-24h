@@ -18,11 +18,12 @@ describe('Parcours événementiels',()=>{
     await userEvent.type(screen.getByLabelText('Texte sous le logo de l’accueil'),'Jouons ensemble pour les associations.')
     await userEvent.click(screen.getByRole('checkbox',{name:/Exiger une capture/}))
     await userEvent.type(screen.getByLabelText('Lien Discord de l’événement'),'https://discord.gg/extia')
+    await userEvent.type(screen.getByLabelText('Vidéo YouTube de l’accueil'),'https://youtu.be/dQw4w9WgXcQ')
     await userEvent.click(screen.getByRole('button',{name:'Ajouter un palier'}))
     await userEvent.type(screen.getByLabelText('Nom du palier 1'),'Expert')
     await userEvent.type(screen.getByLabelText('Seuil de points 1'),'500')
     await userEvent.click(screen.getByRole('button',{name:'Enregistrer'}))
-    await waitFor(()=>expect(api.put).toHaveBeenCalledWith('/api/admin/settings',{homeSubtitle:'Jouons ensemble pour les associations.',proofRequired:true,notifyStartDiscord:false,notifyEndDiscord:false,startReminderMinutes:0,endReminderMinutes:0,eventStart:null,eventEnd:null,discordUrl:'https://discord.gg/extia',honorTiers:[{name:'Expert',points:500}]}))
+    await waitFor(()=>expect(api.put).toHaveBeenCalledWith('/api/admin/settings',{homeSubtitle:'Jouons ensemble pour les associations.',proofRequired:true,notifyStartDiscord:false,notifyEndDiscord:false,startReminderMinutes:0,endReminderMinutes:0,eventStart:null,eventEnd:null,discordUrl:'https://discord.gg/extia',homeVideoUrl:'https://youtu.be/dQw4w9WgXcQ',honorTiers:[{name:'Expert',points:500}]}))
   })
   it('enregistre les annonces Discord et leurs délais indépendants',async()=>{
     renderWithProviders(<SettingsPanel/>);
